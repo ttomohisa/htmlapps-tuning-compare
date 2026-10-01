@@ -2303,10 +2303,10 @@
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => writeStorage(storageKey, JSON.stringify(currentSettings())), 160);
     }
-    function restoreSettings() {
-      const raw = readStorage(storageKey) || readStorage(legacyStorageKey); if (!raw) return;
+    function restoreSettings(settingsOverride = null) {
+      const raw = readStorage(storageKey) || readStorage(legacyStorageKey); if (!settingsOverride && !raw) return;
       try {
-        const saved = JSON.parse(raw);
+        const saved = settingsOverride && typeof settingsOverride === 'object' ? settingsOverride : JSON.parse(raw);
         if (['equal','just','custom'].includes(saved.tuningType)) $('#tuningType').value = saved.tuningType;
         if (saved.referenceNote && [...$('#referenceNote').options].some(option => option.value === saved.referenceNote)) $('#referenceNote').value = saved.referenceNote;
         if (saved.referenceFrequency != null) $('#referenceFrequency').value = saved.referenceFrequency;
@@ -2462,10 +2462,16 @@
         const parsed=JSON.parse(await file.text()),validation=validateProjectDocument(parsed);
         if(!validation.ok){ setProjectStatus(t(validation.reason==='schema'?'projectUnsupported':'projectInvalid'),true); return; }
         if(!window.confirm(t('projectImportConfirm'))){ setProjectStatus(''); return; }
-        const settings=validation.project,saved=writeStorage(storageKey,JSON.stringify(settings));
-        if(settings.language==='ja'||settings.language==='en') writeStorage(languageKey,settings.language);
-        if(!saved){ setProjectStatus(t('projectStorageFailed'),true); return; }
-        setProjectStatus(t('projectImported')); window.setTimeout(()=>window.location.reload(),120);
+        const settings=validation.project;
+        if(settings.language==='ja'||settings.language==='en'){ language=settings.language; writeStorage(languageKey,language); }
+        restoreSettings(settings);
+        ensureCustomInitialized(false); ensureABCustom('a',false); ensureABCustom('b',false);
+        renderABComparison(); setABActive(null); setScoreMode(scoreState.mode); setScoreDuration(scoreState.duration); setScoreAccidental(scoreState.accidental);
+        renderScore(); updateSuggestedWavFilename(); updateWavExportAvailability();
+        $('#volumeValue').textContent=$('#masterVolume').value+'%'; engine.setMasterVolume(Number($('#masterVolume').value)/100);
+        applyLanguage();
+        if(!writeStorage(storageKey,JSON.stringify(currentSettings()))) setProjectStatus(t('projectStorageFailed'),true);
+        else { setProjectStatus(t('projectImported')); AppToast.show({message:t('projectImported')}); }
       }catch(error){ console.error(error); setProjectStatus(t('projectInvalid'),true); }
     }
 
