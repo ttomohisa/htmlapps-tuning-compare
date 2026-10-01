@@ -1,7 +1,9 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-const baseUrl = 'http://127.0.0.1:4173/index.html';
+const baseUrl = pathToFileURL(path.resolve('dist/index.html')).href;
 const outDir = 'release-screenshots';
 await fs.mkdir(outDir, { recursive: true });
 
@@ -15,9 +17,9 @@ async function capture({ locale, viewport, file, isMobile = false }) {
     reducedMotion: 'reduce'
   });
   const page = await context.newPage();
-  await page.goto(baseUrl, { waitUntil: 'networkidle' });
-  await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.evaluate(() => { try { localStorage.clear(); } catch {} });
+  await page.reload({ waitUntil: 'load' });
   await page.waitForTimeout(800);
   await page.screenshot({ path: `${outDir}/${file}`, fullPage: false });
   await browser.close();
