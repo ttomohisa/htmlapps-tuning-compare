@@ -818,7 +818,6 @@
     .score-svg .score-rest-hitbox:active { cursor:grabbing; }
     .score-svg .chord-selection { fill:none; stroke:var(--accent); stroke-width:2.2; }
     .score-svg .score-chord-add-lane { fill:rgba(22,98,79,.055); stroke:rgba(22,98,79,.42); stroke-width:1; stroke-dasharray:2 4; cursor:crosshair; }
-    .score-svg .score-chord-group-hitbox { fill:none; stroke:transparent; stroke-width:14; pointer-events:stroke; cursor:ew-resize; }
 
 
     .sound-card .card-intro { margin-bottom:18px; }
@@ -2382,12 +2381,6 @@
       if(event.id===scoreState.selectedId){
         const selectionY=yMin-12,selectionHeight=Math.max(24,yMax-yMin+24);
         svg.append(scoreSvgElement('rect',{x:x-19,y:selectionY,width:42,height:selectionHeight,rx:9,class:'chord-selection'}));
-        if(event.notes.length>1){
-          svg.append(scoreSvgElement('rect',{
-            x:x-19,y:selectionY,width:42,height:selectionHeight,rx:9,class:'score-chord-group-hitbox',
-            'data-group-event-id':event.id
-          }));
-        }
       }
       positions.forEach(position=>{
         svg.append(scoreSvgElement('rect',{
@@ -2476,19 +2469,6 @@
       try{ svg.setPointerCapture(event.pointerId); }catch{}
       renderScore(); event.preventDefault(); return true;
     }
-    function beginScoreGroupDrag(event,target){
-      const eventId=Number(target.getAttribute('data-group-event-id'));
-      const scoreEvent=scoreState.events.find(item=>item.id===eventId);
-      if(!scoreEvent||scoreEvent.rest||scoreEvent.notes.length<2) return false;
-      clearScoreLongPress();
-      scoreState.selectedId=eventId;
-      scoreState.drag={
-        kind:'group',pointerId:event.pointerId,eventId:eventId,isChord:true,axis:'horizontal',
-        startEventBeat:scoreEvent.start,startX:event.clientX,startY:event.clientY,moved:false,historyPushed:false
-      };
-      try{ $('#scoreSvg').setPointerCapture(event.pointerId); }catch{}
-      renderScore(); event.preventDefault(); return true;
-    }
     function beginRestDrag(event,target){
       const eventId=Number(target.getAttribute('data-event-id'));
       const scoreEvent=scoreState.events.find(item=>item.id===eventId);
@@ -2505,8 +2485,6 @@
     function handleScorePointerDown(event){
       const noteTarget=event.target.closest?event.target.closest('[data-note-index]'):null;
       if(noteTarget&&beginScoreDrag(event,noteTarget)) return;
-      const groupTarget=event.target.closest?event.target.closest('[data-group-event-id]'):null;
-      if(groupTarget&&beginScoreGroupDrag(event,groupTarget)) return;
       const restTarget=event.target.closest?event.target.closest('.score-rest-hitbox'):null;
       if(restTarget&&beginRestDrag(event,restTarget)) return;
       const chordAddTarget=event.target.closest?event.target.closest('[data-chord-add-id]'):null;
@@ -2571,7 +2549,7 @@
       try{ $('#scoreSvg').releasePointerCapture(event.pointerId); }catch{}
       if(drag.historyPushed){
         scheduleSave();
-        setScoreStatus(t(drag.kind==='rest'?'scoreRestDragged':drag.kind==='group'||(drag.isChord&&drag.axis==='horizontal')?'scoreChordMoved':'scoreDragged'));
+        setScoreStatus(t(drag.kind==='rest'?'scoreRestDragged':drag.isChord&&drag.axis==='horizontal'?'scoreChordMoved':'scoreDragged'));
       } else if(drag.kind==='note') {
         const scoreEvent=scoreState.events.find(item=>item.id===drag.eventId);
         if(scoreEvent&&drag.noteRef){
@@ -3252,7 +3230,7 @@
     $('#scoreSvg').addEventListener('pointermove',handleScorePointerMove);
     $('#scoreSvg').addEventListener('pointerup',finishScoreDrag);
     $('#scoreSvg').addEventListener('pointercancel',finishScoreDrag);
-    $('#scoreSvg').addEventListener('contextmenu',event=>{ if(event.target.closest?.('[data-event-id],[data-group-event-id],[data-chord-add-id]')) event.preventDefault(); });
+    $('#scoreSvg').addEventListener('contextmenu',event=>{ if(event.target.closest?.('[data-event-id],[data-chord-add-id]')) event.preventDefault(); });
     $('#scoreModeNote').addEventListener('click',()=>setScoreMode('note'));
     $('#scoreModeRest').addEventListener('click',()=>setScoreMode('rest'));
     $$('[data-duration]').filter(button=>button.closest('#scoreDurationGroup')).forEach(button=>button.addEventListener('click',()=>setScoreDuration(button.dataset.duration)));
