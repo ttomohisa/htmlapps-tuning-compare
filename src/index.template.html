@@ -632,11 +632,18 @@
       fill:#20211f; font-size:31px; line-height:1;
       font-family:"Segoe UI Symbol","Noto Music","Apple Symbols",serif;
     }
+    .score-svg .eighth-rest-head { fill:#20211f; stroke:none; }
+    .score-svg .eighth-rest-stem {
+      fill:none; stroke:#20211f; stroke-width:2.35; stroke-linecap:round; stroke-linejoin:round;
+    }
     .score-svg .score-hitbox { fill:transparent; cursor:crosshair; }
     .score-svg .score-event-hitbox { fill:transparent; cursor:pointer; }
     .score-svg .selected-ring { fill:none; stroke:var(--accent); stroke-width:2.2; }
     .score-svg .cursor-line { stroke:var(--accent); stroke-width:2; pointer-events:none; }
-    .score-svg .clef { fill:#20211f; font-size:54px; font-family:"Segoe UI Symbol","Noto Music",serif; }
+    .score-svg .clef {
+      fill:#20211f; font-size:62px; font-weight:400;
+      font-family:"Noto Music","Segoe UI Symbol","Apple Symbols",serif;
+    }
     .score-svg .time-signature { fill:#20211f; font-size:19px; font-weight:760; text-anchor:middle; }
     .score-svg .measure-number { fill:#8a8d87; font-size:10px; }
     .score-empty-hint { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; padding:22px; color:var(--muted); font-size:12px; text-align:center; }
@@ -2258,8 +2265,17 @@
         const glyph=scoreSvgElement('text',{x:x,y:top+39,class:'rest-glyph','text-anchor':'middle','aria-hidden':'true'});
         glyph.textContent='𝄽'; svg.append(glyph);
       } else {
-        const glyph=scoreSvgElement('text',{x:x,y:top+39,class:'rest-glyph','text-anchor':'middle','aria-hidden':'true'});
-        glyph.textContent='𝄾'; svg.append(glyph);
+        // Eighth rest: a compact flag/head with a descending curved stem.
+        const head=scoreSvgElement('ellipse',{
+          cx:x+3.5,cy:top+16.5,rx:4.2,ry:3.1,
+          class:'eighth-rest-head',
+          transform:'rotate(-22 '+(x+3.5)+' '+(top+16.5)+')'
+        });
+        const stem=scoreSvgElement('path',{
+          d:'M'+(x+6)+' '+(top+17)+' C'+(x+4)+' '+(top+22)+' '+(x+1)+' '+(top+28)+' '+(x-2)+' '+(top+34)+' C'+(x-4)+' '+(top+38)+' '+(x-5)+' '+(top+41)+' '+(x-6)+' '+(top+44),
+          class:'eighth-rest-stem'
+        });
+        svg.append(head,stem);
       }
       if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-17,y:top+4,width:34,height:46,rx:8,class:'selected-ring'}));
       svg.append(scoreSvgElement('rect',{x:x-14,y:hitTop,width:28,height:hitHeight,rx:7,class:'score-rest-hitbox','data-event-id':event.id}));
@@ -2318,8 +2334,8 @@
       const endMeasure=Math.min(scoreMeasureCount(),startMeasure+layout.measuresPerSystem);
       const staffVisualLeft=layout.compact?12:24;
       for(let i=0;i<5;i++){ const y=top+i*12; svg.append(scoreSvgElement('line',{x1:staffVisualLeft,y1:y,x2:layout.right,y2:y,class:'staff-line'})); }
-      const clef=scoreSvgElement('text',{x:layout.compact?18:38,y:top+48,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
-      const timeX=layout.compact?55:73;
+      const clef=scoreSvgElement('text',{x:layout.compact?14:28,y:top+51,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
+      const timeX=layout.compact?55:72;
       const topNum=scoreSvgElement('text',{x:timeX,y:top+23,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
       const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
       svg.append(scoreSvgElement('rect',{x:layout.left,y:top-30,width:layout.right-layout.left,height:104,class:'score-hitbox','data-score-input':'true'}));
@@ -2327,8 +2343,11 @@
         const measureStart=measure*beatsPerMeasure;
         for(let local=0;local<=beatsPerMeasure;local+=.5){
           const globalBeat=measureStart+local,x=scoreXForBeat(globalBeat,layout);
-          if(local===0||Math.abs(local-beatsPerMeasure)<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
-          else if(Math.abs(local-Math.round(local))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
+          if(Math.abs(local-beatsPerMeasure)<.001){
+            svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
+          } else if(local>0&&Math.abs(local-Math.round(local))<.001){
+            svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
+          }
         }
         const label=scoreSvgElement('text',{x:scoreXForBeat(measureStart,layout)+5,y:top-15,class:'measure-number'}); label.textContent=String(measure+1); svg.append(label);
       }
