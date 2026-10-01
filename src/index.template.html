@@ -1971,7 +1971,7 @@
         setAudioReadyState(); setABActive(initialSide); setABStatus(t('comparePlaying',{side:initialSide.toUpperCase()}));
         clearTimeout(engine.comparisonTimer);
         engine.comparisonTimer=window.setTimeout(()=>{
-          if(!engine.comparisonSession){ setABActive(null); setABStatus(''); }
+          setABActive(null); setABStatus('');
         },durationMs+180);
       }catch(error){ console.error(error); setABActive(null); setABStatus(t('playbackFailed'),true); }
     }
