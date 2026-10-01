@@ -1430,40 +1430,41 @@
     const SCORE_NATURAL_NOTES = Object.freeze(['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6']);
     const SCORE_DURATION_NAMES = Object.freeze({ 4:'scoreWhole', 2:'scoreHalf', 1:'scoreQuarter', .5:'scoreEighth' });
     const FLAT_TO_SHARP = Object.freeze({ Db:'C#', Eb:'D#', Gb:'F#', Ab:'G#', Bb:'A#' });
-    const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0 };
+    const SCORE_MEASURE_COUNT = 4;
+    const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0, drag:null };
 
 
     const SCORE_SAMPLES = Object.freeze({
       majorThird: {
         nameKey:'sampleMajorThird', tempo:64, timeSignature:'4/4',
         events:[
-          {start:0,duration:4,notes:['C4','E4']},
-          {start:4,duration:4,notes:['C4','E4']}
+          {start:0,duration:4,notes:['C4','E4']},{start:4,duration:4,notes:['C4','E4']},
+          {start:8,duration:4,notes:['C4','E4']},{start:12,duration:4,notes:['C4','E4']}
         ]
       },
       majorTriad: {
         nameKey:'sampleMajorTriad', tempo:64, timeSignature:'4/4',
         events:[
-          {start:0,duration:4,notes:['C4','E4','G4']},
-          {start:4,duration:4,notes:['C4','E4','G4']}
+          {start:0,duration:4,notes:['C4','E4','G4']},{start:4,duration:4,notes:['C4','E4','G4']},
+          {start:8,duration:4,notes:['C4','E4','G4']},{start:12,duration:4,notes:['C4','E4','G4']}
         ]
       },
       scale: {
         nameKey:'sampleScale', tempo:92, timeSignature:'4/4',
         events:[
-          {start:0,duration:1,notes:['C4']},{start:1,duration:1,notes:['D4']},
-          {start:2,duration:1,notes:['E4']},{start:3,duration:1,notes:['F4']},
-          {start:4,duration:1,notes:['G4']},{start:5,duration:1,notes:['A4']},
-          {start:6,duration:1,notes:['B4']},{start:7,duration:1,notes:['C5']}
+          {start:0,duration:1,notes:['C4']},{start:1,duration:1,notes:['D4']},{start:2,duration:1,notes:['E4']},{start:3,duration:1,notes:['F4']},
+          {start:4,duration:1,notes:['G4']},{start:5,duration:1,notes:['A4']},{start:6,duration:1,notes:['B4']},{start:7,duration:1,notes:['C5']},
+          {start:8,duration:1,notes:['C5']},{start:9,duration:1,notes:['B4']},{start:10,duration:1,notes:['A4']},{start:11,duration:1,notes:['G4']},
+          {start:12,duration:1,notes:['F4']},{start:13,duration:1,notes:['E4']},{start:14,duration:1,notes:['D4']},{start:15,duration:1,notes:['C4']}
         ]
       },
       cadence: {
         nameKey:'sampleCadence', tempo:72, timeSignature:'4/4',
         events:[
-          {start:0,duration:2,notes:['C4','E4','G4']},
-          {start:2,duration:2,notes:['C4','F4','A4']},
-          {start:4,duration:2,notes:['G4','B4','D5']},
-          {start:6,duration:2,notes:['C4','E4','G4']}
+          {start:0,duration:4,notes:['C4','E4','G4']},
+          {start:4,duration:4,notes:['C4','F4','A4']},
+          {start:8,duration:4,notes:['G4','B4','D5']},
+          {start:12,duration:4,notes:['C4','E4','G4']}
         ]
       }
     });
