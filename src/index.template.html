@@ -2224,14 +2224,12 @@
           if(existing.duration!==scoreState.duration){
             pushScoreHistory();
             existing.duration=scoreState.duration;
-            removeScoreEventsCoveredAfter(existing.start,existing.duration,existing.id);
             scheduleSave();
           }
           scoreState.selectedId=existing.id; renderScore(); setScoreStatus(t('scoreRestAdded')); return;
         }
         pushScoreHistory();
         const event={id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:true,notes:[]};
-        removeScoreEventsCoveredAfter(event.start,event.duration);
         scoreState.events.push(event); scoreState.selectedId=event.id; setScoreStatus(t('scoreRestAdded'));
       } else {
         if(existing&&existing.rest){
