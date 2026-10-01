@@ -3,9 +3,9 @@
   "name": "Tuning Compare",
   "nameJa": "音律聞き比べ",
   "slug": "tuning-compare",
-  "version": "0.4.0",
-  "description": "Create a short two-measure score and hear it with equal temperament, 5-limit just intonation, or exact custom A/B tunings.",
-  "descriptionJa": "2小節の簡易譜面を作り、平均律・5-limit純正律・カスタム音律のA/B設定で再生して聞き比べます。",
+  "version": "0.5.0",
+  "description": "Compare tunings and edit a short score with a mobile-first four-page workflow, wrapped staff systems, and local browser audio.",
+  "descriptionJa": "音律を聞き比べ、スマホでは4ページ切替・2段譜面・固定編集バーで短い譜面を操作できるブラウザアプリです。",
   "defaultLanguage": "auto",
   "repository": {
     "owner": "ttomohisa",
