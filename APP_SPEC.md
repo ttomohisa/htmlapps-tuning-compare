@@ -3,154 +3,180 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 0.6.0
-- **Current milestone:** WAV Export
-- **Purpose:** Compare tunings, edit a short score, and export the resulting performance as a local WAV file without server processing.
+- **Version:** 0.7.0
+- **Current milestone:** Custom Tuning / Project Data
+- **Purpose:** Compare tunings, edit a custom 12-note scale with multiple numeric representations, and save or restore the complete app state as a local JSON project.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
-## 2. Template / icon contract
+## 2. Existing application contract
 
-The app continues to use the current `htmlapps-template` shell, mobile navigation pattern, build placeholders, CSP, and single-HTML pipeline.
+v0.7.0 preserves the current `htmlapps-template` shell, favicon/app icon pipeline, mobile bottom navigation, score editor, A/B comparison, local WAV export, CSP, and single-HTML build.
 
-`assets/favicon.svg` is the canonical icon source for both the browser favicon and the app icon shown in the header.
+No third-party runtime dependency is introduced.
 
-## 3. WAV export scope
+## 3. Custom tuning model
 
-v0.6.0 exports the current score as:
+The custom tuning stores absolute C4–B4 frequencies internally in Hz.
 
-- tuning A only
-- tuning B only
-- A → B comparison in one file
+Other octaves continue to derive from those values at a 2:1 octave ratio.
 
-The A → B comparison contains the complete A render, 0.6 seconds of silence, then the complete B render.
+The editor exposes three representations without changing the underlying storage model:
 
-## 4. WAV format
+- **Hz:** direct absolute frequency
+- **Ratio:** frequency ratio relative to a selected C4–B4 reference note
+- **Cents:** cents offset from 12-tone equal temperament calculated from the current reference note and reference frequency
 
-Initial export format:
+Changing representation changes the editor, not the stored tuning concept.
 
-- PCM
-- 16-bit signed integer
-- mono
-- selectable 48 kHz or 44.1 kHz
-- default 48 kHz
+## 4. Hz editing
 
-No external encoder, codec service, WASM dependency, or network request is used.
+Hz mode accepts direct values from 20 to 20,000 Hz.
 
-## 5. Offline rendering
+Example:
 
-WAV export uses `OfflineAudioContext` (or the browser-prefixed equivalent when available).
+- A4 = 442.000 Hz
+- E4 = 329.200 Hz
 
-The offline renderer follows the same score data and audio parameters used by live playback:
+The entered value becomes the stored custom frequency for that pitch class.
 
-- note frequencies are resolved through tuning slot A or B
-- timbre uses the same harmonic coefficient sets
-- master volume is shared
-- attack and release are shared
-- event timing uses the score tempo
-- rests produce no oscillator
+## 5. Ratio editing
 
-The export does not record real-time playback.
+Ratio mode has a selectable ratio reference note. Default is C4.
 
-## 6. A/B level fairness
+The reference note is displayed as 1/1 and is not edited in ratio mode. Its absolute frequency can be changed in Hz or cents mode.
 
-A and B are rendered separately using identical audio settings.
+Other notes accept:
 
-Before encoding:
+- fraction notation such as `5/4`, `3/2`, `15/8`
+- positive decimal notation such as `1.25` or `1.5`
 
-1. inspect the peak sample of A
-2. inspect the peak sample of B
-3. use the larger peak to determine one shared safety scale
-4. apply that same scale to both A and B
+The input is converted to an absolute frequency using the current custom frequency of the ratio reference note.
 
-No independent A-only/B-only loudness normalization is performed.
+Displayed ratios use a best rational approximation with denominator up to 64.
 
-If neither side exceeds the safety peak, the shared scale is 1.0.
+## 6. Cents editing
 
-## 7. Filename
+Cents mode treats the current detailed-tuning reference note and reference frequency as the equal-temperament baseline.
 
-The user can edit the WAV filename before export.
+For a note:
 
-Unsafe filesystem characters are replaced. If the filename has no `.wav` extension, the app adds it automatically.
+`customHz = equalHz × 2^(cents / 1200)`
 
-Suggested names follow the current export target:
+Therefore a user can enter positive or negative cent offsets while the stored custom tuning remains absolute Hz.
 
-- `tuning-compare-a.wav`
-- `tuning-compare-b.wav`
-- `tuning-compare-ab.wav`
+Reference note / frequency stay editable in Custom mode because they define the cents baseline. Changing that reference does not silently rewrite existing custom frequencies.
 
-## 8. Download behavior
+## 7. Custom tuning metadata
 
-After local rendering and encoding:
+Custom tuning state includes:
 
-- create an `audio/wav` Blob
-- create a temporary Blob URL
-- trigger a browser download
-- revoke the Blob URL shortly afterward
+- name
+- edit mode: `hz`, `ratio`, or `cents`
+- ratio reference note
+- C4–B4 absolute frequency map
 
-User score/audio data is not uploaded.
+This metadata is persisted locally and included in project JSON.
 
-## 9. UI / state behavior
+## 8. Project JSON format
 
-The WAV panel is part of the Score page on mobile and the normal score section on desktop.
+Project exports use:
 
-The export button is disabled when:
+- `kind = "browser-kitty.tuning-compare-project"`
+- `schemaVersion = 1`
+- app version
+- export timestamp
+- complete project state
 
-- the score contains no audible note
-- offline audio rendering is unavailable
+The nested project state also carries `schemaVersion = 1`.
 
-Status text covers:
+## 9. Project JSON contents
 
-- rendering A
-- rendering B
-- encoding WAV
-- success
-- failure
-- unsupported browser
-- empty score
+A v1 project includes enough state to restore:
 
-Export target, sample rate, and filename persist locally with the other app settings.
+- language
+- detailed tuning type and reference settings
+- custom tuning metadata and custom frequency map
+- tuning A configuration and custom A map
+- tuning B configuration and custom B map
+- comparison preset and root
+- score events
+- BPM and time signature
+- single-note/chord audition settings
+- timbre, volume, attack, and release
+- WAV export target, sample rate, and filename
 
-## 10. Existing behavior retained
+Transient runtime state is excluded:
 
-v0.6.0 preserves:
+- AudioContext
+- active voices
+- playback cursor
+- Undo/Redo history
+- open dialogs
 
-- Audio Core
-- equal temperament
-- fixed 5-limit just intonation
-- exact custom Hz tuning
-- synchronized A/B comparison
-- simple score editing
-- mobile four-page navigation
-- wrapped mobile score
-- Undo / Redo
-- local persistence
-- Japanese / English
+## 10. Export
 
-## 11. Privacy and network
+Project export creates a local `application/json` Blob and downloads it with a sanitized filename based on the custom tuning name.
+
+No network request is involved.
+
+## 11. Import
+
+The importer accepts local JSON files only.
+
+Before replacing current state it:
+
+1. parses JSON
+2. validates the project kind
+3. validates `schemaVersion = 1`
+4. asks for confirmation because import replaces the current project
+
+After confirmation:
+
+- audio playback is stopped
+- transient score Undo/Redo state is cleared
+- imported state is applied immediately
+- the interface is re-rendered
+- the imported state becomes the new local autosaved state
+
+Import does not require a page reload.
+
+## 12. Error handling
+
+The UI distinguishes:
+
+- malformed or unrelated JSON
+- unsupported schema version
+- local storage failure
+- invalid ratio input
+
+Invalid ratio/frequency input must not overwrite the last valid custom frequency.
+
+## 13. Privacy and network
 
 - no runtime fetch, XHR, WebSocket, CDN, analytics, telemetry, or remote font
 - `connect-src 'none'`
-- WAV rendering and encoding occur locally in the browser
-- generated audio remains local until the browser saves the file
+- JSON export/import is local
+- score, tuning, and audio data are not uploaded
+- WAV remains locally generated
 
-## 12. Acceptance criteria
+## 14. Acceptance criteria
 
-- uploaded final SVG is used as `assets/favicon.svg`
-- favicon and header app icon come from the same canonical SVG
-- score with at least one note can export A-only WAV
-- score with at least one note can export B-only WAV
-- score with at least one note can export one A → B comparison WAV
-- export is mono 16-bit PCM
-- 48 kHz and 44.1 kHz are selectable
-- A and B use one shared peak-safety scale
-- output filename is sanitized and ends in `.wav`
-- no real-time recording is used
-- no external encoder/network dependency is added
+- Custom mode offers Hz / Ratio / Cents editing
+- ratio reference is selectable from C4–B4
+- `5/4` and `1.25` are both accepted as ratios
+- the ratio reference is displayed as 1/1
+- cents are relative to the current equal-temperament reference pitch
+- changing custom edit representation does not change the tuning by itself
+- custom tuning name/edit mode/ratio base survive reload
+- exported JSON contains project kind and schemaVersion
+- imported v1 JSON restores score, A/B tunings, custom tuning, sound, and WAV settings
+- invalid JSON does not replace current state
+- unsupported schema does not replace current state
+- import clears transient Undo/Redo state
 - standalone build and repository validation pass
 
-## 13. Remaining roadmap
+## 15. Remaining roadmap
 
-- v0.7.0: Custom Tuning / Project Data
 - v0.8.0: UX / Learning Support
 - v0.9.0: Release Candidate
 - v1.0.0: Formal Release

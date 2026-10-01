@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- Added custom tuning editing as absolute Hz, ratios, or cents offsets.
+- Added selectable C4–B4 ratio reference and custom tuning names.
+- Kept absolute Hz as the internal custom-tuning representation so switching edit modes does not retune notes by itself.
+- Added schemaVersion 1 project JSON export/import covering score, A/B tunings, custom tuning, sound, language, and WAV settings.
+- Added project kind/schema validation, unsupported-schema handling, import confirmation, and immediate in-page restore without reload.
+- Clear transient playback and Undo/Redo state when importing a project.
+
 ## 0.6.0
 
 - Replaced the canonical favicon/app icon with the supplied final Tuning Compare SVG.
