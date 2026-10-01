@@ -3,97 +3,125 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 0.4.0
-- **Current milestone:** Score Editor MVP
-- **Purpose:** Create a short score and hear the same notes with tuning A or B while preserving the v0.3 A/B comparison workflow.
+- **Version:** 0.5.0
+- **Current milestone:** Mobile / Score UX
+- **Purpose:** Make tuning comparison and short-score editing practical on smartphones without regressing the desktop workflow.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
 ## 2. Template UI contract
 
-The current `htmlapps-template` header, design tokens, page intro, dialogs, toast, spacing, cards, and responsive patterns remain the UI base. App-specific score UI extends those tokens rather than replacing the design system.
+The current `htmlapps-template` header, design tokens, page intro, dialog, toast, and responsive patterns remain the UI base.
 
-## 3. Score scope
+For long smartphone workflows, v0.5.0 adopts the template's mobile bottom-bar / page-tab pattern.
 
-v0.4.0 intentionally provides a compact score editor rather than a full notation application.
+## 3. Smartphone navigation
 
-- two measures
-- treble staff
-- 4/4 and 3/4
-- BPM 30–300
-- whole, half, quarter, and eighth durations
-- note input
-- rest input
-- flat, natural, and sharp input
-- chords by adding multiple pitches at the same start position
-- event selection and deletion
-- Undo / Redo with up to 30 history snapshots
-- playback cursor
-- playback using tuning A or tuning B
+At widths up to 600 px, the app is divided into four pages:
 
-No ties, tuplets, dynamics, multiple parts, lyrics, MIDI import, or engraving-grade layout are required in v0.4.0.
+- Compare
+- Score
+- Tuning
+- Sound
 
-## 4. Input model
+The bottom bar:
 
-The staff represents two measures and snaps horizontally to eighth-note positions. Vertical input maps to natural staff steps from C4 through C6. The selected accidental converts that staff step to a concrete enharmonic note used by the tuning engine.
+- uses SVG icons plus text labels
+- supports safe-area insets
+- keeps state when switching pages
+- does not change the desktop document-flow layout
+- keeps only one smartphone page visible at a time
 
-Adding a note at an occupied start position appends the pitch to that event and creates a chord. Rest input replaces the event at that position with a rest.
+Desktop continues to show all sections normally.
 
-## 5. Score data
+## 4. Score layout on mobile
 
-Each event contains a stable numeric id, `start` in beats, `duration` in beats, `rest`, and `notes[]` with normalized note, display spelling, and accidental.
+The two-measure score is not merely scaled down.
 
-## 6. Playback
+- desktop: both measures stay on one system
+- smartphone: one measure per system, two systems vertically
+- event selection targets are enlarged and vertically bounded around the notation
+- the page itself must not gain horizontal scrolling
+- tapping the staff remains eighth-note-step input
 
-- Score playback schedules notes on the Web Audio timeline rather than chaining UI timers.
-- Play A resolves every pitch through tuning slot A.
-- Play B resolves every pitch through tuning slot B.
-- Rests schedule no oscillators.
-- Playback cursor derives from `AudioContext.currentTime`.
-- Stop releases scheduled/active voices and clears the cursor.
-- Existing timbre, volume, attack, and release settings apply.
+## 5. Mobile selected-event editor
 
-## 7. Existing behavior
+When a score event is selected on smartphone:
 
-v0.1 Audio Core, v0.2 Tuning Engine, and v0.3 synchronized A/B comparison remain available without feature removal.
+- a fixed editor appears directly above the bottom navigation
+- it shows the selected note/chord/rest
+- duration can be changed from the fixed editor
+- the selected event can be deleted
+- score content gains enough bottom padding that the fixed editor does not hide content
 
-## 8. Persistence
+No long-press interaction is required.
 
-Persist score events, tempo, time signature, A/B tuning configuration, detailed tuning configuration, manual audition settings, and language. Undo/Redo history and live audio objects are not persisted.
+## 6. Undo affordance
 
-## 9. Privacy
+Reversible destructive actions follow the template's Toast + Undo pattern.
 
-No runtime fetch, XHR, WebSocket, CDN, analytics, telemetry, or remote font. `connect-src 'none'` remains required. Score data and generated audio stay in the browser.
+- delete selected event → Toast with Undo
+- clear score → Toast with Undo
 
-## 10. Mobile / accessibility baseline
+No blocking confirmation dialog is required for these reversible actions.
+
+## 7. Score playback
+
+The v0.4.0 AudioContext-timed score playback remains unchanged in principle.
+
+- Play A resolves notes through tuning slot A
+- Play B resolves notes through tuning slot B
+- cursor position derives from AudioContext time
+- on mobile, the cursor moves between the first and second score systems correctly
+
+## 8. Existing behavior retained
+
+The following remain available:
+
+- Audio Core
+- equal temperament
+- fixed 5-limit just intonation
+- custom Hz tuning
+- synchronized A/B comparison
+- detailed tuning table
+- arbitrary-frequency audition
+- score editing
+- score persistence
+- Undo / Redo
+- Japanese / English
+
+## 9. Privacy and network
+
+- no runtime fetch, XHR, WebSocket, CDN, analytics, telemetry, or remote font
+- `connect-src 'none'`
+- score data and generated audio remain local to the browser
+
+## 10. Mobile acceptance criteria
+
+Check at 320, 360, 390–393, and 430 px widths:
 
 - no page-level horizontal scrolling
-- SVG score scales to container width
-- score can be entered by pointer/touch
-- input modes and durations use text plus pressed state, not color alone
-- selected event has a visible outline and readable text summary
-- Delete / Backspace and Ctrl/Cmd+Z/Y are available on keyboard
-- full mobile score UX polish remains v0.5.0
+- fixed bottom bar does not hide content
+- selected-event editor does not overlap the bottom bar
+- score displays as two systems
+- score can be tapped without requiring horizontal panning
+- navigation labels fit without overflow
+- dialog remains usable
+- long note/chord labels do not break the page
+- A/B, score, tuning, and sound state survive tab switching
 
-## 11. Acceptance criteria
+## 11. General acceptance criteria
 
-- current template header/design remains intact
-- click/tap adds a note snapped to an eighth-note position
-- another pitch at the same position creates a chord
-- rest input creates a rest event
-- all four required durations are available
-- 3/4 and 4/4 are supported
-- tempo is editable from 30–300 BPM
-- Undo and Redo restore edits
-- selected events can be deleted
-- Play A and Play B use the corresponding tuning slot
-- a playback cursor moves during playback
-- score survives reload through local persistence
+- desktop remains normal document flow
+- template header and design language remain unchanged
+- mobile page tabs use the template's bottom-bar conventions
+- score selection and editing remain available without long press
+- delete and clear are reversible via Undo Toast
+- v0.4 score data survives reload
 - v0.3 A/B comparison continues to work
-- standalone build, CSP, icon, and template validation remain green
+- standalone build and repository checks pass
 
 ## 12. Remaining roadmap
 
-- v0.5.0: Mobile / Score UX
 - v0.6.0: WAV Export
 - v0.7.0: Custom Tuning / Project Data
 - v0.8.0: UX / Learning Support
