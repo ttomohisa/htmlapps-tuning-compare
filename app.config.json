@@ -3,9 +3,9 @@
   "name": "Tuning Compare",
   "nameJa": "音律聞き比べ",
   "slug": "tuning-compare",
-  "version": "0.2.0",
-  "description": "Calculate and audition equal temperament, 5-limit just intonation, and exact custom note frequencies in the browser.",
-  "descriptionJa": "12平均律・5-limit純正律・カスタム音律の周波数を計算し、その場で試聴できます。",
+  "version": "0.3.0",
+  "description": "Compare equal temperament, 5-limit just intonation, and exact custom frequencies with synchronized A/B playback in the browser.",
+  "descriptionJa": "平均律・5-limit純正律・カスタム音律を、同じ再生位置でA/B切り替えして聞き比べます。",
   "defaultLanguage": "auto",
   "repository": {
     "owner": "ttomohisa",

@@ -3,125 +3,97 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 0.2.0
-- **Current milestone:** Tuning Engine
-- **Purpose:** Let users see and hear the exact frequencies produced by equal temperament, a defined 5-limit just-intonation preset, or direct custom Hz values before the later A/B and score workflows are added.
+- **Version:** 0.3.0
+- **Current milestone:** A/B Compare
+- **Purpose:** Let users configure two tunings independently and hear the same notes with only the tuning changed.
 - **Primary users:** Musicians, music learners, and people exploring tuning and pitch relationships.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
-## 2. v0.2.0 outcome
+## 2. v0.3.0 outcome
 
-The v0.1.0 arbitrary-frequency Audio Core remains intact. v0.2.0 adds a tuning calculation layer that maps note names to exact frequencies and lets the user audition the result immediately.
+v0.3.0 keeps the v0.1 Audio Core and v0.2 Tuning Engine, aligns the application shell with the current htmlapps-template design, and adds synchronized A/B tuning comparison.
 
-## 3. Supported tuning modes
+## 3. Template UI contract
 
-### 12-tone equal temperament
+- Reuse the current template header structure, design tokens, sticky header behavior, language button, SVG help button, page-intro pattern, local-processing badge, dialog styling, and toast styling.
+- App-specific UI extends those tokens instead of redefining an unrelated design system.
+- The header meta line remains app-specific rather than exposing generic template copy.
+- Desktop and smartphone layouts are first-class.
 
-For MIDI note `m`, reference MIDI note `r`, and reference frequency `f`:
+## 4. A/B tuning slots
 
-`frequency = f * 2^((m-r)/12)`
+Two independent slots named A and B are available. Each slot supports:
 
-The default reference is A4 = 440.000 Hz. The reference note can be any chromatic note from C4 through B4 and its frequency can be 20–20,000 Hz.
+- 12-tone equal temperament
+- the defined 5-limit just-intonation preset
+- custom C4–B4 frequencies in Hz
+- independent reference note and reference frequency for equal/just modes
+- independent tonic for just intonation
+- independent custom-frequency map
 
-### 5-limit just intonation
+Default: A = 12-tone equal temperament, B = 5-limit just intonation, both referenced to A4 = 440 Hz with C as the just-intonation tonic.
 
-Use the following pitch-class ratios from the selected tonic:
+## 5. Quick comparison material
 
-`1/1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/8`
+v0.3.0 provides three short comparison presets:
 
-The user chooses the tonic from C through B. The complete tuning is scaled so the selected reference note remains exactly at the selected reference frequency.
+- Major third
+- Perfect fifth
+- Major triad
 
-The UI and help must not imply that every possible chord becomes perfectly just. The preset is a concrete fixed ratio table relative to the selected tonic.
+The root note is selectable from C4 through B4. The frequency table shows the exact A frequency, B frequency, and B-minus-A cent difference for every note in the selected comparison.
 
-### Custom
+## 6. Synchronized A/B playback
 
-- C4–B4 are directly editable in Hz.
-- Other octaves are generated at 2:1 from the same pitch class.
-- C5 is shown as a derived value (`C4 * 2`) and is not independently editable in v0.2.0.
-- Selecting Custom directly initializes missing custom values from current equal temperament.
-- “Copy current values to Custom” copies the current selected tuning's C4–B4 frequencies, then switches to Custom.
-- In Custom mode, reference-note and reference-frequency controls are disabled because direct Hz values are authoritative.
+- A and B oscillator layers start on the same AudioContext timeline.
+- Only the active layer is audible.
+- Switching A/B crossfades the two group gains over roughly 24 ms to avoid clicks.
+- The switch does not restart oscillators, so comparison remains at the same playback position.
+- Play A and Play B start a synchronized session on the requested side.
+- A → B starts on A and changes to B after about 1.8 seconds.
+- Stop releases all comparison voices.
+- The same timbre, master volume, attack, and release settings apply to both sides.
 
-## 4. Frequency table
+## 7. Tuning engine retained from v0.2.0
 
-Show C4 through C5 with:
+- Equal temperament uses `f * 2^((m-r)/12)`.
+- 5-limit ratios are `1/1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/8` from the selected tonic.
+- Custom C4–B4 values are direct Hz values and other octaves derive at 2:1.
+- The detailed C4–C5 inspection table and manual arbitrary-frequency audition remain available.
 
-- note name
-- actual frequency to three decimal places
-- tonic ratio for just intonation
-- cents difference from equal temperament using the same reference pitch
-- per-note audition button
+## 8. State and persistence
 
-For equal temperament the cents difference is zero by definition. For Custom it is calculated from the direct Hz value against equal temperament.
+Persist locally when available: language, detailed tuning settings, manual audition settings, A/B preset/root, both slot configurations, and both custom-frequency maps. Audio runtime objects are never persisted.
 
-## 5. Audio Core retained from v0.1.0
-
-- Web Audio API only; no runtime dependencies.
-- Arbitrary frequency audition from 20–20,000 Hz.
-- Four visible manual chord frequencies.
-- Engine maximum of 16 oscillator voices.
-- Sine, Soft harmonics, Rich harmonics.
-- Soft harmonics: fundamental 1.0; harmonics 2..6 = 0.18, 0.07, 0.03, 0.015, 0.007.
-- Master volume, attack, release.
-- Starting a new preview releases previous voices.
-- Stop releases all active voices.
-
-Quick-note buttons (C4, E4, G4, A4) must now use the currently selected tuning rather than hard-coded equal-temperament values.
-
-## 6. State and persistence
-
-Persist locally when available:
-
-- language
-- tuningType
-- referenceNote
-- referenceFrequency
-- tonic
-- customFrequencies C4–B4
-- v0.1.0 manual-audition settings
-
-Use a stable `${slug}:settings` key. Read the previous `${slug}:v0.1.0-settings` key as a one-way compatibility fallback.
-
-Audio runtime objects remain non-serializable and are never persisted.
-
-## 7. Privacy and network
+## 9. Privacy and network
 
 - No runtime fetch, XHR, WebSocket, CDN, analytics, telemetry, or remote font.
 - `connect-src 'none'` remains required.
-- All frequency calculation and audio generation occurs in the browser.
+- Frequency calculation and audio generation occur entirely in the browser.
 
-## 8. Accessibility and mobile
+## 10. Accessibility and mobile
 
-- 320 px minimum width.
-- Tuning controls wrap to two columns on narrow screens.
-- Frequency table may scroll horizontally inside its own bordered region; it must not make the page itself horizontally scroll.
-- Every editable frequency has an accessible note-specific label.
-- Per-note audition buttons include the note name in the accessible label.
-- Controls that are irrelevant to the selected tuning are disabled, not merely visually dimmed.
-- Help remains scrollable on short smartphone viewports.
+- Minimum page width 320 px.
+- A/B cards become one column on narrow screens.
+- Frequency tables scroll inside their own containers without causing page-level horizontal scrolling.
+- Every custom frequency input has a note/slot-specific accessible name.
+- A/B state is identified by text, not color alone.
+- Help remains fully scrollable on short smartphone viewports.
 
-## 9. Validation and error handling
+## 11. Acceptance criteria
 
-- Reference frequency: 20–20,000 Hz.
-- Custom frequencies: 20–20,000 Hz each.
-- Invalid custom values stay visibly invalid and must not overwrite the last valid stored value.
-- Audio errors remain user-readable.
-
-## 10. Acceptance criteria
-
-- Default equal temperament returns A4 exactly 440 Hz and C4 approximately 261.626 Hz.
-- With tonic C and a reference scaled consistently, just-intonation pitch classes use the specified ratio table.
-- For tonic C, C–E ratio is 5/4 and C–G ratio is 3/2.
-- Custom C4 can be changed to an arbitrary valid value and C5 becomes exactly twice that value.
-- Quick-note audition follows the selected tuning.
-- Copy-to-Custom preserves the current C4–B4 frequencies to numerical precision shown by the UI.
-- v0.1.0 manual audition and timbre controls continue to work.
+- The header and top-level visual system use the current htmlapps-template structure/tokens.
+- Default A is equal temperament and default B is C-based 5-limit just intonation at A4 = 440 Hz.
+- Major-triad comparison produces three frequencies per side.
+- A/B switch changes the audible layer without restarting the synchronized oscillators.
+- A and B can each use Custom with separate C4–B4 values.
+- The comparison table reports cent difference from A to B.
+- v0.1/v0.2 manual audition and detailed tuning inspection continue to work.
 - No third-party runtime dependency is added.
-- Template placeholders/icon/network/component markers remain valid.
+- Template placeholders, canonical icon, CSP, and standalone build markers remain valid.
 
-## 11. Remaining roadmap
+## 12. Remaining roadmap
 
-- v0.3.0: A/B Compare
 - v0.4.0: Score Editor MVP
 - v0.5.0: Mobile / Score UX
 - v0.6.0: WAV Export
