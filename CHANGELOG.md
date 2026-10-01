@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Added template-style smartphone bottom page tabs for Compare, Score, Tuning, and Sound.
+- Wrapped the two-measure score into one measure per system on smartphones instead of shrinking the desktop score.
+- Added larger, vertically bounded score selection targets for touch input.
+- Added a fixed selected-event editor above the mobile bottom navigation.
+- Added Toast + Undo for reversible score deletion and clearing.
+- Preserved desktop document flow and all existing v0.4 score/A-B functionality.
+
 ## 0.4.0
 
 - Added a two-measure treble-staff score editor with click/tap step input.
