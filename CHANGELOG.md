@@ -2,6 +2,10 @@
 
 ## 0.9.0
 
+- Updated score playback controls to match the A/B comparison and visibly mark the active tuning.
+- Replaced native confirmation prompts with the template confirmation dialog for sample replacement and project import.
+- Adjusted mobile tab scroll positioning to align the selected card directly below the sticky header.
+- Relaxed the Sound Settings layout with stacked controls, a separated advanced panel, and roomier playback state.
 - Fixed runtime initialization failures caused by using the single-element ` helper for multi-element score listeners.
 - Kept A/B reference note, reference frequency, and just-intonation tonic selectors available and correctly initialized.
 - Simplified A/B playback to Play A, Play B, and Stop, with a visible active-side state.
