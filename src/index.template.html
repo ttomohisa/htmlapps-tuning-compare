@@ -707,6 +707,34 @@
       .score-mobile-editor .button { padding-inline:8px; }
     }
 
+
+    .wav-export-panel {
+      margin-top:14px; padding:14px; border:1px solid var(--line); border-radius:12px;
+      background:var(--surface-muted);
+    }
+    .wav-export-head { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+    .wav-export-head h3 { margin:0; font-size:14px; }
+    .wav-export-head p { margin:4px 0 0; color:var(--muted); font-size:12px; line-height:1.55; }
+    .wav-spec { flex:0 0 auto; color:var(--muted); font-size:11px; white-space:nowrap; }
+    .wav-export-grid { display:grid; grid-template-columns:1fr .8fr 1.2fr; gap:10px; align-items:end; }
+    .wav-export-grid label { min-width:0; }
+    .wav-export-grid select,.wav-export-grid input {
+      width:100%; min-height:40px; border:1px solid var(--line); border-radius:10px;
+      padding:7px 9px; background:var(--surface); color:var(--text); font:inherit;
+    }
+    .wav-export-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:11px; }
+    .wav-export-actions .button { min-width:150px; }
+    .wav-export-status { flex:1 1 220px; min-height:20px; margin:0; color:var(--muted); font-size:12px; line-height:1.5; }
+    .wav-export-status.error { color:var(--danger); }
+    @media (max-width:720px) { .wav-export-grid { grid-template-columns:1fr; } }
+    @media (max-width:600px) {
+      .wav-export-panel { margin-inline:-2px; padding:12px; }
+      .wav-export-head { display:block; }
+      .wav-spec { display:inline-block; margin-top:6px; }
+      .wav-export-actions .button { width:100%; min-height:46px; }
+      .wav-export-status { flex-basis:100%; }
+    }
+
     /* APP:END */
 
   </style>
@@ -719,7 +747,7 @@
             <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
           </div>
           <div class="brand-copy">
-            <p class="brand-name"><span id="brandName">音律聞き比べ</span><span class="version-badge" id="versionBadge">v0.5.0</span></p>
+            <p class="brand-name"><span id="brandName">音律聞き比べ</span><span class="version-badge" id="versionBadge">v0.6.0</span></p>
             <p class="brand-meta" data-i18n="brandMeta">音律をA/Bで聞き比べ</p>
           </div>
         </div>
@@ -887,6 +915,41 @@
         <button type="button" class="button danger" id="scoreStop" data-i18n="stopAll">すべて停止</button>
       </div>
       <p class="score-status" id="scoreStatus" role="status" aria-live="polite"></p>
+
+      <div class="wav-export-panel" aria-labelledby="wavExportTitle">
+        <div class="wav-export-head">
+          <div>
+            <h3 id="wavExportTitle" data-i18n="wavTitle">WAVを書き出す</h3>
+            <p data-i18n="wavIntro">譜面をブラウザ内でレンダリングし、A・B・A→B比較を音声ファイルとして保存します。</p>
+          </div>
+          <span class="wav-spec">PCM 16-bit · Mono</span>
+        </div>
+        <div class="wav-export-grid">
+          <label>
+            <span class="field-label" data-i18n="wavTarget">書き出す内容</span>
+            <select id="wavTarget">
+              <option value="a" data-i18n="wavTargetA">Aのみ</option>
+              <option value="b" data-i18n="wavTargetB">Bのみ</option>
+              <option value="ab" selected data-i18n="wavTargetAB">A → B 比較</option>
+            </select>
+          </label>
+          <label>
+            <span class="field-label" data-i18n="wavSampleRate">サンプルレート</span>
+            <select id="wavSampleRate">
+              <option value="48000" selected>48 kHz</option>
+              <option value="44100">44.1 kHz</option>
+            </select>
+          </label>
+          <label>
+            <span class="field-label" data-i18n="wavFilename">ファイル名</span>
+            <input id="wavFilename" type="text" value="tuning-compare-ab" maxlength="120" autocomplete="off">
+          </label>
+        </div>
+        <div class="wav-export-actions">
+          <button type="button" class="button primary" id="exportWavButton" data-i18n="wavExport">WAVを書き出す</button>
+          <p class="wav-export-status" id="wavExportStatus" role="status" aria-live="polite"></p>
+        </div>
+      </div>
     </section>
 
       <section id="mobileTuningPage" class="card app-mobile-page" aria-labelledby="tuningTitle">
@@ -1058,7 +1121,7 @@
       <ul>
         <li data-i18n="helpNoteVolume">突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。</li>
         <li data-i18n="helpNoteRange">20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。</li>
-        <li data-i18n="helpNoteMilestone">v0.5.0ではスマホ用4ページナビ、2段譜面、選択中の固定編集バー、Undo導線まで対応しています。WAV出力は後続バージョンで追加します。</li>
+        <li data-i18n="helpNoteMilestone">v0.6.0では譜面をAのみ・Bのみ・A→B比較のWAVとしてブラウザ内で書き出せます。</li>
         <li data-i18n="helpNoteStorage">ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。</li>
       </ul>
       <!-- APP:HELP:END -->
@@ -1076,7 +1139,7 @@
     const BUILD_MANIFEST = __BUILD_MANIFEST_JSON__;
     const EMBEDDED_ASSETS = JSON.parse(document.getElementById('embedded-assets').textContent || '{}');
 
-    // Keep the template asset API available even though v0.5.0 has no dependencies.
+    // Keep the template asset API available even though v0.6.0 has no dependencies.
     const assetCache = new Map();
     const blobUrls = new Set();
     const decodeBase64 = value => {
@@ -1158,25 +1221,25 @@
 
     const translations = {
       ja: {
-        brandMeta: '音律をA/Bで聞き比べ', introTitle: '同じ音を、異なる音律で聞き比べる', introLead: '平均律・純正律・カスタム音律を同じ音色、同じ音量条件で切り替えて比較できます。', localBadge: '完全ローカル処理', mobileNavLabel: 'スマートフォン用ナビゲーション', mobileCompare: '比較', mobileScore: '譜面', mobileTuning: '音律', mobileSound: '音', undoAction: '元に戻す', compareTitle: 'A/B 音律比較', compareIntro: 'AとBを独立して設定し、同じ音を同じ再生位置から切り替えて聞き比べます。', compareActive: '再生中', slotTuning: '音律', slotReferenceNote: '基準音', slotReferenceFrequency: '基準周波数', slotTonic: '純正律の主音', customFrequencies: 'カスタム周波数', customHint: 'C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。', comparePreset: '比較する音', compareRoot: '基準の音', presetMajorThird: '長三度', presetPerfectFifth: '完全五度', presetMajorTriad: '長三和音', compareNote: '音', compareA: 'A 周波数', compareB: 'B 周波数', compareDifference: 'B − A', playA: 'Aを再生', playB: 'Bを再生', switchAB: 'A/Bを切り替え', playSequence: 'A → Bで聞く', compareIdle: '—', comparePlaying: '{side}を再生しています。A/B切り替えで同じ再生位置のまま比較できます。', compareSwitched: '{side}へ切り替えました。', sequenceStarted: 'Aを再生し、約1.8秒後にBへ切り替えます。', invalidABFrequency: 'A/B音律の周波数設定を確認してください。', scoreTitle: '簡易譜面', scoreIntro: '五線譜をクリックまたはタップして音符を追加します。同じ位置に追加すると和音になります。', scoreLength: '2小節', scoreInputMode: '入力', scoreModeNote: '音符', scoreModeRest: '休符', scoreDuration: '音価', durationWhole: '全', durationHalf: '2分', durationQuarter: '4分', durationEighth: '8分', scoreAccidental: '臨時記号', scoreTempo: 'テンポ', scoreTimeSignature: '拍子', scoreUndo: '元に戻す', scoreRedo: 'やり直す', scoreClear: '譜面をクリア', scoreCanvasLabel: 'クリックまたはタップで入力する簡易五線譜', scoreEmptyHint: '五線譜をクリックすると音符を追加できます', scoreNoSelection: '音符を選択すると編集できます', scoreDelete: '選択を削除', scorePlayA: 'Aで譜面を再生', scorePlayB: 'Bで譜面を再生', scoreEmpty: '譜面に音符または休符を追加してください。', scorePlaying: '音律{side}で譜面を再生しています。', scoreStopped: '譜面の再生を停止しました。', scoreAdded: '{note}を追加しました。', scoreRestAdded: '休符を追加しました。', scoreDeleted: '選択した音を削除しました。', scoreCleared: '譜面をクリアしました。', scoreUndone: '元に戻しました。', scoreRedone: 'やり直しました。', scoreWhole: '全音符', scoreHalf: '2分音符', scoreQuarter: '4分音符', scoreEighth: '8分音符', milestone: 'Mobile / Score UX · v0.5.0', title: '周波数をそのまま鳴らして確かめる',
+        brandMeta: '音律をA/Bで聞き比べ', introTitle: '同じ音を、異なる音律で聞き比べる', introLead: '平均律・純正律・カスタム音律を同じ音色、同じ音量条件で切り替えて比較できます。', localBadge: '完全ローカル処理', mobileNavLabel: 'スマートフォン用ナビゲーション', mobileCompare: '比較', mobileScore: '譜面', mobileTuning: '音律', mobileSound: '音', undoAction: '元に戻す', compareTitle: 'A/B 音律比較', compareIntro: 'AとBを独立して設定し、同じ音を同じ再生位置から切り替えて聞き比べます。', compareActive: '再生中', slotTuning: '音律', slotReferenceNote: '基準音', slotReferenceFrequency: '基準周波数', slotTonic: '純正律の主音', customFrequencies: 'カスタム周波数', customHint: 'C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。', comparePreset: '比較する音', compareRoot: '基準の音', presetMajorThird: '長三度', presetPerfectFifth: '完全五度', presetMajorTriad: '長三和音', compareNote: '音', compareA: 'A 周波数', compareB: 'B 周波数', compareDifference: 'B − A', playA: 'Aを再生', playB: 'Bを再生', switchAB: 'A/Bを切り替え', playSequence: 'A → Bで聞く', compareIdle: '—', comparePlaying: '{side}を再生しています。A/B切り替えで同じ再生位置のまま比較できます。', compareSwitched: '{side}へ切り替えました。', sequenceStarted: 'Aを再生し、約1.8秒後にBへ切り替えます。', invalidABFrequency: 'A/B音律の周波数設定を確認してください。', scoreTitle: '簡易譜面', scoreIntro: '五線譜をクリックまたはタップして音符を追加します。同じ位置に追加すると和音になります。', scoreLength: '2小節', scoreInputMode: '入力', scoreModeNote: '音符', scoreModeRest: '休符', scoreDuration: '音価', durationWhole: '全', durationHalf: '2分', durationQuarter: '4分', durationEighth: '8分', scoreAccidental: '臨時記号', scoreTempo: 'テンポ', scoreTimeSignature: '拍子', scoreUndo: '元に戻す', scoreRedo: 'やり直す', scoreClear: '譜面をクリア', scoreCanvasLabel: 'クリックまたはタップで入力する簡易五線譜', scoreEmptyHint: '五線譜をクリックすると音符を追加できます', scoreNoSelection: '音符を選択すると編集できます', scoreDelete: '選択を削除', scorePlayA: 'Aで譜面を再生', scorePlayB: 'Bで譜面を再生', scoreEmpty: '譜面に音符または休符を追加してください。', scorePlaying: '音律{side}で譜面を再生しています。', scoreStopped: '譜面の再生を停止しました。', scoreAdded: '{note}を追加しました。', scoreRestAdded: '休符を追加しました。', scoreDeleted: '選択した音を削除しました。', scoreCleared: '譜面をクリアしました。', scoreUndone: '元に戻しました。', scoreRedone: 'やり直しました。', scoreWhole: '全音符', scoreHalf: '2分音符', scoreQuarter: '4分音符', scoreEighth: '8分音符', wavTitle: 'WAVを書き出す', wavIntro: '譜面をブラウザ内でレンダリングし、A・B・A→B比較を音声ファイルとして保存します。', wavTarget: '書き出す内容', wavTargetA: 'Aのみ', wavTargetB: 'Bのみ', wavTargetAB: 'A → B 比較', wavSampleRate: 'サンプルレート', wavFilename: 'ファイル名', wavExport: 'WAVを書き出す', wavExportingA: '音律Aをレンダリングしています…', wavExportingB: '音律Bをレンダリングしています…', wavEncoding: 'WAVファイルを作成しています…', wavDone: '{filename} を保存しました。', wavFailed: 'WAVを書き出せませんでした。', wavUnsupported: 'このブラウザではWAVのオフライン生成を利用できません。', wavNoScore: '譜面に音符を追加してから書き出してください。', milestone: 'WAV Export · v0.6.0', title: '周波数をそのまま鳴らして確かめる',
         lead: '12平均律、5-limit純正律、カスタム音律の実周波数を確認し、そのまま試聴できます。音律A/B比較と譜面は次の開発段階で追加します。',
         localNote: '入力した周波数と設定は外部へ送信されません',
         tuningTitle: '音律を詳しく確認', tuningIntro: '選んだ音律のC4〜C5を周波数・比率・centで確認し、1音ずつ試聴できます。', tuningType: '音律', tuningEqual: '12平均律', tuningJust: '純正律 5-limit', tuningCustom: 'カスタム', referenceNote: '基準音', referenceFrequency: '基準周波数', tonic: '純正律の主音', copyToCustom: '現在値をカスタムへコピー', note: '音', frequency: '周波数', ratio: '主音比', equalDifference: '平均律との差', audition: '試聴', equalDescription: '12平均律では、基準音から1半音ごとに同じ比率で周波数を計算します。', justDescription: '5-limit純正律では、選択した主音から定義済みの整数比で各音を計算します。すべての和音が常に純正になる方式ではありません。', customDescription: 'カスタムではC4〜B4のHzを直接編集します。ほかのオクターブは2:1で生成します。', play: '試聴', customCopied: '現在の周波数をカスタム音律へコピーしました。', derivedOctave: 'C5はC4の2倍として自動生成', invalidReference: '基準周波数は20〜20,000 Hzで指定してください。',
         auditionTitle: '単音・和音を試聴', auditionIntro: '数値を直接入力して鳴らします。音名は入力を助けるためのショートカットです。',
         singleFrequency: '単音の周波数', playSingle: '単音を試聴', frequencyHelp: '20〜20,000 Hz。327.5 Hzのような値も指定できます。', chordTitle: '和音の周波数', playChord: '和音を試聴', stopAll: 'すべて停止',
         soundTitle: '音の設定', soundIntro: '音程の比較を邪魔しない、控えめな倍音を使えます。', timbre: '音色', timbreSine: '正弦波', timbreSoft: 'やわらかい倍音', timbreRich: '豊かな倍音', volume: '音量', advanced: '詳細設定', attack: '立ち上がり', release: '余韻', audioState: '音声', activeVoices: '鳴っている音', audioWaiting: '未開始', audioReady: '準備完了', audioUnsupported: 'このブラウザでは音声を再生できません', footer: 'ブラウザ内で音を生成',
-        helpButtonLabel: '使い方', helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: 'AとBそれぞれの音律を設定します。平均律と純正律では基準音、純正律では主音も指定できます。', helpStep2: '長三度・完全五度・長三和音から比較対象を選び、AまたはBを再生します。「A/Bを切り替え」では同じ再生位置のまま音律だけを切り替えます。', helpStep3: '簡易譜面では五線譜をクリック/タップして音符を追加します。同じ開始位置に追加すると和音になり、休符・音価・BPM・3/4 / 4/4も変更できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。', helpNotesTitle: '注意事項', helpNoteVolume: '突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。', helpNoteRange: '20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。', helpNoteMilestone: 'v0.5.0ではスマホ用4ページナビ、2段譜面、選択中の固定編集バー、Undo導線まで対応しています。WAV出力は後続バージョンで追加します。', helpNoteStorage: 'ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。',
+        helpButtonLabel: '使い方', helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: 'AとBそれぞれの音律を設定します。平均律と純正律では基準音、純正律では主音も指定できます。', helpStep2: '長三度・完全五度・長三和音から比較対象を選び、AまたはBを再生します。「A/Bを切り替え」では同じ再生位置のまま音律だけを切り替えます。', helpStep3: '簡易譜面では五線譜をクリック/タップして音符を追加します。同じ開始位置に追加すると和音になり、休符・音価・BPM・3/4 / 4/4も変更できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。', helpNotesTitle: '注意事項', helpNoteVolume: '突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。', helpNoteRange: '20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。', helpNoteMilestone: 'v0.6.0ではスマホ用4ページナビ、2段譜面、選択中の固定編集バー、Undo導線まで対応しています。WAV出力は後続バージョンで追加します。', helpNoteStorage: 'ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。',
         invalidFrequency: '20〜20,000 Hzの範囲で周波数を入力してください。', noChordNotes: '有効な周波数を1つ以上選んでください。', playbackFailed: '音を再生できませんでした。ブラウザの音声設定を確認して、もう一度お試しください。', playingSingle: '{frequency} Hzを試聴しています。', playingChord: '{count}音の和音を試聴しています。', stopped: '音を停止しました。', settingsSaved: '設定を端末内に保存しました。'
       },
       en: {
-        brandMeta: 'Compare tunings by ear', introTitle: 'Hear the same notes with different tunings', introLead: 'Switch between equal temperament, just intonation, and custom tunings with the same timbre and level.', localBadge: 'Fully local processing', mobileNavLabel: 'Mobile navigation', mobileCompare: 'Compare', mobileScore: 'Score', mobileTuning: 'Tuning', mobileSound: 'Sound', undoAction: 'Undo', compareTitle: 'A/B tuning comparison', compareIntro: 'Configure A and B independently, then switch tuning at the same playback position.', compareActive: 'Playing', slotTuning: 'Tuning', slotReferenceNote: 'Reference note', slotReferenceFrequency: 'Reference frequency', slotTonic: 'Just-intonation tonic', customFrequencies: 'Custom frequencies', customHint: 'Set C4–B4 directly in Hz. Other octaves are derived at 2:1.', comparePreset: 'Compare', compareRoot: 'Root note', presetMajorThird: 'Major third', presetPerfectFifth: 'Perfect fifth', presetMajorTriad: 'Major triad', compareNote: 'Note', compareA: 'A frequency', compareB: 'B frequency', compareDifference: 'B − A', playA: 'Play A', playB: 'Play B', switchAB: 'Switch A/B', playSequence: 'Play A → B', compareIdle: '—', comparePlaying: 'Playing {side}. Switch A/B to compare at the same playback position.', compareSwitched: 'Switched to {side}.', sequenceStarted: 'Playing A, then switching to B after about 1.8 seconds.', invalidABFrequency: 'Check the A/B tuning frequency settings.', scoreTitle: 'Simple score', scoreIntro: 'Click or tap the staff to add notes. Add another note at the same start position to build a chord.', scoreLength: '2 measures', scoreInputMode: 'Input', scoreModeNote: 'Note', scoreModeRest: 'Rest', scoreDuration: 'Duration', durationWhole: 'Whole', durationHalf: 'Half', durationQuarter: 'Quarter', durationEighth: 'Eighth', scoreAccidental: 'Accidental', scoreTempo: 'Tempo', scoreTimeSignature: 'Time signature', scoreUndo: 'Undo', scoreRedo: 'Redo', scoreClear: 'Clear score', scoreCanvasLabel: 'Simple staff editor; click or tap to enter notes', scoreEmptyHint: 'Click the staff to add a note', scoreNoSelection: 'Select a note to edit it', scoreDelete: 'Delete selection', scorePlayA: 'Play score with A', scorePlayB: 'Play score with B', scoreEmpty: 'Add at least one note or rest to the score.', scorePlaying: 'Playing the score with tuning {side}.', scoreStopped: 'Stopped score playback.', scoreAdded: 'Added {note}.', scoreRestAdded: 'Added a rest.', scoreDeleted: 'Deleted the selected event.', scoreCleared: 'Cleared the score.', scoreUndone: 'Undid the last edit.', scoreRedone: 'Redid the edit.', scoreWhole: 'Whole note', scoreHalf: 'Half note', scoreQuarter: 'Quarter note', scoreEighth: 'Eighth note', milestone: 'Mobile / Score UX · v0.5.0', title: 'Play the exact frequency you want to hear',
+        brandMeta: 'Compare tunings by ear', introTitle: 'Hear the same notes with different tunings', introLead: 'Switch between equal temperament, just intonation, and custom tunings with the same timbre and level.', localBadge: 'Fully local processing', mobileNavLabel: 'Mobile navigation', mobileCompare: 'Compare', mobileScore: 'Score', mobileTuning: 'Tuning', mobileSound: 'Sound', undoAction: 'Undo', compareTitle: 'A/B tuning comparison', compareIntro: 'Configure A and B independently, then switch tuning at the same playback position.', compareActive: 'Playing', slotTuning: 'Tuning', slotReferenceNote: 'Reference note', slotReferenceFrequency: 'Reference frequency', slotTonic: 'Just-intonation tonic', customFrequencies: 'Custom frequencies', customHint: 'Set C4–B4 directly in Hz. Other octaves are derived at 2:1.', comparePreset: 'Compare', compareRoot: 'Root note', presetMajorThird: 'Major third', presetPerfectFifth: 'Perfect fifth', presetMajorTriad: 'Major triad', compareNote: 'Note', compareA: 'A frequency', compareB: 'B frequency', compareDifference: 'B − A', playA: 'Play A', playB: 'Play B', switchAB: 'Switch A/B', playSequence: 'Play A → B', compareIdle: '—', comparePlaying: 'Playing {side}. Switch A/B to compare at the same playback position.', compareSwitched: 'Switched to {side}.', sequenceStarted: 'Playing A, then switching to B after about 1.8 seconds.', invalidABFrequency: 'Check the A/B tuning frequency settings.', scoreTitle: 'Simple score', scoreIntro: 'Click or tap the staff to add notes. Add another note at the same start position to build a chord.', scoreLength: '2 measures', scoreInputMode: 'Input', scoreModeNote: 'Note', scoreModeRest: 'Rest', scoreDuration: 'Duration', durationWhole: 'Whole', durationHalf: 'Half', durationQuarter: 'Quarter', durationEighth: 'Eighth', scoreAccidental: 'Accidental', scoreTempo: 'Tempo', scoreTimeSignature: 'Time signature', scoreUndo: 'Undo', scoreRedo: 'Redo', scoreClear: 'Clear score', scoreCanvasLabel: 'Simple staff editor; click or tap to enter notes', scoreEmptyHint: 'Click the staff to add a note', scoreNoSelection: 'Select a note to edit it', scoreDelete: 'Delete selection', scorePlayA: 'Play score with A', scorePlayB: 'Play score with B', scoreEmpty: 'Add at least one note or rest to the score.', scorePlaying: 'Playing the score with tuning {side}.', scoreStopped: 'Stopped score playback.', scoreAdded: 'Added {note}.', scoreRestAdded: 'Added a rest.', scoreDeleted: 'Deleted the selected event.', scoreCleared: 'Cleared the score.', scoreUndone: 'Undid the last edit.', scoreRedone: 'Redid the edit.', scoreWhole: 'Whole note', scoreHalf: 'Half note', scoreQuarter: 'Quarter note', scoreEighth: 'Eighth note', wavTitle: 'Export WAV', wavIntro: 'Render the score in the browser and save tuning A, tuning B, or an A → B comparison as audio.', wavTarget: 'Export', wavTargetA: 'A only', wavTargetB: 'B only', wavTargetAB: 'A → B comparison', wavSampleRate: 'Sample rate', wavFilename: 'Filename', wavExport: 'Export WAV', wavExportingA: 'Rendering tuning A…', wavExportingB: 'Rendering tuning B…', wavEncoding: 'Encoding WAV…', wavDone: 'Saved {filename}.', wavFailed: 'Could not export the WAV file.', wavUnsupported: 'Offline WAV rendering is not available in this browser.', wavNoScore: 'Add at least one note to the score before exporting.', milestone: 'WAV Export · v0.6.0', title: 'Play the exact frequency you want to hear',
         lead: 'Calculate and audition actual frequencies for 12-tone equal temperament, 5-limit just intonation, and a custom per-note tuning. A/B comparison and the score editor arrive in the next milestones.',
         localNote: 'Entered frequencies and settings are not sent outside this device',
         tuningTitle: 'Inspect a tuning', tuningIntro: 'Inspect C4–C5 by frequency, ratio, and cents, and audition each note individually.', tuningType: 'Tuning', tuningEqual: '12-tone equal temperament', tuningJust: 'Just intonation 5-limit', tuningCustom: 'Custom', referenceNote: 'Reference note', referenceFrequency: 'Reference frequency', tonic: 'Just-intonation tonic', copyToCustom: 'Copy current values to Custom', note: 'Note', frequency: 'Frequency', ratio: 'Tonic ratio', equalDifference: 'Difference from equal', audition: 'Audition', equalDescription: 'Equal temperament calculates every semitone with the same frequency ratio from the reference pitch.', justDescription: '5-limit just intonation uses defined integer ratios from the selected tonic. It does not make every chord perfectly just in every context.', customDescription: 'Custom mode edits C4–B4 directly in Hz. Other octaves are generated at a 2:1 ratio.', play: 'Play', customCopied: 'Copied the current frequencies into Custom tuning.', derivedOctave: 'C5 is generated automatically at twice C4', invalidReference: 'Set the reference frequency between 20 and 20,000 Hz.',
         auditionTitle: 'Audition notes and chords', auditionIntro: 'Enter exact numbers. Note-name shortcuts are only there to make common frequencies quicker to try.',
         singleFrequency: 'Single-note frequency', playSingle: 'Play note', frequencyHelp: '20–20,000 Hz. Values such as 327.5 Hz are supported.', chordTitle: 'Chord frequencies', playChord: 'Play chord', stopAll: 'Stop all',
         soundTitle: 'Sound settings', soundIntro: 'Use restrained harmonics that keep pitch differences easy to hear.', timbre: 'Timbre', timbreSine: 'Sine', timbreSoft: 'Soft harmonics', timbreRich: 'Rich harmonics', volume: 'Volume', advanced: 'Advanced settings', attack: 'Attack', release: 'Release', audioState: 'Audio', activeVoices: 'Active voices', audioWaiting: 'Not started', audioReady: 'Ready', audioUnsupported: 'Audio playback is not supported in this browser', footer: 'Audio generated in your browser',
-        helpButtonLabel: 'How to use', helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Configure tuning A and B independently. Equal and just modes use a reference pitch, and just intonation also uses a tonic.', helpStep2: 'Choose Major third, Perfect fifth, or Major triad, then play A or B. Switch A/B changes tuning without restarting the synchronized comparison.', helpStep3: 'In the simple score, click or tap the staff to add notes. Notes at the same start position form a chord; rests, duration, BPM, and 3/4 or 4/4 can also be changed.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Entered frequencies and settings are processed only in this browser and are not sent outside by the app. Audio is generated on the device.', helpNotesTitle: 'Notes', helpNoteVolume: 'Start with a modest device volume to avoid unexpectedly loud audio.', helpNoteRange: 'You can enter 20–20,000 Hz, but audible range and playback quality vary by device, speaker, and listener.', helpNoteMilestone: 'v0.5.0 adds mobile page navigation, wrapped score systems, a sticky selection editor, and Undo affordances. WAV export arrives later.', helpNoteStorage: 'Clearing browser site data may remove settings stored on this device.',
+        helpButtonLabel: 'How to use', helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Configure tuning A and B independently. Equal and just modes use a reference pitch, and just intonation also uses a tonic.', helpStep2: 'Choose Major third, Perfect fifth, or Major triad, then play A or B. Switch A/B changes tuning without restarting the synchronized comparison.', helpStep3: 'In the simple score, click or tap the staff to add notes. Notes at the same start position form a chord; rests, duration, BPM, and 3/4 or 4/4 can also be changed.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Entered frequencies and settings are processed only in this browser and are not sent outside by the app. Audio is generated on the device.', helpNotesTitle: 'Notes', helpNoteVolume: 'Start with a modest device volume to avoid unexpectedly loud audio.', helpNoteRange: 'You can enter 20–20,000 Hz, but audible range and playback quality vary by device, speaker, and listener.', helpNoteMilestone: 'v0.6.0 adds local WAV export for tuning A, tuning B, and an A → B comparison.', helpNoteStorage: 'Clearing browser site data may remove settings stored on this device.',
         invalidFrequency: 'Enter a frequency between 20 and 20,000 Hz.', noChordNotes: 'Enable at least one valid frequency.', playbackFailed: 'Could not play audio. Check the browser audio settings and try again.', playingSingle: 'Playing {frequency} Hz.', playingChord: 'Playing a {count}-note chord.', stopped: 'Stopped audio.', settingsSaved: 'Settings saved locally.'
       }
     };
@@ -1914,6 +1977,7 @@
         const sel=$('#scoreSelection'); sel.replaceChildren(); const strong=document.createElement('strong'); strong.textContent=notes; sel.append(strong,document.createTextNode(' · '+scoreDurationLabel(selected.duration)));
       } else $('#scoreSelection').textContent=t('scoreNoSelection');
       updateScoreUndoButtons();
+      updateWavExportAvailability();
     }
     function scorePointerToLocal(event){
       const svg=$('#scoreSvg'), point=svg.createSVGPoint(), matrix=svg.getScreenCTM(); if(!matrix) return null;
@@ -1974,6 +2038,146 @@
     }
     function stopScore(){ engine.stopAll({releaseMs:Number($('#releaseMs').value)||70}); stopScoreCursor(); setScoreStatus(t('scoreStopped')); }
 
+
+    function offlineAudioSupported(){ return Boolean(window.OfflineAudioContext || window.webkitOfflineAudioContext); }
+    function scoreHasAudibleEvents(){ return scoreState.events.some(event=>!event.rest&&event.notes.length); }
+    function scoreRenderDurationSeconds(){
+      const secondsPerBeat=60/scoreState.tempo;
+      let end=scoreTotalBeats()*secondsPerBeat;
+      scoreState.events.forEach(event=>{ end=Math.max(end,(event.start+event.duration)*secondsPerBeat); });
+      return Math.max(.2,end+.08);
+    }
+    function offlinePeriodicWave(context,timbre){
+      if(timbre==='sine') return null;
+      const coefficients=engine.coefficients(timbre);
+      const real=new Float32Array(coefficients.length);
+      const imag=new Float32Array(coefficients);
+      return context.createPeriodicWave(real,imag,{disableNormalization:false});
+    }
+    async function renderOfflineSide(side,sampleRate){
+      const OfflineContext=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+      if(!OfflineContext) throw new Error('OfflineAudioContext unavailable');
+      const options=playbackOptions();
+      const sequence=scoreSequenceForSide(side);
+      const durationSeconds=scoreRenderDurationSeconds();
+      const frameCount=Math.max(1,Math.ceil(durationSeconds*sampleRate));
+      const context=new OfflineContext(1,frameCount,sampleRate);
+      const master=context.createGain();
+      master.gain.value=Math.max(0,Math.min(1,Number(options.masterVolume)||0));
+      master.connect(context.destination);
+      const wave=offlinePeriodicWave(context,options.timbre);
+      sequence.forEach(event=>{
+        const start=Math.max(0,Number(event.startSeconds)||0);
+        const duration=Math.max(.06,Number(event.durationSeconds)||.1);
+        const frequencies=Array.isArray(event.frequencies)?event.frequencies.filter(value=>engine.validFrequency(value)):[];
+        if(!frequencies.length) return;
+        const attack=Math.min(duration*.35,Math.max(.001,Math.min(.12,options.attackMs/1000)));
+        const release=Math.min(duration*.45,Math.max(.008,Math.min(.35,options.releaseMs/1000)));
+        const releaseStart=start+Math.max(attack+.01,duration-release);
+        const perVoiceLevel=Math.min(.86,.8/Math.sqrt(frequencies.length));
+        frequencies.forEach(frequency=>{
+          const oscillator=context.createOscillator(), gain=context.createGain();
+          oscillator.frequency.setValueAtTime(frequency,start);
+          if(wave) oscillator.setPeriodicWave(wave); else oscillator.type='sine';
+          gain.gain.setValueAtTime(.0001,start);
+          gain.gain.exponentialRampToValueAtTime(Math.max(.0002,perVoiceLevel),start+attack);
+          gain.gain.setValueAtTime(Math.max(.0002,perVoiceLevel),releaseStart);
+          gain.gain.exponentialRampToValueAtTime(.0001,releaseStart+release);
+          oscillator.connect(gain); gain.connect(master);
+          oscillator.start(start); oscillator.stop(Math.min(durationSeconds-.001,start+duration+.01));
+        });
+      });
+      const buffer=await context.startRendering();
+      return new Float32Array(buffer.getChannelData(0));
+    }
+    function samplePeak(samples){
+      let peak=0;
+      for(let i=0;i<samples.length;i+=1){ const value=Math.abs(samples[i]); if(value>peak) peak=value; }
+      return peak;
+    }
+    function scaledCopy(samples,scale){
+      const output=new Float32Array(samples.length);
+      for(let i=0;i<samples.length;i+=1) output[i]=samples[i]*scale;
+      return output;
+    }
+    function buildExportSamples(target,a,b,sampleRate,scale){
+      if(target==='a') return scaledCopy(a,scale);
+      if(target==='b') return scaledCopy(b,scale);
+      const gapFrames=Math.round(sampleRate*.6);
+      const output=new Float32Array(a.length+gapFrames+b.length);
+      for(let i=0;i<a.length;i+=1) output[i]=a[i]*scale;
+      const offset=a.length+gapFrames;
+      for(let i=0;i<b.length;i+=1) output[offset+i]=b[i]*scale;
+      return output;
+    }
+    function encodePcm16Wav(samples,sampleRate){
+      const buffer=new ArrayBuffer(44+samples.length*2), view=new DataView(buffer);
+      function writeText(offset,text){ for(let i=0;i<text.length;i+=1) view.setUint8(offset+i,text.charCodeAt(i)); }
+      writeText(0,'RIFF'); view.setUint32(4,36+samples.length*2,true); writeText(8,'WAVE');
+      writeText(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true);
+      view.setUint32(24,sampleRate,true); view.setUint32(28,sampleRate*2,true); view.setUint16(32,2,true); view.setUint16(34,16,true);
+      writeText(36,'data'); view.setUint32(40,samples.length*2,true);
+      let offset=44;
+      for(let i=0;i<samples.length;i+=1){
+        const sample=Math.max(-1,Math.min(1,samples[i]));
+        const intValue=sample<0?Math.round(sample*32768):Math.round(sample*32767);
+        view.setInt16(offset,intValue,true); offset+=2;
+      }
+      return buffer;
+    }
+    function sanitizeWavFilename(value){
+      let name=String(value||'').replace(/[<>:"/\\|?*\u0000-\u001f]/g,'-').replace(/[. ]+$/g,'').trim();
+      if(!name) name='tuning-compare';
+      if(!/\.wav$/i.test(name)) name+='.wav';
+      return name.slice(0,160);
+    }
+    function setWavStatus(message,error=false){
+      const status=$('#wavExportStatus'); status.textContent=message||''; status.classList.toggle('error',Boolean(error));
+    }
+    function updateWavExportAvailability(){
+      const button=$('#exportWavButton'); if(!button) return;
+      const supported=offlineAudioSupported(), hasScore=scoreHasAudibleEvents();
+      button.disabled=!supported||!hasScore;
+      if(!supported) setWavStatus(t('wavUnsupported'),true);
+      else if(!hasScore&&$('#wavExportStatus').textContent===t('wavUnsupported')) setWavStatus('');
+    }
+    function updateSuggestedWavFilename(){
+      const input=$('#wavFilename'); if(!input||input.dataset.edited==='true') return;
+      const suffix=$('#wavTarget').value==='a'?'a':$('#wavTarget').value==='b'?'b':'ab';
+      input.value='tuning-compare-'+suffix;
+    }
+    async function exportScoreWav(){
+      if(!offlineAudioSupported()){ setWavStatus(t('wavUnsupported'),true); return; }
+      if(!scoreHasAudibleEvents()){ setWavStatus(t('wavNoScore'),true); return; }
+      scoreState.tempo=Math.max(30,Math.min(300,Number($('#scoreTempo').value)||90)); $('#scoreTempo').value=String(scoreState.tempo);
+      const button=$('#exportWavButton'), target=$('#wavTarget').value, sampleRate=Number($('#wavSampleRate').value)===44100?44100:48000;
+      const filename=sanitizeWavFilename($('#wavFilename').value);
+      button.disabled=true; button.setAttribute('aria-busy','true');
+      try{
+        setWavStatus(t('wavExportingA'));
+        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+        const a=await renderOfflineSide('a',sampleRate);
+        setWavStatus(t('wavExportingB'));
+        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+        const b=await renderOfflineSide('b',sampleRate);
+        const sharedPeak=Math.max(samplePeak(a),samplePeak(b));
+        const scale=sharedPeak>.98?.98/sharedPeak:1;
+        setWavStatus(t('wavEncoding'));
+        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+        const samples=buildExportSamples(target,a,b,sampleRate,scale);
+        const wav=encodePcm16Wav(samples,sampleRate);
+        const blob=new Blob([wav],{type:'audio/wav'}), url=URL.createObjectURL(blob), link=document.createElement('a');
+        link.href=url; link.download=filename; document.body.append(link); link.click(); link.remove();
+        window.setTimeout(()=>URL.revokeObjectURL(url),2000);
+        setWavStatus(t('wavDone',{filename:filename}));
+        AppToast.show({message:t('wavDone',{filename:filename})});
+      }catch(error){
+        console.error(error); setWavStatus(t('wavFailed'),true);
+      }finally{
+        button.removeAttribute('aria-busy'); updateWavExportAvailability();
+      }
+    }
+
     function tuningSettings() {
       const referenceFrequency = Number($('#referenceFrequency').value);
       return {
@@ -2004,6 +2208,7 @@
         tonic: $('#tonic').value,
         customFrequencies: { ...tuningEngine.custom },
         score: { tempo: scoreState.tempo, timeSignature: scoreState.timeSignature, events: scoreState.events, nextId: scoreState.nextId },
+        wavExport: { target: $('#wavTarget').value, sampleRate: $('#wavSampleRate').value, filename: $('#wavFilename').value },
         abCompare: {
           preset: $('#abPreset').value,
           root: $('#abRoot').value,
@@ -2069,6 +2274,11 @@
           }
           scoreState.nextId=Math.max(Number(saved.score.nextId)||1,...scoreState.events.map(event=>event.id+1));
           $('#scoreTempo').value=String(scoreState.tempo); $('#scoreTimeSignature').value=scoreState.timeSignature;
+        }
+        if (saved.wavExport && typeof saved.wavExport === 'object') {
+          if (['a','b','ab'].includes(saved.wavExport.target)) $('#wavTarget').value = saved.wavExport.target;
+          if (['44100','48000'].includes(String(saved.wavExport.sampleRate))) $('#wavSampleRate').value = String(saved.wavExport.sampleRate);
+          if (typeof saved.wavExport.filename === 'string' && saved.wavExport.filename.trim()) { $('#wavFilename').value = saved.wavExport.filename; $('#wavFilename').dataset.edited = 'true'; }
         }
         if (saved.singleFrequency != null) $('#singleFrequency').value = saved.singleFrequency;
         if (Array.isArray(saved.chordFrequencies)) $$('.chord-frequency').forEach((input, index) => { if (saved.chordFrequencies[index] != null) input.value = saved.chordFrequencies[index]; });
@@ -2280,6 +2490,10 @@
     $('#scorePlayA').addEventListener('click',()=>playScore('a'));
     $('#scorePlayB').addEventListener('click',()=>playScore('b'));
     $('#scoreStop').addEventListener('click',stopScore);
+    $('#exportWavButton').addEventListener('click',exportScoreWav);
+    $('#wavTarget').addEventListener('change',()=>{ updateSuggestedWavFilename(); scheduleSave(); });
+    $('#wavSampleRate').addEventListener('change',scheduleSave);
+    $('#wavFilename').addEventListener('input',()=>{ $('#wavFilename').dataset.edited='true'; scheduleSave(); });
 
     $('#masterVolume').addEventListener('input', () => { $('#volumeValue').textContent = `${$('#masterVolume').value}%`; engine.setMasterVolume(Number($('#masterVolume').value) / 100); scheduleSave(); });
     document.querySelectorAll('input,select').forEach(control => { if (control.id !== 'masterVolume') control.addEventListener('change', scheduleSave); });
@@ -2306,6 +2520,8 @@
     setScoreDuration(scoreState.duration);
     setScoreAccidental(scoreState.accidental);
     renderScore();
+    updateSuggestedWavFilename();
+    updateWavExportAvailability();
     $('#volumeValue').textContent = `${$('#masterVolume').value}%`;
     $('#versionBadge').textContent = `v${APP_CONFIG.version}`;
     if (!engine.supported()) {
