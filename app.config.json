@@ -1,15 +1,15 @@
 {
   "$schema": "./schemas/app-config.schema.json",
-  "name": "Single HTML App Starter",
-  "nameJa": "単一HTMLアプリ スターター",
-  "slug": "single-html-app-starter",
-  "version": "1.3.0",
-  "description": "A reusable starter for privacy-friendly, fully self-contained browser apps.",
-  "descriptionJa": "プライバシーに配慮した完全内包型ブラウザーアプリの再利用テンプレートです。",
+  "name": "Tuning Compare",
+  "nameJa": "音律聞き比べ",
+  "slug": "tuning-compare",
+  "version": "0.2.0",
+  "description": "Calculate and audition equal temperament, 5-limit just intonation, and exact custom note frequencies in the browser.",
+  "descriptionJa": "12平均律・5-limit純正律・カスタム音律の周波数を計算し、その場で試聴できます。",
   "defaultLanguage": "auto",
   "repository": {
-    "owner": "OWNER",
-    "name": "single-html-app-template"
+    "owner": "ttomohisa",
+    "name": "htmlapps-tuning-compare"
   },
   "build": {
     "output": "dist/index.html",
@@ -19,8 +19,8 @@
       "output": "dist/index.self-extract.html"
     },
     "sizeBudget": {
-      "readableWarningMb": 25,
-      "selfExtractWarningMb": 12
+      "readableWarningMb": 3,
+      "selfExtractWarningMb": 1
     }
   }
 }
