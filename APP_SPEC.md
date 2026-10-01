@@ -216,12 +216,12 @@ Rendering, pointer-to-pitch conversion, dragging, and ledger-line drawing must u
 
 The notes being compared are visually separated from tuning A and tuning B.
 
-The comparison-target panel contains:
+The comparison-target workspace is a sibling of the A/B tuning comparison workspace and contains:
 
 - note combination: Major third / Perfect fifth / Major triad
 - root note
 
-These controls remain one shared comparison target for both A and B, but are presented independently from the A/B tuning-setting cards.
+These controls remain one shared comparison target for both A and B. The entire comparison-target workspace is structurally and visually independent from the A/B tuning comparison workspace.
 
 ## 16. Acceptance criteria
 
@@ -235,6 +235,7 @@ These controls remain one shared comparison target for both A and B, but are pre
 - C4 / E4 / G4 / B4 / D5 / F5 render at standard treble-clef positions
 - pointer input and dragging use the same treble-clef pitch origin as rendering
 - comparison target is visually independent from tuning A/B setting cards
+- A/B tuning comparison and comparison target are sibling sections at the same workspace hierarchy
 - chords use a shared stem
 - score playback works for A and B
 - score has four measures
