@@ -2411,6 +2411,29 @@
       const settings=tuningSettings(),midi=tuningEngine.noteToMidi(note),referenceMidi=tuningEngine.noteToMidi(settings.referenceNote);
       return tuningEngine.equalFrequency(midi,referenceMidi,settings.referenceFrequency);
     }
+
+    function customValueForMode(note,frequency,mode){
+      if(mode==='ratio'){
+        const base=tuningEngine.customFrequency(tuningEngine.noteToMidi(customRatioBaseNote()));
+        return approximateRatio(frequency/base);
+      }
+      if(mode==='cents') return tuningEngine.centsDifference(frequency,customBaselineFrequency(note)).toFixed(2);
+      return formatFrequency(frequency);
+    }
+    function applyCustomValue(note,input,mode){
+      let frequency=NaN;
+      if(mode==='ratio'){
+        const ratio=parseRatioValue(input.value),base=tuningEngine.customFrequency(tuningEngine.noteToMidi(customRatioBaseNote()));
+        if(Number.isFinite(ratio)&&Number.isFinite(base)) frequency=base*ratio;
+      } else if(mode==='cents'){
+        const cents=Number(input.value),baseline=customBaselineFrequency(note);
+        if(Number.isFinite(cents)&&Number.isFinite(baseline)) frequency=baseline*Math.pow(2,cents/1200);
+      } else frequency=Number(input.value);
+      const valid=Number.isFinite(frequency)&&frequency>=20&&frequency<=20000;
+      input.setAttribute('aria-invalid',valid?'false':'true');
+      if(!valid){ if(mode==='ratio') AppToast.show({message:t('invalidRatio')}); return false; }
+      tuningEngine.custom[note]=frequency; return true;
+    }
     function updateCustomEditorUi(){
       const custom=currentTuningType()==='custom',panel=$('#customEditorPanel'); if(panel) panel.hidden=!custom; if(!custom) return;
       const mode=customEditMode(); $('#customRatioBaseControl').hidden=mode!=='ratio';
@@ -2462,23 +2485,37 @@
         const noteCell = document.createElement('td'); noteCell.className = 'note-name'; noteCell.textContent = display;
         const frequencyCell = document.createElement('td');
         if (type === 'custom' && midi <= 71) {
-          const input = document.createElement('input');
-          input.type = 'number'; input.inputMode = 'decimal'; input.min = '20'; input.max = '20000'; input.step = '0.001';
-          input.className = 'frequency-edit'; input.value = formatFrequency(frequency); input.dataset.customNote = note;
-          input.setAttribute('aria-label', `${display} Hz`);
-          input.addEventListener('change', () => {
-            const value = Number(input.value);
-            if (!Number.isFinite(value) || value < 20 || value > 20000) { input.setAttribute('aria-invalid', 'true'); return; }
-            input.setAttribute('aria-invalid', 'false'); tuningEngine.custom[note] = value; renderTuningTable(); scheduleSave();
-          });
-          frequencyCell.append(input, document.createTextNode(' Hz'));
+          const mode=customEditMode(),input=document.createElement('input');
+          input.className='custom-value-input'+(mode==='ratio'?' ratio':''); input.dataset.customNote=note;
+          if(mode==='ratio'){
+            input.type='text'; input.inputMode='decimal'; input.value=customValueForMode(note,frequency,mode);
+            input.setAttribute('aria-label',display+' '+t('customValueRatio'));
+            if(note===customRatioBaseNote()){ input.value='1/1'; input.disabled=true; }
+          } else {
+            input.type='number'; input.inputMode='decimal'; input.step=mode==='cents'?'0.01':'0.001';
+            if(mode==='hz'){ input.min='20'; input.max='20000'; }
+            input.value=customValueForMode(note,frequency,mode);
+            input.setAttribute('aria-label',display+' '+t(mode==='cents'?'customValueCents':'frequency'));
+          }
+          input.addEventListener('change',()=>{ if(applyCustomValue(note,input,mode)){ renderTuningTable(); scheduleSave(); } });
+          frequencyCell.append(input);
+          const suffix=document.createElement('span'); suffix.className='custom-value-suffix'; suffix.textContent=mode==='hz'?'Hz':mode==='cents'?'¢':'';
+          if(suffix.textContent) frequencyCell.append(suffix);
         } else {
-          frequencyCell.className = 'number'; frequencyCell.textContent = `${formatFrequency(frequency)} Hz`;
-          if (type === 'custom' && midi === 72) frequencyCell.title = t('derivedOctave');
+          frequencyCell.className='number';
+          if(type==='custom'&&midi===72){
+            const mode=customEditMode(),value=customValueForMode(note,frequency,mode);
+            frequencyCell.textContent=value+(mode==='hz'?' Hz':mode==='cents'?' ¢':'');
+            frequencyCell.title=t('derivedOctave');
+          } else frequencyCell.textContent=formatFrequency(frequency)+' Hz';
         }
         const ratioCell = document.createElement('td'); ratioCell.className = 'number';
-        if (type === 'just') { const ratio = tuningEngine.ratioForMidi(midi, NOTE_NAMES.indexOf(settings.tonic)); ratioCell.textContent = `${ratio.n}/${ratio.d}`; }
-        else ratioCell.textContent = '—';
+        if(type==='just'){
+          const ratio=tuningEngine.ratioForMidi(midi,NOTE_NAMES.indexOf(settings.tonic)); ratioCell.textContent=ratio.n+'/'+ratio.d;
+        } else if(type==='custom'){
+          const base=tuningEngine.customFrequency(tuningEngine.noteToMidi(customRatioBaseNote()));
+          ratioCell.textContent=approximateRatio(frequency/base);
+        } else ratioCell.textContent='—';
         const centsCell = document.createElement('td'); centsCell.textContent = formatCents(cents); centsCell.className = cents > .005 ? 'cent-positive' : cents < -.005 ? 'cent-negative' : 'number';
         const playCell = document.createElement('td');
         const playButton = document.createElement('button'); playButton.type = 'button'; playButton.className = 'play-row'; playButton.textContent = t('play'); playButton.setAttribute('aria-label', `${t('play')} ${display}`);
@@ -2486,14 +2523,14 @@
         playCell.append(playButton);
         row.append(noteCell, frequencyCell, ratioCell, centsCell, playCell); body.append(row);
       }
-      const custom = type === 'custom';
-      const just = type === 'just';
-      $$('.reference-control').forEach(element => element.classList.toggle('disabled-control', custom));
-      $('#referenceNote').disabled = custom; $('#referenceFrequency').disabled = custom;
-      $('#tonic').disabled = !just;
-      $('#tonicControl').classList.toggle('disabled-control', !just);
-      $('#copyToCustomButton').disabled = custom;
-      $('#tuningDescription').textContent = t(type === 'just' ? 'justDescription' : type === 'custom' ? 'customDescription' : 'equalDescription');
+      const custom=type==='custom',just=type==='just';
+      $$('.reference-control').forEach(element=>element.classList.remove('disabled-control'));
+      $('#referenceNote').disabled=false; $('#referenceFrequency').disabled=false;
+      $('#tonic').disabled=!just; $('#tonicControl').classList.toggle('disabled-control',!just);
+      $('#copyToCustomButton').disabled=custom;
+      $('#tuningValueHeader').textContent=custom?t(customEditMode()==='ratio'?'customValueRatio':customEditMode()==='cents'?'customValueCents':'frequency'):t('frequency');
+      updateCustomEditorUi();
+      $('#tuningDescription').textContent=t(type==='just'?'justDescription':type==='custom'?'customDescription':'equalDescription');
       $$('.note-chip').forEach(button => {
         const note = button.dataset.note;
         const frequency = tuningEngine.frequency(note, type, settings);
