@@ -135,7 +135,6 @@ A visible note can be dragged.
 - for a chord, drag direction locks after the movement threshold
 - horizontal chord drag moves the whole event while preserving every note's pitch
 - vertical chord-note drag changes only the grabbed note's pitch
-- a selected chord can also be dragged horizontally from its selection outline
 - horizontal movement uses duration-aware snapping
 - movement into an occupied start position does not merge or overwrite the other event
 - accidental type is preserved when the dragged note changes staff position
