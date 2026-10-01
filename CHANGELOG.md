@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0
+
+- Added a dynamic “What to listen for” panel to the A/B comparison.
+- Added largest cents-gap and Hz-gap metrics derived from the current A/B notes.
+- Added descriptive higher/lower wording and preset-specific listening tips.
+- Added four embedded sample scores: Major third, Major triad, C major scale, and I–IV–V–I.
+- Added confirmation before replacing a non-empty score with a sample.
+- Sample loading participates in Undo, autosave, project JSON, A/B playback, and WAV export through the existing score model.
+- Updated stale introductory/help copy to reflect the current application capabilities.
+
 ## 0.7.0
 
 - Added custom tuning editing as absolute Hz, ratios, or cents offsets.

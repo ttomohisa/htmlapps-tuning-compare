@@ -3,9 +3,9 @@
   "name": "Tuning Compare",
   "nameJa": "音律聞き比べ",
   "slug": "tuning-compare",
-  "version": "0.7.0",
-  "description": "Compare tunings, edit custom scales in Hz, ratios, or cents, save full projects as JSON, and export local WAV audio.",
-  "descriptionJa": "音律を聞き比べ、カスタム音律をHz・比率・cent差で編集し、譜面や設定をプロジェクトJSONとして保存・復元できます。",
+  "version": "0.8.0",
+  "description": "Compare tunings with guided A/B metrics, load sample scores for listening practice, edit custom tunings, save projects, and export WAV audio.",
+  "descriptionJa": "音律をA/B比較し、差の大きい音を数値で確認しながら、サンプル譜面・カスタム音律・プロジェクト保存・WAV出力を利用できます。",
   "defaultLanguage": "auto",
   "repository": {
     "owner": "ttomohisa",
