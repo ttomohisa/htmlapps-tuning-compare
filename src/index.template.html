@@ -2918,7 +2918,10 @@
     $('#abStop').addEventListener('click', stopAll);
 
 
-    $('#scoreSvg').addEventListener('pointerdown',handleScorePointer);
+    $('#scoreSvg').addEventListener('pointerdown',handleScorePointerDown);
+    $('#scoreSvg').addEventListener('pointermove',handleScorePointerMove);
+    $('#scoreSvg').addEventListener('pointerup',finishScoreDrag);
+    $('#scoreSvg').addEventListener('pointercancel',finishScoreDrag);
     $('#scoreModeNote').addEventListener('click',()=>setScoreMode('note'));
     $('#scoreModeRest').addEventListener('click',()=>setScoreMode('rest'));
     $('#scoreDurationGroup [data-duration]').forEach(button=>button.addEventListener('click',()=>setScoreDuration(button.dataset.duration)));
@@ -2928,7 +2931,7 @@
     $('#scoreUndo').addEventListener('click',scoreUndo);
     $('#scoreRedo').addEventListener('click',scoreRedo);
     $('#scoreClear').addEventListener('click',clearScore);
-    $('[data-score-sample]').forEach(button=>button.addEventListener('click',()=>loadScoreSample(button.dataset.scoreSample)));
+    $$('[data-score-sample]').forEach(button=>button.addEventListener('click',()=>loadScoreSample(button.dataset.scoreSample)));
     $('#scoreDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
