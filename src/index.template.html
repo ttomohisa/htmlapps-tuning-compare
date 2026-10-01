@@ -2463,6 +2463,8 @@
         if(!validation.ok){ setProjectStatus(t(validation.reason==='schema'?'projectUnsupported':'projectInvalid'),true); return; }
         if(!window.confirm(t('projectImportConfirm'))){ setProjectStatus(''); return; }
         const settings=validation.project;
+        stopAll();
+        scoreState.undo=[]; scoreState.redo=[]; scoreState.selectedId=null;
         if(settings.language==='ja'||settings.language==='en'){ language=settings.language; writeStorage(languageKey,language); }
         restoreSettings(settings);
         ensureCustomInitialized(false); ensureABCustom('a',false); ensureABCustom('b',false);
