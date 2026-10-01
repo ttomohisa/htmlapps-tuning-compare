@@ -1,40 +1,42 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty app for comparing equal temperament, just intonation, and exact custom tunings with the same timbre and playback position.
+A Browser Kitty app for comparing equal temperament, just intonation, and exact custom tunings, including playback from a short score.
 
-**v0.3.0 is the A/B Compare milestone.** Tuning A and B are configured independently. Both audio layers start on the same AudioContext timeline, so switching A/B changes tuning without restarting the comparison.
+**v0.4.0 is the Score Editor MVP milestone.** It adds a compact two-measure staff editor on top of the v0.3 A/B comparison.
 
-## v0.3.0 features
+## v0.4.0 features
 
 - Independent A/B equal, 5-limit just, or custom tuning
-- Independent reference pitch and just-intonation tonic per side
-- Separate direct C4–B4 custom Hz maps for A and B
-- Major-third, perfect-fifth, and major-triad quick comparisons
-- Synchronized dual-layer playback with an approximately 24 ms A/B crossfade
-- Automatic A → B comparison
-- Exact A/B frequency and cent-difference table
-- v0.2 C4–C5 tuning inspection and per-note audition
-- Arbitrary-Hz single-note and chord audition
+- Major-third, perfect-fifth, and major-triad A/B comparison
+- Two-measure treble-staff note entry by click or tap
+- Chords by adding pitches at the same start position
+- Rest input
+- Whole / half / quarter / eighth durations
+- Flat / natural / sharp
+- 3/4 and 4/4
+- 30–300 BPM
+- Undo / Redo
+- Score playback with tuning A or tuning B
+- Playback cursor
 - Sine / Soft harmonics / Rich harmonics
-- Japanese / English UI and local settings persistence
+- Japanese / English UI and local persistence
 - No runtime network dependency
 
 ## Privacy
 
-Frequencies, tuning settings, and interactions are processed in the browser. There is no runtime API, CDN, analytics, or telemetry dependency.
+Score data, frequencies, and tuning settings are processed in the browser. There is no runtime API, CDN, analytics, or telemetry dependency.
 
 ## Development
 
-The repository follows the current `ttomohisa/htmlapps-template` structure. Edit `src/index.template.html`; do not hand-edit generated HTML.
+Edit `src/index.template.html`; do not hand-edit generated HTML.
 
-Windows verification:
-
-    powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-powershell-syntax.ps1
-    pwsh -NoProfile -File .\scripts\check-repository.ps1
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-powershell-syntax.ps1
+pwsh -NoProfile -File .\scripts\check-repository.ps1
+```
 
 ## Roadmap
 
-- v0.4.0: Score Editor MVP
 - v0.5.0: Mobile / Score UX
 - v0.6.0: WAV Export
 - v0.7.0: Custom Tuning / Project Data

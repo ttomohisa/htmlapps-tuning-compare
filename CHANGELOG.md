@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Added a two-measure treble-staff score editor with click/tap step input.
+- Added note, rest, chord, whole/half/quarter/eighth duration, accidental, 3/4 and 4/4, and 30–300 BPM controls.
+- Added Undo/Redo history, event selection/deletion, and local score persistence.
+- Added score playback using tuning A or B with AudioContext-timed scheduling and a playback cursor.
+- Preserved the template-aligned UI and v0.3 A/B comparison workflow.
+
 ## 0.3.0
 
 - Realigned the header, page intro, design tokens, dialogs, toast, spacing, cards, and responsive behavior with the current htmlapps-template UI.
