@@ -1,0 +1,51 @@
+name: Capture v1.0.0 release screenshots
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "app.config.json"
+      - "scripts/capture-release-screenshots.mjs"
+      - ".github/workflows/release-screenshots.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build standalone HTML
+        shell: pwsh
+        run: ./build-standalone.ps1
+
+      - name: Install Playwright
+        shell: pwsh
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install chromium
+
+      - name: Start local server and capture screenshots
+        shell: pwsh
+        run: |
+          $server = Start-Process python -ArgumentList '-m','http.server','4173','--bind','127.0.0.1','--directory','dist' -PassThru
+          try {
+            Start-Sleep -Seconds 2
+            node ./scripts/capture-release-screenshots.mjs
+          } finally {
+            Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+          }
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: v1.0.0-release-screenshots
+          path: release-screenshots/*.png
+          if-no-files-found: error
+          retention-days: 7
