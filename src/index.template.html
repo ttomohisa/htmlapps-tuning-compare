@@ -629,13 +629,11 @@
     .score-svg .accidental { fill:#20211f; font-size:17px; font-family:"Segoe UI Symbol","Noto Sans Symbols",sans-serif; }
     .score-svg .rest-block { fill:#20211f; stroke:none; }
     .score-svg .rest-glyph {
-      fill:#20211f; font-size:31px; line-height:1;
-      font-family:"Segoe UI Symbol","Noto Music","Apple Symbols",serif;
+      fill:#20211f; line-height:1;
+      font-family:"Noto Music","Segoe UI Symbol","Apple Symbols",serif;
     }
-    .score-svg .eighth-rest-head { fill:#20211f; stroke:none; }
-    .score-svg .eighth-rest-stem {
-      fill:none; stroke:#20211f; stroke-width:2.35; stroke-linecap:round; stroke-linejoin:round;
-    }
+    .score-svg .quarter-rest-glyph { font-size:36px; }
+    .score-svg .eighth-rest-glyph { font-size:39px; }
     .score-svg .score-hitbox { fill:transparent; cursor:crosshair; }
     .score-svg .score-event-hitbox { fill:transparent; cursor:pointer; }
     .score-svg .selected-ring { fill:none; stroke:var(--accent); stroke-width:2.2; }
@@ -2204,6 +2202,16 @@
     function pushScoreHistory(){ scoreState.undo.push(scoreSnapshot()); if(scoreState.undo.length>30) scoreState.undo.shift(); scoreState.redo=[]; updateScoreUndoButtons(); }
     function updateScoreUndoButtons(){ $('#scoreUndo').disabled=!scoreState.undo.length; $('#scoreRedo').disabled=!scoreState.redo.length; }
     function scoreEventAtBeat(beat,excludeId=null){ return scoreState.events.find(event=>event.id!==excludeId&&Math.abs(event.start-beat)<.001)||null; }
+    function removeScoreEventsCoveredAfter(start,duration,excludeId=null){
+      const end=start+Math.max(0,Number(duration)||0),epsilon=.001;
+      const removed=[];
+      scoreState.events=scoreState.events.filter(event=>{
+        const covered=event.id!==excludeId&&event.start>start+epsilon&&event.start<end-epsilon;
+        if(covered) removed.push(event);
+        return !covered;
+      });
+      return removed;
+    }
     function scoreSelectedEvent(){ return scoreState.events.find(event=>event.id===scoreState.selectedId)||null; }
     function setScoreStatus(message,error=false){ const node=$('#scoreStatus'); node.textContent=message||''; node.classList.toggle('error',Boolean(error)); }
     function addScoreInput(beat,step){
@@ -2213,11 +2221,17 @@
           scoreState.selectedId=existing.id; renderScore(); setScoreStatus(t('scoreOccupiedByNote'),true); return;
         }
         if(existing&&existing.rest){
-          if(existing.duration!==scoreState.duration){ pushScoreHistory(); existing.duration=scoreState.duration; scheduleSave(); }
+          if(existing.duration!==scoreState.duration){
+            pushScoreHistory();
+            existing.duration=scoreState.duration;
+            removeScoreEventsCoveredAfter(existing.start,existing.duration,existing.id);
+            scheduleSave();
+          }
           scoreState.selectedId=existing.id; renderScore(); setScoreStatus(t('scoreRestAdded')); return;
         }
         pushScoreHistory();
         const event={id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:true,notes:[]};
+        removeScoreEventsCoveredAfter(event.start,event.duration);
         scoreState.events.push(event); scoreState.selectedId=event.id; setScoreStatus(t('scoreRestAdded'));
       } else {
         if(existing&&existing.rest){
@@ -2235,6 +2249,7 @@
         } else {
           pushScoreHistory();
           const event={id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:false,notes:[pitch]};
+          removeScoreEventsCoveredAfter(event.start,event.duration);
           scoreState.events.push(event); scoreState.selectedId=event.id; setScoreStatus(t('scoreAdded',{note:pitch.display}));
         }
       }
@@ -2262,20 +2277,11 @@
         const lineY=top+24;
         svg.append(scoreSvgElement('rect',{x:x-8,y:lineY-5,width:16,height:5,rx:1,class:'rest-block'}));
       } else if(event.duration>=1){
-        const glyph=scoreSvgElement('text',{x:x,y:top+39,class:'rest-glyph','text-anchor':'middle','aria-hidden':'true'});
+        const glyph=scoreSvgElement('text',{x:x,y:top+41,class:'rest-glyph quarter-rest-glyph','text-anchor':'middle','aria-hidden':'true'});
         glyph.textContent='𝄽'; svg.append(glyph);
       } else {
-        // Eighth rest: a compact flag/head with a descending curved stem.
-        const head=scoreSvgElement('ellipse',{
-          cx:x+3.5,cy:top+16.5,rx:4.2,ry:3.1,
-          class:'eighth-rest-head',
-          transform:'rotate(-22 '+(x+3.5)+' '+(top+16.5)+')'
-        });
-        const stem=scoreSvgElement('path',{
-          d:'M'+(x+6)+' '+(top+17)+' C'+(x+4)+' '+(top+22)+' '+(x+1)+' '+(top+28)+' '+(x-2)+' '+(top+34)+' C'+(x-4)+' '+(top+38)+' '+(x-5)+' '+(top+41)+' '+(x-6)+' '+(top+44),
-          class:'eighth-rest-stem'
-        });
-        svg.append(head,stem);
+        const glyph=scoreSvgElement('text',{x:x,y:top+42,class:'rest-glyph eighth-rest-glyph','text-anchor':'middle','aria-hidden':'true'});
+        glyph.textContent='𝄾'; svg.append(glyph);
       }
       if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-17,y:top+4,width:34,height:46,rx:8,class:'selected-ring'}));
       svg.append(scoreSvgElement('rect',{x:x-14,y:hitTop,width:28,height:hitHeight,rx:7,class:'score-rest-hitbox','data-event-id':event.id}));
