@@ -197,6 +197,32 @@ Additional v0.9.0 hands-on fixes:
 - the Sound Settings card uses a stacked, roomier form layout with a separated Advanced Settings panel and playback-state block
 - on smartphone widths, the template confirmation dialog presents as the template bottom-sheet variant
 
+### Treble-clef pitch geometry
+
+The score uses standard treble-clef vertical placement:
+
+- bottom staff line: E4
+- second line: G4
+- middle line: B4
+- fourth line: D5
+- top line: F5
+- C4: first ledger line below the staff
+
+With 12 px between staff lines, adjacent natural-note staff positions are 6 px apart.
+
+Rendering, pointer-to-pitch conversion, dragging, and ledger-line drawing must use the same origin. C4 is `systemTop + 60`.
+
+### Independent comparison target
+
+The notes being compared are visually separated from tuning A and tuning B.
+
+The comparison-target panel contains:
+
+- note combination: Major third / Perfect fifth / Major triad
+- root note
+
+These controls remain one shared comparison target for both A and B, but are presented independently from the A/B tuning-setting cards.
+
 ## 16. Acceptance criteria
 
 - A/B reference-note and tonic dropdowns are populated and selectable
@@ -206,6 +232,9 @@ Additional v0.9.0 hands-on fixes:
 - quarter-note input in 4/4 exposes four starts per measure
 - eighth-note input in 4/4 exposes eight starts per measure
 - adjacent staff positions remain clickable next to existing notes
+- C4 / E4 / G4 / B4 / D5 / F5 render at standard treble-clef positions
+- pointer input and dragging use the same treble-clef pitch origin as rendering
+- comparison target is visually independent from tuning A/B setting cards
 - chords use a shared stem
 - score playback works for A and B
 - score has four measures
