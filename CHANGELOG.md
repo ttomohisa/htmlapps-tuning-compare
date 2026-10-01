@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0
+
+- Promoted Tuning Compare from the v0.9.0 release candidate to the first formal release.
+- Finalized the four-measure score editor, including treble-clef pitch geometry, standard rest placement, enlarged quarter/eighth rest glyphs, measure barlines, chord notation, drag editing, accidental editing, and Undo behavior.
+- Finalized A/B tuning comparison for 12-tone equal temperament, 5-limit just intonation, and custom tunings.
+- Finalized local WAV export, project JSON import/export, autosave, Japanese/English UI, and smartphone navigation.
+- Removed stale release-candidate and pre-WAV help text from the user-facing UI.
+- Updated release documentation, version metadata, favicon checks, and screenshots for v1.0.0.
+- Kept runtime processing local with no external network dependency.
+
 ## 0.9.0
 
 - Added duration-based overwrite for newly inserted notes: later events covered by the new note are removed in the same Undo operation.
