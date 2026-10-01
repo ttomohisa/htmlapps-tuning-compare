@@ -245,9 +245,10 @@ Score notation follows these additional rules:
 
 - whole rest hangs from the fourth staff line (second line from the top)
 - half rest sits on the middle staff line
-- quarter and eighth rests use standard Unicode music-rest glyphs rather than ad-hoc path approximations
+- quarter rest uses a standard music-rest glyph; eighth rest uses an explicit SVG head + curved stem so its shape is consistent across browsers
 - staff lines extend behind the treble clef and time signature so both symbols are visually part of the staff
 - staff lines are drawn before clef/time-signature glyphs so the symbols remain legible
+- no system-start barline is drawn immediately to the right of the clef/time signature; only measure-end barlines are drawn
 - the score header does not show the redundant "4 measures / event count" badge
 - clicking an existing note without dragging applies the currently selected accidental to that staff position
 - flat / natural / sharp click edits participate in Undo history
@@ -278,6 +279,8 @@ Score notation follows these additional rules:
 - whole and half rests render at standard staff positions
 - quarter and eighth rests use standard music-rest shapes
 - treble clef and time signature appear on the staff rather than outside the staff lines
+- treble clef is enlarged/repositioned to span the staff in a conventional engraving-like placement
+- no redundant vertical barline appears immediately after the clef/time signature
 - redundant score-header measure/event-count badge is absent
 - clicking an existing note applies the selected flat/natural/sharp without dragging
 - standalone build and repository validation pass
