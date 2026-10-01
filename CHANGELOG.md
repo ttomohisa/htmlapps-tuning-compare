@@ -2,8 +2,11 @@
 
 ## 0.9.0
 
+- Refined treble-clef size and placement to span the staff more like conventional engraving.
+- Removed the system-start barline immediately after the clef/time signature and kept measure-end barlines only.
+- Replaced the eighth-rest font glyph with a custom SVG head + curved stem for a cleaner, browser-consistent shape.
 - Corrected whole-rest and half-rest placement to standard staff-line positions.
-- Replaced hand-drawn quarter/eighth rest paths with standard music-rest glyphs.
+- Replaced the quarter-rest path with a standard music-rest glyph and redrew the eighth rest as explicit SVG geometry.
 - Extended staff lines behind the treble clef and time signature and layered the symbols above the staff.
 - Removed the redundant score-header "4 measures / event count" badge.
 - Added click-to-apply accidental editing for existing notes using the selected flat / natural / sharp tool, with Undo support.
