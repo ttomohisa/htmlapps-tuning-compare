@@ -12,15 +12,18 @@ on:
       - ".github/workflows/release-screenshots.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   capture:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout repository
+      - name: Checkout release branch
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       - name: Build standalone HTML
         shell: pwsh
@@ -43,3 +46,18 @@ jobs:
           path: release-screenshots/*.png
           if-no-files-found: error
           retention-days: 7
+
+      - name: Commit generated release assets
+        shell: pwsh
+        run: |
+          Copy-Item release-screenshots/screenshot.png assets/screenshot.png -Force
+          Copy-Item release-screenshots/screenshot-en.png assets/screenshot-en.png -Force
+          Copy-Item release-screenshots/screenshot-mobile.png assets/screenshot-mobile.png -Force
+          Copy-Item dist/index.html tuning-compare.html -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/screenshot.png assets/screenshot-en.png assets/screenshot-mobile.png tuning-compare.html
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "chore: refresh v1.0.0 release assets"
+            git push origin HEAD:${{ github.head_ref }}
+          }
