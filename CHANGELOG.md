@@ -2,6 +2,7 @@
 
 ## 0.9.0
 
+- Promoted the comparison target to a sibling workspace at the same hierarchy as A/B tuning comparison, with its table, listening guidance, and playback controls grouped inside it.
 - Corrected treble-clef note placement so C4 uses the ledger line below the staff and E4/G4/B4/D5/F5 align to the five staff lines.
 - Corrected pointer and drag pitch conversion plus ledger-line placement to use the same score origin.
 - Moved the comparison-note controls into an independent comparison-target panel, separate from tuning A/B settings.

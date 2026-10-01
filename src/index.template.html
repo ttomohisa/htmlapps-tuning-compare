@@ -836,18 +836,12 @@
     }
 
 
-    .compare-target-panel {
-      margin-top:16px; padding:14px; border:1px solid var(--line); border-radius:14px;
-      background:var(--surface-muted);
-    }
-    .compare-target-head h3 { margin:0; font-size:14px; }
-    .compare-target-head p { margin:5px 0 0; color:var(--muted); font-size:12px; line-height:1.55; }
-    .compare-target-panel .compare-builder {
-      margin-top:12px; padding-top:0; border-top:0;
+    .compare-target-workspace { margin-bottom:16px; }
+    .compare-target-workspace .compare-builder {
+      margin-top:0; padding-top:0; border-top:0;
     }
     @media (max-width:620px) {
-      .compare-target-panel { padding:12px; }
-      .compare-target-panel .compare-builder { grid-template-columns:1fr; }
+      .compare-target-workspace .compare-builder { grid-template-columns:1fr; }
     }
 
     /* APP:END */
@@ -889,16 +883,16 @@
       </div>
     </section>
 
-    <section id="mobileComparePage" class="workspace compare-workspace app-mobile-page is-mobile-active" aria-labelledby="compareTitle">
-      <div class="workspace-head">
-        <div>
-          <h2 id="compareTitle" data-i18n="compareTitle">A/B 音律比較</h2>
-          <p data-i18n="compareIntro">AとBを独立して設定し、同じ音をAとBそれぞれで再生して聞き比べます。</p>
+    <div id="mobileComparePage" class="app-mobile-page is-mobile-active">
+      <section class="workspace compare-workspace" aria-labelledby="compareTitle">
+        <div class="workspace-head">
+          <div>
+            <h2 id="compareTitle" data-i18n="compareTitle">A/B 音律比較</h2>
+            <p data-i18n="compareIntro">AとBを独立して設定し、同じ音をAとBそれぞれで再生して聞き比べます。</p>
+          </div>
         </div>
-        <div class="compare-active"><span data-i18n="compareActive">再生中</span><strong id="abActiveSide">—</strong></div>
-      </div>
 
-      <div class="ab-grid">
+        <div class="ab-grid">
         <section class="ab-slot" data-slot="a" aria-labelledby="abATitle">
           <div class="ab-slot-head"><span class="ab-badge">A</span><strong class="ab-slot-name" id="abATitle">12平均律</strong></div>
           <div class="ab-fields">
@@ -928,20 +922,21 @@
             <div class="ab-custom-grid" id="abBCustomGrid"></div>
           </details>
         </section>
-      </div>
+        </div>
+      </section>
 
-      <section class="compare-target-panel" aria-labelledby="compareTargetTitle">
-        <div class="compare-target-head">
+      <section class="workspace compare-target-workspace" aria-labelledby="compareTargetTitle">
+        <div class="workspace-head">
           <div>
-            <h3 id="compareTargetTitle" data-i18n="compareTargetTitle">比較する音</h3>
+            <h2 id="compareTargetTitle" data-i18n="compareTargetTitle">比較する音</h2>
             <p data-i18n="compareTargetIntro">AとBの音律設定とは独立して、聞き比べる音の組み合わせを選びます。</p>
           </div>
+          <div class="compare-active"><span data-i18n="compareActive">再生中</span><strong id="abActiveSide">—</strong></div>
         </div>
         <div class="compare-builder">
           <label><span class="field-label" data-i18n="comparePattern">組み合わせ</span><select id="abPreset"><option value="majorThird" data-i18n="presetMajorThird">長三度</option><option value="perfectFifth" data-i18n="presetPerfectFifth">完全五度</option><option value="majorTriad" selected data-i18n="presetMajorTriad">長三和音</option></select></label>
           <label><span class="field-label" data-i18n="compareRoot">基準の音</span><select id="abRoot"></select></label>
         </div>
-      </section>
 
       <div class="comparison-table-wrap">
         <table class="comparison-table">
@@ -968,7 +963,8 @@
         <button type="button" class="button danger" id="abStop" data-i18n="stopShort">停止</button>
       </div>
       <p class="ab-status" id="abStatus" role="status" aria-live="polite"></p>
-    </section>
+      </section>
+    </div>
 
 
     <section id="mobileScorePage" class="workspace score-workspace app-mobile-page" aria-labelledby="scoreTitle">
