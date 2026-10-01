@@ -1418,6 +1418,42 @@
     const FLAT_TO_SHARP = Object.freeze({ Db:'C#', Eb:'D#', Gb:'F#', Ab:'G#', Bb:'A#' });
     const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0 };
 
+
+    const SCORE_SAMPLES = Object.freeze({
+      majorThird: {
+        nameKey:'sampleMajorThird', tempo:64, timeSignature:'4/4',
+        events:[
+          {start:0,duration:4,notes:['C4','E4']},
+          {start:4,duration:4,notes:['C4','E4']}
+        ]
+      },
+      majorTriad: {
+        nameKey:'sampleMajorTriad', tempo:64, timeSignature:'4/4',
+        events:[
+          {start:0,duration:4,notes:['C4','E4','G4']},
+          {start:4,duration:4,notes:['C4','E4','G4']}
+        ]
+      },
+      scale: {
+        nameKey:'sampleScale', tempo:92, timeSignature:'4/4',
+        events:[
+          {start:0,duration:1,notes:['C4']},{start:1,duration:1,notes:['D4']},
+          {start:2,duration:1,notes:['E4']},{start:3,duration:1,notes:['F4']},
+          {start:4,duration:1,notes:['G4']},{start:5,duration:1,notes:['A4']},
+          {start:6,duration:1,notes:['B4']},{start:7,duration:1,notes:['C5']}
+        ]
+      },
+      cadence: {
+        nameKey:'sampleCadence', tempo:72, timeSignature:'4/4',
+        events:[
+          {start:0,duration:2,notes:['C4','E4','G4']},
+          {start:2,duration:2,notes:['C4','F4','A4']},
+          {start:4,duration:2,notes:['G4','B4','D5']},
+          {start:6,duration:2,notes:['C4','E4','G4']}
+        ]
+      }
+    });
+
     class TuningEngine {
       constructor() { this.custom = {}; }
       noteToMidi(note) {
@@ -1844,6 +1880,31 @@
       const intervals = AB_PRESETS[$('#abPreset').value] || AB_PRESETS.majorTriad;
       return intervals.map(interval => tuningEngine.midiToNote(rootMidi + interval));
     }
+
+    function updateLearningInsight(){
+      const notes=comparisonNotes();
+      const rows=notes.map(note=>{
+        const a=abFrequency('a',note),b=abFrequency('b',note);
+        return {note:note.replace('#','♯'),a,b,cents:tuningEngine.centsDifference(b,a),hz:b-a};
+      }).filter(row=>Number.isFinite(row.a)&&Number.isFinite(row.b)&&Number.isFinite(row.cents));
+      const summary=$('#learningSummary'),centsValue=$('#learningMaxCentsValue'),hzValue=$('#learningMaxHzValue'),tip=$('#learningTip');
+      if(!rows.length){
+        summary.textContent=t('learningSummaryDefault'); centsValue.textContent='—'; hzValue.textContent='—'; tip.textContent=''; return;
+      }
+      const maxCents=rows.reduce((best,row)=>Math.abs(row.cents)>Math.abs(best.cents)?row:best,rows[0]);
+      const maxHz=rows.reduce((best,row)=>Math.abs(row.hz)>Math.abs(best.hz)?row:best,rows[0]);
+      centsValue.textContent=maxCents.note+' · '+formatCents(maxCents.cents);
+      hzValue.textContent=maxHz.note+' · '+Math.abs(maxHz.hz).toFixed(3)+' Hz';
+      if(Math.abs(maxCents.cents)<.05) summary.textContent=t('learningSame');
+      else summary.textContent=t('learningDirection',{
+        note:maxCents.note,
+        direction:t(maxCents.cents>0?'learningHigher':'learningLower'),
+        cents:Math.abs(maxCents.cents).toFixed(2)+' ¢'
+      });
+      const preset=$('#abPreset').value;
+      tip.textContent=t(preset==='majorThird'?'learningTipThird':preset==='perfectFifth'?'learningTipFifth':'learningTipTriad');
+    }
+
     function renderABComparison() {
       renderABSlot('a');
       renderABSlot('b');
@@ -1869,6 +1930,7 @@
         row.append(noteCell, aCell, bCell, diffCell);
         body.append(row);
       });
+      updateLearningInsight();
     }
     function abFrequencies(side) { return comparisonNotes().map(note => abFrequency(side, note)); }
     function setABActive(side) {
@@ -2108,6 +2170,27 @@
       const p=scorePointerToLocal(event), pos=p?scorePointToPosition(p.x,p.y):null;
       if(!pos) return; addScoreInput(pos.beat,pos.step);
     }
+
+    function sampleScoreNote(note){
+      return {note:note,display:String(note).replace('#','♯'),accidental:String(note).includes('#')?'sharp':'natural'};
+    }
+    function loadScoreSample(key){
+      const sample=SCORE_SAMPLES[key]; if(!sample) return;
+      if(scoreState.events.length && !window.confirm(t('sampleReplaceConfirm'))) return;
+      stopScore();
+      pushScoreHistory();
+      let nextId=scoreState.nextId;
+      scoreState.events=sample.events.map(event=>({
+        id:nextId++,start:event.start,duration:event.duration,rest:false,notes:event.notes.map(sampleScoreNote)
+      }));
+      scoreState.nextId=nextId; scoreState.selectedId=null; scoreState.tempo=sample.tempo; scoreState.timeSignature=sample.timeSignature;
+      $('#scoreTempo').value=String(scoreState.tempo); $('#scoreTimeSignature').value=scoreState.timeSignature;
+      renderScore(); scheduleSave();
+      const name=t(sample.nameKey);
+      setScoreStatus(t('sampleLoaded',{name:name}));
+      AppToast.show({message:t('sampleLoaded',{name:name}),actionLabel:t('undoAction'),duration:5000,onAction:scoreUndo});
+    }
+
     function deleteScoreSelection(){
       const index=scoreState.events.findIndex(event=>event.id===scoreState.selectedId); if(index<0) return;
       pushScoreHistory(); scoreState.events.splice(index,1); scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreDeleted'));
@@ -2722,6 +2805,7 @@
     $('#scoreUndo').addEventListener('click',scoreUndo);
     $('#scoreRedo').addEventListener('click',scoreRedo);
     $('#scoreClear').addEventListener('click',clearScore);
+    $('[data-score-sample]').forEach(button=>button.addEventListener('click',()=>loadScoreSample(button.dataset.scoreSample)));
     $('#scoreDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
