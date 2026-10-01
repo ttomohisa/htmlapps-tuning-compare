@@ -627,10 +627,11 @@
     .score-svg .note-head.open { fill:#fff; }
     .score-svg .note-stem,.score-svg .note-flag,.score-svg .ledger { stroke:#20211f; stroke-width:1.6; fill:none; stroke-linecap:round; }
     .score-svg .accidental { fill:#20211f; font-size:17px; font-family:"Segoe UI Symbol","Noto Sans Symbols",sans-serif; }
-    .score-svg .rest-mark { stroke:#20211f; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
-    .score-svg .rest-block,.score-svg .rest-dot { fill:#20211f; stroke:none; }
-    .score-svg .quarter-rest { stroke-width:2.5; }
-    .score-svg .eighth-rest { stroke-width:2.2; }
+    .score-svg .rest-block { fill:#20211f; stroke:none; }
+    .score-svg .rest-glyph {
+      fill:#20211f; font-size:31px; line-height:1;
+      font-family:"Segoe UI Symbol","Noto Music","Apple Symbols",serif;
+    }
     .score-svg .score-hitbox { fill:transparent; cursor:crosshair; }
     .score-svg .score-event-hitbox { fill:transparent; cursor:pointer; }
     .score-svg .selected-ring { fill:none; stroke:var(--accent); stroke-width:2.2; }
@@ -2254,20 +2255,11 @@
         const lineY=top+24;
         svg.append(scoreSvgElement('rect',{x:x-8,y:lineY-5,width:16,height:5,rx:1,class:'rest-block'}));
       } else if(event.duration>=1){
-        // Quarter rest: compact zig-zag with a small lower hook.
-        const path=scoreSvgElement('path',{
-          d:'M'+(x+3)+' '+(top+7)+' L'+(x-2)+' '+(top+17)+' L'+(x+4)+' '+(top+24)+' L'+(x-2)+' '+(top+31)+' C'+(x+5)+' '+(top+30)+' '+(x+8)+' '+(top+35)+' '+(x+3)+' '+(top+41)+' C'+(x+1)+' '+(top+37)+' '+(x-1)+' '+(top+35)+' '+(x-5)+' '+(top+36),
-          class:'rest-mark quarter-rest'
-        });
-        svg.append(path);
+        const glyph=scoreSvgElement('text',{x:x,y:top+39,class:'rest-glyph','text-anchor':'middle','aria-hidden':'true'});
+        glyph.textContent='𝄽'; svg.append(glyph);
       } else {
-        // Eighth rest: one flag with a descending stem.
-        svg.append(scoreSvgElement('ellipse',{cx:x-3,cy:top+14,rx:4.5,ry:3.3,class:'rest-dot'}));
-        const path=scoreSvgElement('path',{
-          d:'M'+(x+1)+' '+(top+14)+' C'+(x+8)+' '+(top+14)+' '+(x+9)+' '+(top+20)+' '+(x+4)+' '+(top+24)+' L'+(x-4)+' '+(top+42),
-          class:'rest-mark eighth-rest'
-        });
-        svg.append(path);
+        const glyph=scoreSvgElement('text',{x:x,y:top+39,class:'rest-glyph','text-anchor':'middle','aria-hidden':'true'});
+        glyph.textContent='𝄾'; svg.append(glyph);
       }
       if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-17,y:top+4,width:34,height:46,rx:8,class:'selected-ring'}));
       svg.append(scoreSvgElement('rect',{x:x-14,y:hitTop,width:28,height:hitHeight,rx:7,class:'score-rest-hitbox','data-event-id':event.id}));
@@ -2325,11 +2317,11 @@
       const startMeasure=scoreSystemStartMeasure(systemIndex,layout);
       const endMeasure=Math.min(scoreMeasureCount(),startMeasure+layout.measuresPerSystem);
       const staffVisualLeft=layout.compact?12:24;
+      for(let i=0;i<5;i++){ const y=top+i*12; svg.append(scoreSvgElement('line',{x1:staffVisualLeft,y1:y,x2:layout.right,y2:y,class:'staff-line'})); }
       const clef=scoreSvgElement('text',{x:layout.compact?18:38,y:top+48,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
       const timeX=layout.compact?55:73;
       const topNum=scoreSvgElement('text',{x:timeX,y:top+23,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
       const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
-      for(let i=0;i<5;i++){ const y=top+i*12; svg.append(scoreSvgElement('line',{x1:staffVisualLeft,y1:y,x2:layout.right,y2:y,class:'staff-line'})); }
       svg.append(scoreSvgElement('rect',{x:layout.left,y:top-30,width:layout.right-layout.left,height:104,class:'score-hitbox','data-score-input':'true'}));
       for(let measure=startMeasure;measure<endMeasure;measure+=1){
         const measureStart=measure*beatsPerMeasure;
