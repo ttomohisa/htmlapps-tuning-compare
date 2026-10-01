@@ -864,6 +864,19 @@
         <div class="score-selection" id="scoreSelection" aria-live="polite"><span data-i18n="scoreNoSelection">音符を選択すると編集できます</span></div>
         <button type="button" class="button danger" id="scoreDelete" data-i18n="scoreDelete" disabled>選択を削除</button>
       </div>
+      <div class="score-mobile-editor" id="scoreMobileEditor" hidden>
+        <div class="score-mobile-selected" id="scoreMobileSelected"></div>
+        <label class="score-mobile-duration">
+          <span class="sr-only-app" data-i18n="scoreDuration">音価</span>
+          <select id="scoreMobileDuration" aria-label="Duration">
+            <option value="4" data-i18n="scoreWhole">全音符</option>
+            <option value="2" data-i18n="scoreHalf">2分音符</option>
+            <option value="1" data-i18n="scoreQuarter">4分音符</option>
+            <option value="0.5" data-i18n="scoreEighth">8分音符</option>
+          </select>
+        </label>
+        <button type="button" class="button danger" id="scoreMobileDelete" data-i18n="scoreDelete">選択を削除</button>
+      </div>
       <div class="score-transport">
         <button type="button" class="button primary" id="scorePlayA" data-i18n="scorePlayA">Aで譜面を再生</button>
         <button type="button" class="button" id="scorePlayB" data-i18n="scorePlayB">Bで譜面を再生</button>
