@@ -3,8 +3,8 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 0.9.0
-- **Current milestone:** Release Candidate
+- **Version:** 1.0.0
+- **Current milestone:** Formal Release
 - **Purpose:** Compare tuning A and B by ear and by frequency/cents, edit a short score, export WAV audio, and save the full project locally.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
@@ -21,9 +21,9 @@ The app continues to follow the current `htmlapps-template` shell:
 
 No third-party runtime dependency is added.
 
-## 3. Release-candidate fixes
+## 3. v1.0.0 release baseline
 
-v0.9.0 addresses the interaction problems found during hands-on testing of v0.8.0.
+v1.0.0 retains the release-candidate interaction fixes and defines them as the formal release baseline.
 
 ### Runtime initialization
 
@@ -302,7 +302,12 @@ This automatic overwrite applies to note insertion only. Rest insertion keeps th
 - one Undo restores both the inserted long note and the events it replaced
 - rest insertion does not use the covered-note overwrite behavior
 - standalone build and repository validation pass
+- app version is consistently 1.0.0 in config and generated UI
+- Japanese and English UI complete the core compare → score → WAV / JSON flow
+- release screenshots include current Japanese desktop/mobile and English desktop UI
+- favicon and header app icon use the same canonical SVG
+- runtime CSP keeps external connections blocked
 
-## 17. Remaining roadmap
+## 17. Post-v1.0 roadmap
 
-- v1.0.0: Formal Release
+Future additions are optional and must not weaken the v1.0.0 local-first comparison workflow.
