@@ -2,6 +2,9 @@
 
 ## 0.9.0
 
+- Corrected treble-clef note placement so C4 uses the ledger line below the staff and E4/G4/B4/D5/F5 align to the five staff lines.
+- Corrected pointer and drag pitch conversion plus ledger-line placement to use the same score origin.
+- Moved the comparison-note controls into an independent comparison-target panel, separate from tuning A/B settings.
 - Updated score playback controls to match the A/B comparison and visibly mark the active tuning.
 - Replaced native confirmation prompts with the template confirmation dialog for sample replacement and project import.
 - Adjusted mobile tab scroll positioning to align the selected card directly below the sticky header.
