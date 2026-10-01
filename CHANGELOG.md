@@ -2,6 +2,12 @@
 
 ## 1.0.0
 
+- Added sixteenth notes and sixteenth rests with quarter-beat snapping.
+- Added long-press duplication for chords, preserving voicing, accidentals, and duration.
+- Locked horizontal chord dragging so all chord-note pitches remain unchanged.
+- Added vertical-only note movement inside chords plus a selected-chord pitch lane for easier targeted note addition.
+- Added horizontal dragging for rests.
+- Added the GitHub Pages demo link to the English and Japanese README files.
 - Promoted Tuning Compare from the v0.9.0 release candidate to the first formal release.
 - Finalized the four-measure score editor, including treble-clef pitch geometry, standard rest placement, enlarged quarter/eighth rest glyphs, measure barlines, chord notation, drag editing, accidental editing, and Undo behavior.
 - Finalized A/B tuning comparison for 12-tone equal temperament, 5-limit just intonation, and custom tunings.
