@@ -2351,7 +2351,7 @@
       }));
       if(event.id===scoreState.selectedId&&event.notes.length>1&&scoreState.mode==='note'){
         svg.append(scoreSvgElement('rect',{
-          x:x-22,y:top-10,width:44,height:72,rx:9,class:'score-chord-add-lane',
+          x:x-22,y:top-28,width:44,height:92,rx:9,class:'score-chord-add-lane',
           'data-chord-add-id':event.id
         }));
       }
@@ -2541,7 +2541,7 @@
         renderScore(); event.preventDefault(); return;
       }
       if(!drag.noteRef){ scoreState.drag=null; return; }
-      if(drag.isChord&&!drag.axis) drag.axis=Math.abs(dx)>=Math.abs(dy)?'horizontal':'vertical';
+      if(drag.isChord&&!drag.axis) drag.axis=Math.abs(dx)>=Math.abs(dy)*.8?'horizontal':'vertical';
       if(!drag.historyPushed){ pushScoreHistory(); drag.historyPushed=true; }
       drag.moved=true;
       if(drag.isChord&&drag.axis==='horizontal'){
