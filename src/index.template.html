@@ -686,10 +686,13 @@
       .score-segmented button { min-height:46px; }
       .score-subtoolbar .button,.score-transport .button { min-height:46px; }
       .score-editor-row { display:none; }
+      .score-workspace.has-mobile-selection { padding-bottom:96px; }
       .score-mobile-editor {
-        position:sticky; z-index:55; bottom:calc(var(--app-mobile-bottom-bar-height) + 8px);
+        position:fixed; z-index:75;
+        left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right));
+        bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 8px);
         display:grid; grid-template-columns:minmax(0,1fr) minmax(98px,.72fr) auto; gap:8px; align-items:center;
-        margin:10px -4px 12px; padding:9px; border:1px solid var(--line); border-radius:14px;
+        padding:9px; border:1px solid var(--line); border-radius:14px;
         background:rgba(255,255,255,.96); box-shadow:var(--shadow-md); backdrop-filter:blur(14px);
       }
       .score-mobile-selected { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:760; }
@@ -1884,7 +1887,7 @@
     }
     function setScoreMobileEditor(selected){
       const editor=$('#scoreMobileEditor'); if(!editor) return;
-      editor.hidden=!selected; if(!selected) return;
+      editor.hidden=!selected; $('#mobileScorePage')?.classList.toggle('has-mobile-selection',Boolean(selected)); if(!selected) return;
       const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
       $('#scoreMobileSelected').textContent=notes; $('#scoreMobileDuration').value=String(selected.duration);
     }
