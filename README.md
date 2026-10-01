@@ -1,79 +1,75 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty app for comparing tunings with A/B playback, a short score editor, WAV export, and project JSON — all processed locally in the browser.
+A Browser Kitty app for comparing 12-tone equal temperament, 5-limit just intonation, and custom tunings by ear and by frequency. It includes a four-measure score editor, local WAV export, and project JSON. Processing stays in the browser.
 
-**v0.9.0 is the Release Candidate milestone.**
+[日本語 README](README.ja.md)
 
-## v0.9.0 changes
+![Tuning Compare screenshot](assets/screenshot-en.png)
 
-### A/B tuning comparison
+## Features
 
-Playback is reduced to three controls:
-
-- **Play A**
-- **Play B**
-- **Stop**
-
-The currently playing side is visibly selected and also shown by the A/B status indicator.
-
-Reference note, reference frequency, and just-intonation tonic remain selectable regardless of the current tuning type.
-
-v0.9.0 also fixes listener registration that used the single-element `$` helper where the multi-element `$$` helper was required. That runtime error could stop initialization before A/B options and score playback were ready.
-
-### Simple score
-
-The score now has **four measures**.
-
-Input positions snap to the selected duration. In 4/4, the primary starts per measure are:
-
-- whole: 1
-- half: 2
-- quarter: 4
-- eighth: 8
-
-Also added or refined:
-
-- drag notes vertically to change pitch
-- drag horizontally to move event start
-- shared chord stems
-- smaller note-selection targets so nearby staff positions remain usable
-- no silent note → rest overwrite
-- no silent rest → note overwrite
-- playback cursor across all four measures
-
-## Main features
-
+- Compare tuning A and tuning B with the same notes, timbre, and level
 - 12-tone equal temperament
-- 5-limit just intonation
-- Custom tuning in Hz / Ratio / Cents
-- A/B frequency and cents comparison
-- listening guidance
-- four-measure score editor
-- sample scores
-- score playback with tuning A or B
-- WAV export
-- project JSON
-- Undo / Redo
+- 5-limit just intonation with selectable tonic
+- Custom tuning editing in Hz, ratio, or cents
+- Frequency and cents difference display
+- Four-measure treble-clef score editor
+- Single notes, chords, rests, whole/half/quarter/eighth durations
+- Sharp, flat, and natural accidentals
+- 4/4 and 3/4 time signatures
+- Sample scores for quick comparison
+- Score playback with tuning A or B
+- Local 16-bit mono WAV export at 44.1 kHz or 48 kHz
+- A-only, B-only, and A → B comparison WAV export
+- Project JSON export/import
+- Undo / Redo and local autosave
 - Japanese / English UI
-- local autosave
-- no runtime network dependency
+- No runtime network dependency
+
+## Usage
+
+1. Configure tuning A and tuning B.
+2. Choose notes to compare and play A or B.
+3. Edit the short score if you want to compare a melody or chord progression.
+4. Inspect frequencies, ratios, and cents differences.
+5. Adjust a custom tuning when needed and listen again.
+6. Export the score as WAV or save the project as JSON.
+
+The score editor is intentionally small. Tuning Compare is not intended to replace notation software, a DAW, or a MIDI sequencer.
 
 ## Privacy
 
-Score data, tunings, comparison calculations, JSON, and WAV generation stay in the browser. User input and generated audio are not uploaded.
+Score data, tuning settings, project JSON, and generated audio are processed locally in the browser. The app does not upload user input or generated audio, and the standalone build blocks runtime network connections.
+
+## Browser support
+
+Primary targets:
+
+- Chrome
+- Edge
+
+The app also aims to work in current Safari and Firefox where the required Web Audio APIs are available.
+
+Audio starts only after a user action because browsers restrict automatic audio playback.
 
 ## Development
 
-Edit `src/index.template.html`; do not hand-edit generated HTML.
+The editable source is `src/index.template.html`. Generated standalone HTML should not be hand-edited.
+
+Run repository validation on Windows PowerShell / PowerShell 7:
 
 ```powershell
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-powershell-syntax.ps1
 pwsh -NoProfile -File .\scripts\check-repository.ps1
 ```
 
-## Roadmap
+## Build
 
-- v1.0.0: Formal Release
+```powershell
+pwsh -NoProfile -File .\build-standalone.ps1
+```
+
+The build produces the standalone HTML configured in `app.config.json` and a repository-root `tuning-compare.html` copy. The repository validation also checks CSP, embedded favicon/app icon consistency, unresolved placeholders, and runtime network blocking.
 
 ## License
 
