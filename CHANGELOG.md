@@ -2,6 +2,11 @@
 
 ## 0.9.0
 
+- Corrected whole-rest and half-rest placement to standard staff-line positions.
+- Replaced hand-drawn quarter/eighth rest paths with standard music-rest glyphs.
+- Extended staff lines behind the treble clef and time signature and layered the symbols above the staff.
+- Removed the redundant score-header "4 measures / event count" badge.
+- Added click-to-apply accidental editing for existing notes using the selected flat / natural / sharp tool, with Undo support.
 - Added AppConfirm before clearing the whole score while keeping Toast + Undo after confirmation.
 - Reserved playback-indicator space in idle state so Play A / Play B button dimensions do not change during playback.
 - Promoted the comparison target to a sibling workspace at the same hierarchy as A/B tuning comparison, with its table, listening guidance, and playback controls grouped inside it.
