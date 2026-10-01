@@ -1,80 +1,228 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty app for comparing tunings with A/B playback, a short score editor, WAV export, and project JSON — all processed locally in the browser.
+[![Validate standalone HTML](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](tuning-compare.html)
+[![Version](https://img.shields.io/badge/version-v1.0.0-16624F)](CHANGELOG.md)
 
-**v0.9.0 is the Release Candidate milestone.**
+[日本語版 README](README.ja.md)
 
-## v0.9.0 changes
+A browser-based tool for comparing **12-tone equal temperament**, **5-limit just intonation**, and **custom tunings** with the same notes, timbre, and playback level.
 
-### A/B tuning comparison
+You can compare tunings by ear, inspect frequencies and cents differences, edit a short four-measure score, adjust custom frequencies directly, and export the result as WAV — without uploading the score, tuning settings, or generated audio.
 
-Playback is reduced to three controls:
+[![Tuning Compare screenshot](assets/screenshot-en.png)](tuning-compare.html)
 
-- **Play A**
-- **Play B**
-- **Stop**
+## Features
 
-The currently playing side is visibly selected and also shown by the A/B status indicator.
+- **Compare tuning A and B under the same conditions** — Play the same notes with the same timbre and level so pitch differences are easier to hear.
+- **12-tone equal temperament and 5-limit just intonation** — Select the reference pitch and, for just intonation, the tonic used by the built-in ratio table.
+- **Edit custom tunings directly** — Work in Hz, ratio, or cents and audition individual notes while adjusting them.
+- **See the difference numerically** — Inspect A/B frequency values and cents differences alongside the listening comparison.
+- **Use a four-measure score** — Enter notes, chords, rests, accidentals, 3/4 or 4/4 time, and whole/half/quarter/eighth durations.
+- **Edit the score without leaving the staff** — Drag notes to change pitch or timing, apply accidentals, delete events, and use Undo / Redo.
+- **Start with useful examples** — Load a major third, major triad, C major scale, or I–IV–V–I sample.
+- **Export audio locally** — Render A only, B only, or an A → B comparison as 16-bit mono WAV at 44.1 kHz or 48 kHz.
+- **Save the whole experiment** — Export and import project JSON containing the score, tunings, sound settings, and WAV settings.
+- **Local-first single HTML** — Japanese/English UI, local autosave, no runtime CDN, and no external runtime network dependency.
 
-Reference note, reference frequency, and just-intonation tonic remain selectable regardless of the current tuning type.
+## Quick start
 
-v0.9.0 also fixes listener registration that used the single-element `$` helper where the multi-element `$$` helper was required. That runtime error could stop initialization before A/B options and score playback were ready.
+No installation or account is required.
 
-### Simple score
+### Use the standalone HTML
 
-The score now has **four measures**.
+1. Download [tuning-compare.html](tuning-compare.html) from this repository.
+2. Open it directly in a current browser.
+3. Start with tuning A = equal temperament and tuning B = 5-limit just intonation, or change either side before playback.
 
-Input positions snap to the selected duration. In 4/4, the primary starts per measure are:
+The standalone file contains the application code, UI, translations, presets, and icon assets it needs at runtime.
 
-- whole: 1
-- half: 2
-- quarter: 4
-- eighth: 8
+### Build it yourself
 
-Also added or refined:
+1. Download or clone this repository.
+2. Run:
 
-- drag notes vertically to change pitch
-- drag horizontally to move event start
-- shared chord stems
-- smaller note-selection targets so nearby staff positions remain usable
-- no silent note → rest overwrite
-- no silent rest → note overwrite
-- playback cursor across all four measures
+```powershell
+pwsh -NoProfile -File .\build-standalone.ps1
+```
 
-## Main features
+3. Open the generated `dist/index.html` directly.
 
-- 12-tone equal temperament
-- 5-limit just intonation
-- Custom tuning in Hz / Ratio / Cents
-- A/B frequency and cents comparison
-- listening guidance
-- four-measure score editor
-- sample scores
-- score playback with tuning A or B
-- WAV export
-- project JSON
-- Undo / Redo
-- Japanese / English UI
-- local autosave
-- no runtime network dependency
-
-## Privacy
-
-Score data, tunings, comparison calculations, JSON, and WAV generation stay in the browser. User input and generated audio are not uploaded.
-
-## Development
-
-Edit `src/index.template.html`; do not hand-edit generated HTML.
+For the full repository validation, including CSP and standalone checks:
 
 ```powershell
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-powershell-syntax.ps1
 pwsh -NoProfile -File .\scripts\check-repository.ps1
 ```
 
-## Roadmap
+## Usage
 
-- v1.0.0: Formal Release
+### 1. Configure tuning A and B
+
+Each side can use:
+
+- 12-tone equal temperament
+- 5-limit just intonation
+- Custom tuning
+
+Reference note and reference frequency are stored per tuning. The just-intonation preset also uses a selectable tonic.
+
+### 2. Compare a note combination
+
+Choose a major third, perfect fifth, or major triad, then select the root note.
+
+Use **Play A** and **Play B** to hear the same notes with either tuning. The comparison table shows the frequency on each side and the difference in cents.
+
+### 3. Edit the score
+
+The score is intentionally limited to four measures so it stays focused on tuning comparison rather than full notation.
+
+Supported in v1.0.0:
+
+- Treble clef
+- Single notes and chords
+- Rests
+- Whole, half, quarter, and eighth durations
+- Flat, natural, and sharp accidentals
+- 4/4 and 3/4
+- 30–300 BPM
+- Drag editing
+- Undo / Redo
+
+On desktop, the score uses two measures per system. On smartphones, it wraps to one measure per system instead of forcing a long horizontal canvas.
+
+### 4. Inspect or edit a tuning
+
+The tuning table shows note frequencies and related values.
+
+Custom tuning can be edited as:
+
+- Hz
+- Ratio
+- Cents offset
+
+C4–B4 are stored directly for custom tuning. Other octaves are derived with a 2:1 octave relationship.
+
+### 5. Export WAV
+
+The score can be rendered locally as:
+
+- A only
+- B only
+- A → B comparison
+
+WAV output uses mono 16-bit PCM at 44.1 kHz or 48 kHz.
+
+The A and B sides use the same sound and gain conditions. The app does not normalize A and B independently.
+
+### 6. Save or restore a project
+
+Project JSON stores the editable project state, including the score and tuning settings. Audio data is not embedded in the JSON.
+
+The app also saves the current project state locally in the browser so it can be restored on the next visit unless site data has been cleared.
+
+## Smartphone UI
+
+The mobile layout is not a scaled-down desktop canvas.
+
+It uses bottom navigation for:
+
+- Compare
+- Score
+- Tuning
+- Sound
+
+The score wraps by measure, touch targets are enlarged where needed, and selected-note editing remains accessible above the bottom navigation.
+
+![Tuning Compare mobile screenshot](assets/screenshot-mobile.png)
+
+## Publish with GitHub Pages
+
+This repository includes a workflow that builds the standalone HTML and can deploy `dist` to GitHub Pages when Pages is enabled for the repository.
+
+1. Open **Settings → Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Push to `main`, or manually run **Deploy standalone app to GitHub Pages** from the Actions tab.
+4. The workflow rebuilds and validates the standalone HTML before deployment.
+
+If GitHub Pages is not enabled, the workflow still builds and validates the app, then skips the deployment step with setup instructions in the workflow summary.
+
+## Development and build layout
+
+```text
+.
+├─ src/index.template.html          # Application source template
+├─ app.config.json                  # App metadata and build configuration
+├─ assets/
+│  ├─ favicon.svg                   # Canonical app icon
+│  ├─ screenshot.png                # Japanese desktop screenshot
+│  ├─ screenshot-en.png             # English desktop screenshot
+│  └─ screenshot-mobile.png         # Japanese mobile screenshot
+├─ build-standalone.ps1             # Standalone HTML builder
+├─ scripts/check-repository.ps1     # Repository/build regression checks
+├─ scripts/verify-standalone.ps1    # Standalone/CSP/network verification
+├─ tuning-compare.html              # Generated readable standalone release
+├─ dist/index.html                  # Generated readable standalone build
+└─ .github/workflows/
+   ├─ build-standalone.yml          # Pull-request standalone validation
+   └─ deploy-pages.yml              # Optional GitHub Pages deployment
+```
+
+Edit `src/index.template.html`; do not hand-edit generated HTML.
+
+The build process:
+
+- Injects app metadata from `app.config.json`
+- Embeds the canonical favicon/app icon
+- Produces `dist/index.html`
+- Produces the self-extracting standalone variant configured by the repository
+- Copies the readable standalone build to `tuning-compare.html`
+- Verifies unresolved build placeholders are gone
+- Verifies the favicon and upper-left app icon use the same embedded SVG
+- Verifies the local-only Content Security Policy
+- Generates build/dependency manifests
+
+## Privacy and runtime network protection
+
+Tuning Compare is designed so score data, tuning values, project JSON, and generated WAV audio remain on the device.
+
+The standalone build is verified to have:
+
+- `connect-src 'none'` in the Content Security Policy
+- No external runtime script URL
+- No external runtime stylesheet URL
+- No runtime CDN dependency
+- No telemetry or remote API requirement for the app's core functions
+
+When the app is served from GitHub Pages or another static host, loading the page itself requires the normal initial HTML request. The tuning data and generated audio are still processed locally by the app.
+
+For a disconnected workflow, open the generated standalone HTML directly and follow [VERIFY_OFFLINE.md](VERIFY_OFFLINE.md).
+
+## Limitations
+
+- This is a tuning-comparison tool, not full notation software, a DAW, or a MIDI sequencer.
+- The score is fixed to four measures in v1.0.0.
+- Dotted notes, ties, tuplets, dynamics, and multiple parts are not implemented in v1.0.0.
+- MIDI keyboard input and MIDI file import are not implemented.
+- Custom tuning stores C4–B4 directly and derives other octaves at 2:1; independent per-octave tuning is not included.
+- The built-in just-intonation preset is specifically 5-limit just intonation relative to the selected tonic. It should not be interpreted as making every chord in every key perfectly just.
+- WAV export is mono 16-bit PCM. 24-bit WAV, FLAC, and other audio formats are not included.
+- Playback and audible range depend on the browser, device audio system, speakers/headphones, and listener.
+- Chrome and Edge are the primary targets. Safari and Firefox are supported where the required browser audio APIs behave compatibly.
+
+## Dependencies
+
+Tuning Compare has **no third-party runtime dependency** in `dependencies.json`.
+
+The application is implemented with browser-native HTML, CSS, JavaScript, SVG, and the Web Audio API. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for repository notices.
+
+## Contributing
+
+Bug reports and feature proposals are welcome through GitHub Issues. See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidance and the local-first contribution rules.
 
 ## License
 
-MIT
+Copyright © 2026 ttomohisa
+
+Licensed under the [MIT License](LICENSE).

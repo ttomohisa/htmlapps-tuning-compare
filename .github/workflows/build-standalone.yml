@@ -9,6 +9,7 @@ on:
       - "src/**"
       - "scripts/**"
       - "app.config.json"
+      - "assets/favicon.svg"
       - "dependencies.json"
       - "dependencies.lock.json"
       - "schemas/dependencies*.json"
