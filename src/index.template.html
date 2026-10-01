@@ -1332,6 +1332,7 @@
       title.textContent=options.title||fallback.title;
       message.textContent=options.message||'';
       cancelButton.textContent=options.cancelLabel||fallback.cancelLabel;
+      closeButton.setAttribute('aria-label',options.cancelLabel||fallback.cancelLabel);
       okButton.textContent=options.confirmLabel||fallback.confirmLabel;
       okButton.classList.toggle('danger',options.tone==='danger');
       okButton.classList.toggle('primary',options.tone!=='danger');
@@ -2058,6 +2059,7 @@
       status.classList.toggle('error', isError);
     }
     async function startABComparison(initialSide='a') {
+      stopScoreCursor();
       const frequencies=abFrequencies(initialSide);
       if(!frequencies.length||frequencies.some(value=>!engine.validFrequency(value))){
         setABStatus(t('invalidABFrequency'),true); return;
@@ -2456,6 +2458,7 @@
       scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor);
     }
     async function playScore(side){
+      setABActive(null); setABStatus('');
       if(!scoreState.events.some(event=>!event.rest&&event.notes.length)){ setScoreStatus(t('scoreEmpty'),true); return; }
       scoreState.tempo=Math.max(30,Math.min(300,Number($('#scoreTempo').value)||90)); $('#scoreTempo').value=String(scoreState.tempo);
       const sequence=scoreSequenceForSide(side);
@@ -2941,7 +2944,7 @@
       $('#audioStateValue').textContent = t('audioReady');
     }
     async function playSingle() {
-      setABActive(null);
+      stopScoreCursor(); setABActive(null);
       const frequency = parseFrequency($('#singleFrequency'));
       if (frequency == null) { setStatus(t('invalidFrequency'), true); $('#singleFrequency').focus(); return; }
       try {
@@ -2950,7 +2953,7 @@
       } catch (error) { console.error(error); setStatus(t('playbackFailed'), true); }
     }
     async function playChord() {
-      setABActive(null);
+      stopScoreCursor(); setABActive(null);
       const frequencies = [];
       const enabled = $$('.chord-enabled');
       $$('.chord-frequency').forEach((input, index) => { if (!enabled[index].checked) return; const frequency = parseFrequency(input); if (frequency != null) frequencies.push(frequency); });
