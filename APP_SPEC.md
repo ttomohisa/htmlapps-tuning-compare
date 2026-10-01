@@ -223,6 +223,22 @@ The comparison-target workspace is a sibling of the A/B tuning comparison worksp
 
 These controls remain one shared comparison target for both A and B. The entire comparison-target workspace is structurally and visually independent from the A/B tuning comparison workspace.
 
+### Score clear confirmation
+
+Clearing the whole score requires the template `AppConfirm` dialog.
+
+- empty score: no confirmation is shown
+- non-empty score: show title, explanation, Cancel, and destructive Clear action
+- after confirmation, the clear operation is still added to Undo history
+- the existing Toast + Undo remains available after clearing
+- native `window.confirm` is not used
+
+### Stable playback-button geometry
+
+Play A / Play B buttons reserve the playing-indicator dot area in both idle and active states.
+
+The indicator changes opacity rather than being inserted only during playback, so button width and neighboring controls must not shift when playback starts or stops.
+
 ## 16. Acceptance criteria
 
 - A/B reference-note and tonic dropdowns are populated and selectable
@@ -242,6 +258,9 @@ These controls remain one shared comparison target for both A and B. The entire 
 - note dragging changes pitch/time and is Undoable
 - rest input does not silently overwrite notes
 - score layout works on desktop and smartphone
+- clearing a non-empty score uses the AppConfirm dialog before deletion
+- clearing remains Undoable after confirmation
+- A/B and score playback buttons do not change width when the playing indicator appears
 - standalone build and repository validation pass
 
 ## 17. Remaining roadmap
