@@ -1,40 +1,58 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty app for comparing tunings, editing a short score, and saving the result as a WAV file.
+A Browser Kitty app for comparing tunings, editing a short score, exporting WAV audio, and saving the complete work as project JSON.
 
-**v0.6.0 is the WAV Export milestone.**
+**v0.7.0 is the Custom Tuning / Project Data milestone.**
 
-## v0.6.0 features
+## v0.7.0 features
 
-- Export the score with tuning A only
-- Export the score with tuning B only
-- Export one A → B comparison WAV
-- 0.6 seconds of silence between A and B
-- PCM 16-bit / Mono
-- 48 kHz / 44.1 kHz
-- Editable filename
-- Offline A/B rendering under identical audio settings
-- One shared peak-safety scale when needed
-- `OfflineAudioContext` instead of real-time recording
-- No external encoder, API, or WASM dependency
-- Final supplied SVG used for both favicon and header app icon
+### Custom tuning
 
-Existing features remain available:
+Custom tuning internally stores absolute C4–B4 frequencies in Hz.
 
-- Independent A/B equal, 5-limit just, or custom tuning
-- Synchronized A/B comparison
-- Two-measure simple score editor
-- Four-page mobile navigation
-- Rests, chords, flat / natural / sharp
-- Whole / half / quarter / eighth durations
-- 3/4 and 4/4, 30–300 BPM
+The editor can switch among:
+
+- **Hz** — direct absolute frequency
+- **Ratio** — values such as 5/4, 3/2, or 1.25 relative to a selected 1/1 reference note
+- **Cents** — offset from equal temperament calculated from the current reference pitch
+
+The ratio reference note is selectable from C4 through B4.
+
+Custom tunings can also be named.
+
+### Project JSON
+
+Export and restore the entire working state as JSON, including:
+
+- score
+- BPM / time signature
+- A / B tuning configuration
+- A / B custom frequency maps
+- detailed custom tuning
+- timbre, volume, attack, and release
+- WAV export settings
+- UI language
+
+Project files use `schemaVersion: 1`.
+
+Import asks before replacing the current project, stops playback, clears transient Undo/Redo history, and applies the imported project immediately without reloading the page.
+
+## Existing features
+
+- 12-tone equal temperament
+- 5-limit just intonation
+- synchronized A/B comparison
+- two-measure simple score editor
+- four-page mobile UI
 - Undo / Redo
+- A-only / B-only / A→B WAV export
+- mono 16-bit PCM at 48 kHz or 44.1 kHz
 - Japanese / English UI
-- Local persistence
+- local autosave
 
 ## Privacy
 
-Score data, frequencies, tuning settings, and WAV generation stay in the browser. Audio and user input are not uploaded.
+Score data, tunings, JSON, and WAV generation stay in the browser. User input and generated audio are not uploaded.
 
 ## Development
 
@@ -47,7 +65,6 @@ pwsh -NoProfile -File .\scripts\check-repository.ps1
 
 ## Roadmap
 
-- v0.7.0: Custom Tuning / Project Data
 - v0.8.0: UX / Learning Support
 - v0.9.0: Release Candidate
 - v1.0.0: Formal Release
