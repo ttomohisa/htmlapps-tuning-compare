@@ -32,16 +32,9 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install chromium
 
-      - name: Start local server and capture screenshots
+      - name: Capture standalone screenshots
         shell: pwsh
-        run: |
-          $server = Start-Process python -ArgumentList '-m','http.server','4173','--bind','127.0.0.1','--directory','dist' -PassThru
-          try {
-            Start-Sleep -Seconds 2
-            node ./scripts/capture-release-screenshots.mjs
-          } finally {
-            Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
-          }
+        run: node ./scripts/capture-release-screenshots.mjs
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v7
