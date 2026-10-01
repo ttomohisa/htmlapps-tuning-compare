@@ -2,6 +2,16 @@
 
 ## 0.9.0
 
+- Added duration-based overwrite for newly inserted notes: later events covered by the new note are removed in the same Undo operation.
+- Kept rest insertion out of the duration-based overwrite behavior.
+- Refined treble-clef size and placement to span the staff more like conventional engraving.
+- Removed the system-start barline immediately after the clef/time signature and kept measure-end barlines only.
+- Restored the eighth-rest music glyph and enlarged both quarter- and eighth-rest glyphs.
+- Corrected whole-rest and half-rest placement to standard staff-line positions.
+- Uses standard music-rest glyphs for both quarter and eighth rests at larger sizes.
+- Extended staff lines behind the treble clef and time signature and layered the symbols above the staff.
+- Removed the redundant score-header "4 measures / event count" badge.
+- Added click-to-apply accidental editing for existing notes using the selected flat / natural / sharp tool, with Undo support.
 - Added AppConfirm before clearing the whole score while keeping Toast + Undo after confirmation.
 - Reserved playback-indicator space in idle state so Play A / Play B button dimensions do not change during playback.
 - Promoted the comparison target to a sibling workspace at the same hierarchy as A/B tuning comparison, with its table, listening guidance, and playback controls grouped inside it.

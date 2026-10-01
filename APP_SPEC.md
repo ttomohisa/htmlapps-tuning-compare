@@ -239,6 +239,35 @@ Play A / Play B buttons reserve the playing-indicator dot area in both idle and 
 
 The indicator changes opacity rather than being inserted only during playback, so button width and neighboring controls must not shift when playback starts or stops.
 
+### Rest engraving and accidental click editing
+
+Score notation follows these additional rules:
+
+- whole rest hangs from the fourth staff line (second line from the top)
+- half rest sits on the middle staff line
+- quarter and eighth rests use standard music-rest glyphs, displayed larger than the previous v0.9.0 sizing
+- staff lines extend behind the treble clef and time signature so both symbols are visually part of the staff
+- staff lines are drawn before clef/time-signature glyphs so the symbols remain legible
+- no system-start barline is drawn immediately to the right of the clef/time signature; only measure-end barlines are drawn
+- the score header does not show the redundant "4 measures / event count" badge
+- clicking an existing note without dragging applies the currently selected accidental to that staff position
+- flat / natural / sharp click edits participate in Undo history
+- dragging still changes pitch/time and does not also apply the currently selected accidental on pointer release
+
+### Covered-note overwrite
+
+When a new note event is inserted, later score events whose start positions fall strictly inside the new note's duration are removed before the new note is added.
+
+Example in 4/4:
+
+- insert a whole note at beat 0
+- existing events starting at beats 1, 2, and 3 are removed
+- an event starting at beat 4 is outside the duration and remains
+
+The overwrite is part of the same Undo snapshot as the newly inserted note, so one Undo restores the previous score.
+
+This automatic overwrite applies to note insertion only. Rest insertion keeps the existing no-silent-overwrite behavior.
+
 ## 16. Acceptance criteria
 
 - A/B reference-note and tonic dropdowns are populated and selectable
@@ -261,6 +290,17 @@ The indicator changes opacity rather than being inserted only during playback, s
 - clearing a non-empty score uses the AppConfirm dialog before deletion
 - clearing remains Undoable after confirmation
 - A/B and score playback buttons do not change width when the playing indicator appears
+- whole and half rests render at standard staff positions
+- quarter and eighth rests use enlarged standard music-rest glyphs
+- treble clef and time signature appear on the staff rather than outside the staff lines
+- treble clef is enlarged/repositioned to span the staff in a conventional engraving-like placement
+- no redundant vertical barline appears immediately after the clef/time signature
+- redundant score-header measure/event-count badge is absent
+- clicking an existing note applies the selected flat/natural/sharp without dragging
+- quarter and eighth rest glyphs are visibly larger than the previous sizing
+- inserting a long note removes later events covered by its duration, while the event at the exact end boundary remains
+- one Undo restores both the inserted long note and the events it replaced
+- rest insertion does not use the covered-note overwrite behavior
 - standalone build and repository validation pass
 
 ## 17. Remaining roadmap
