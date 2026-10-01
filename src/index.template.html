@@ -655,11 +655,63 @@
       .score-transport .button { flex:1 1 120px; }
     }
 
+
+    :root { --app-mobile-bottom-bar-height:74px; --app-mobile-bottom-accent:var(--accent); --app-mobile-bottom-accent-soft:var(--accent-soft); --app-mobile-bottom-muted:var(--muted); --app-mobile-bottom-line:var(--line); }
+    .app-mobile-bottom-bar { display:none; }
+    .app-mobile-page { display:block; }
+    .grid.app-mobile-page { display:grid; }
+    .score-mobile-editor { display:none; }
+    .score-mobile-editor[hidden] { display:none !important; }
+    @media (max-width:600px) {
+      body.has-mobile-bottom-bar { padding-bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom)); }
+      body.has-mobile-page-tabs .app-mobile-page { display:none; }
+      body.has-mobile-page-tabs .app-mobile-page.is-mobile-active { display:block; }
+      .app-mobile-bottom-bar {
+        position:fixed; z-index:80; left:0; right:0; bottom:0; display:grid;
+        grid-template-columns:repeat(var(--app-mobile-bottom-items,4),minmax(0,1fr)); gap:4px;
+        padding:6px 10px calc(6px + env(safe-area-inset-bottom));
+        border-top:1px solid color-mix(in srgb,var(--app-mobile-bottom-line) 82%,transparent);
+        background:rgba(255,255,255,.94); box-shadow:0 -8px 24px rgba(20,22,20,.06); backdrop-filter:blur(18px) saturate(1.35);
+      }
+      .app-mobile-bottom-item {
+        min-width:0; min-height:54px; padding:5px 4px; border:0; border-radius:12px; background:transparent;
+        color:var(--app-mobile-bottom-muted); display:grid; place-items:center; align-content:center; gap:3px;
+        font:inherit; font-size:10px; font-weight:750; line-height:1.15; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+      }
+      .app-mobile-bottom-item svg { width:21px; height:21px; }
+      .app-mobile-bottom-item span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .app-mobile-bottom-item:hover,.app-mobile-bottom-item:focus-visible,.app-mobile-bottom-item.is-active,.app-mobile-bottom-item[aria-current="page"] { color:var(--app-mobile-bottom-accent); background:var(--app-mobile-bottom-accent-soft); }
+      .score-canvas-shell,.score-svg { min-height:345px; }
+      .score-toolbar { grid-template-columns:1fr; }
+      .score-segmented button { min-height:46px; }
+      .score-subtoolbar .button,.score-transport .button { min-height:46px; }
+      .score-editor-row { display:none; }
+      .score-workspace.has-mobile-selection { padding-bottom:96px; }
+      .score-mobile-editor {
+        position:fixed; z-index:75;
+        left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right));
+        bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 8px);
+        display:grid; grid-template-columns:minmax(0,1fr) minmax(98px,.72fr) auto; gap:8px; align-items:center;
+        padding:9px; border:1px solid var(--line); border-radius:14px;
+        background:rgba(255,255,255,.96); box-shadow:var(--shadow-md); backdrop-filter:blur(14px);
+      }
+      .score-mobile-selected { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:760; }
+      .score-mobile-duration select { width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:var(--surface); }
+      .score-mobile-editor .button { min-height:44px; padding:7px 10px; }
+      .score-empty-hint { align-items:start; padding-top:22px; }
+      .page-intro { padding-bottom:14px; }
+      footer { padding-bottom:12px; }
+    }
+    @media (max-width:380px) {
+      .score-mobile-editor { grid-template-columns:minmax(0,1fr) 92px auto; gap:6px; padding:7px; }
+      .score-mobile-editor .button { padding-inline:8px; }
+    }
+
     /* APP:END */
 
   </style>
 </head>
-<body>
+<body class="has-mobile-bottom-bar has-mobile-page-tabs">
   <header class="app-header">
       <div class="header-inner">
         <div class="brand">
@@ -667,7 +719,7 @@
             <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
           </div>
           <div class="brand-copy">
-            <p class="brand-name"><span id="brandName">音律聞き比べ</span><span class="version-badge" id="versionBadge">v0.4.0</span></p>
+            <p class="brand-name"><span id="brandName">音律聞き比べ</span><span class="version-badge" id="versionBadge">v0.5.0</span></p>
             <p class="brand-meta" data-i18n="brandMeta">音律をA/Bで聞き比べ</p>
           </div>
         </div>
@@ -694,7 +746,7 @@
       </div>
     </section>
 
-    <section class="workspace compare-workspace" aria-labelledby="compareTitle">
+    <section id="mobileComparePage" class="workspace compare-workspace app-mobile-page is-mobile-active" aria-labelledby="compareTitle">
       <div class="workspace-head">
         <div>
           <h2 id="compareTitle" data-i18n="compareTitle">A/B 音律比較</h2>
@@ -758,7 +810,7 @@
     </section>
 
 
-    <section class="workspace score-workspace" aria-labelledby="scoreTitle">
+    <section id="mobileScorePage" class="workspace score-workspace app-mobile-page" aria-labelledby="scoreTitle">
       <div class="workspace-head">
         <div>
           <h2 id="scoreTitle" data-i18n="scoreTitle">簡易譜面</h2>
@@ -816,6 +868,19 @@
         <div class="score-selection" id="scoreSelection" aria-live="polite"><span data-i18n="scoreNoSelection">音符を選択すると編集できます</span></div>
         <button type="button" class="button danger" id="scoreDelete" data-i18n="scoreDelete" disabled>選択を削除</button>
       </div>
+      <div class="score-mobile-editor" id="scoreMobileEditor" hidden>
+        <div class="score-mobile-selected" id="scoreMobileSelected"></div>
+        <label class="score-mobile-duration">
+          <span class="sr-only-app" data-i18n="scoreDuration">音価</span>
+          <select id="scoreMobileDuration" data-i18n-aria-label="scoreDuration" aria-label="音価">
+            <option value="4" data-i18n="scoreWhole">全音符</option>
+            <option value="2" data-i18n="scoreHalf">2分音符</option>
+            <option value="1" data-i18n="scoreQuarter">4分音符</option>
+            <option value="0.5" data-i18n="scoreEighth">8分音符</option>
+          </select>
+        </label>
+        <button type="button" class="button danger" id="scoreMobileDelete" data-i18n="scoreDelete">選択を削除</button>
+      </div>
       <div class="score-transport">
         <button type="button" class="button primary" id="scorePlayA" data-i18n="scorePlayA">Aで譜面を再生</button>
         <button type="button" class="button" id="scorePlayB" data-i18n="scorePlayB">Bで譜面を再生</button>
@@ -824,7 +889,7 @@
       <p class="score-status" id="scoreStatus" role="status" aria-live="polite"></p>
     </section>
 
-      <section class="card" aria-labelledby="tuningTitle">
+      <section id="mobileTuningPage" class="card app-mobile-page" aria-labelledby="tuningTitle">
         <h2 id="tuningTitle" data-i18n="tuningTitle">音律</h2>
         <p class="card-intro" data-i18n="tuningIntro">基準音と主音から各音の周波数を計算します。カスタムではHzを直接変更できます。</p>
         <div class="tuning-controls">
@@ -859,7 +924,7 @@
         </div>
       </section>
 
-      <div class="grid">
+      <div id="mobileSoundPage" class="grid app-mobile-page">
         <section class="card" aria-labelledby="auditionTitle">
           <h2 id="auditionTitle" data-i18n="auditionTitle">単音・和音を試聴</h2>
           <p class="card-intro" data-i18n="auditionIntro">数値を直接入力して鳴らします。音名は入力を助けるためのショートカットです。</p>
@@ -950,6 +1015,26 @@
     </main>
     <!-- APP:END -->
 
+
+  <nav class="app-mobile-bottom-bar" id="appMobileBottomBar" style="--app-mobile-bottom-items:4" data-i18n-aria-label="mobileNavLabel" aria-label="スマートフォン用ナビゲーション">
+    <button class="app-mobile-bottom-item is-active" type="button" data-mobile-key="compare" data-mobile-page-target="mobileComparePage" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h7M4 12h11M4 17h7"/><path d="m16 6 4 4-4 4"/></svg>
+      <span data-i18n="mobileCompare">比較</span>
+    </button>
+    <button class="app-mobile-bottom-item" type="button" data-mobile-key="score" data-mobile-page-target="mobileScorePage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14M5 9h14M5 12h14M5 15h14M5 18h14"/><circle cx="10" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M12 12V7"/></svg>
+      <span data-i18n="mobileScore">譜面</span>
+    </button>
+    <button class="app-mobile-bottom-item" type="button" data-mobile-key="tuning" data-mobile-page-target="mobileTuningPage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h8M16 17h4"/><circle cx="16" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="14" cy="17" r="2"/></svg>
+      <span data-i18n="mobileTuning">音律</span>
+    </button>
+    <button class="app-mobile-bottom-item" type="button" data-mobile-key="sound" data-mobile-page-target="mobileSoundPage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10v4h3l4 4V6L8 10z"/><path d="M16 9c1.2.8 1.8 1.8 1.8 3S17.2 14.2 16 15"/><path d="M18.5 6.5c2 1.5 3 3.3 3 5.5s-1 4-3 5.5"/></svg>
+      <span data-i18n="mobileSound">音</span>
+    </button>
+  </nav>
+
     <footer><span id="footerName">音律聞き比べ</span> · <span data-i18n="footer">ブラウザ内で音を生成</span></footer>
 
   <dialog id="helpDialog">
@@ -973,7 +1058,7 @@
       <ul>
         <li data-i18n="helpNoteVolume">突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。</li>
         <li data-i18n="helpNoteRange">20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。</li>
-        <li data-i18n="helpNoteMilestone">v0.4.0では簡易譜面の作成とA/B音律での再生に対応しています。スマホ操作の磨き込みとWAV出力は後続バージョンで追加します。</li>
+        <li data-i18n="helpNoteMilestone">v0.5.0ではスマホ用4ページナビ、2段譜面、選択中の固定編集バー、Undo導線まで対応しています。WAV出力は後続バージョンで追加します。</li>
         <li data-i18n="helpNoteStorage">ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。</li>
       </ul>
       <!-- APP:HELP:END -->
@@ -991,7 +1076,7 @@
     const BUILD_MANIFEST = __BUILD_MANIFEST_JSON__;
     const EMBEDDED_ASSETS = JSON.parse(document.getElementById('embedded-assets').textContent || '{}');
 
-    // Keep the template asset API available even though v0.4.0 has no dependencies.
+    // Keep the template asset API available even though v0.5.0 has no dependencies.
     const assetCache = new Map();
     const blobUrls = new Set();
     const decodeBase64 = value => {
@@ -1038,27 +1123,60 @@
     });
     window.addEventListener('pagehide', () => { blobUrls.forEach(url => URL.revokeObjectURL(url)); blobUrls.clear(); });
 
+
+    function mountMobileBottomBar(root) {
+      if (!(root instanceof HTMLElement)) return null;
+      const buttons=Array.from(root.querySelectorAll('.app-mobile-bottom-item'));
+      const pages=buttons.filter(button=>button.dataset.mobilePageTarget);
+      const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      function showPage(keyOrId,options={}) {
+        const button=pages.find(candidate=>candidate.dataset.mobileKey===keyOrId||candidate.dataset.mobilePageTarget===keyOrId);
+        if(!button) return false;
+        pages.forEach(candidate=>{
+          const page=document.getElementById(candidate.dataset.mobilePageTarget), active=candidate===button;
+          page?.classList.toggle('is-mobile-active',active); candidate.classList.toggle('is-active',active);
+          if(active) candidate.setAttribute('aria-current','page'); else candidate.removeAttribute('aria-current');
+        });
+        if(window.matchMedia('(max-width:600px)').matches&&options.scroll!==false){
+          const page=document.getElementById(button.dataset.mobilePageTarget);
+          const top=Math.max(0,(page?.getBoundingClientRect().top||0)+window.scrollY-78);
+          window.scrollTo({top:top,behavior:options.behavior||(reduceMotion?'auto':'smooth')});
+        }
+        if(button.dataset.mobileKey==='score') requestAnimationFrame(renderScore);
+        return true;
+      }
+      root.addEventListener('click',event=>{
+        const button=event.target.closest('.app-mobile-bottom-item');
+        if(!button||!root.contains(button)||button.disabled) return;
+        showPage(button.dataset.mobileKey||button.dataset.mobilePageTarget);
+      });
+      const initial=pages.find(button=>button.classList.contains('is-active'))||pages[0];
+      if(initial) showPage(initial.dataset.mobileKey||initial.dataset.mobilePageTarget,{scroll:false});
+      return Object.freeze({showPage});
+    }
+    window.AppMobileBottomBar=Object.freeze({mount:mountMobileBottomBar});
+
     const translations = {
       ja: {
-        brandMeta: '音律をA/Bで聞き比べ', introTitle: '同じ音を、異なる音律で聞き比べる', introLead: '平均律・純正律・カスタム音律を同じ音色、同じ音量条件で切り替えて比較できます。', localBadge: '完全ローカル処理', compareTitle: 'A/B 音律比較', compareIntro: 'AとBを独立して設定し、同じ音を同じ再生位置から切り替えて聞き比べます。', compareActive: '再生中', slotTuning: '音律', slotReferenceNote: '基準音', slotReferenceFrequency: '基準周波数', slotTonic: '純正律の主音', customFrequencies: 'カスタム周波数', customHint: 'C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。', comparePreset: '比較する音', compareRoot: '基準の音', presetMajorThird: '長三度', presetPerfectFifth: '完全五度', presetMajorTriad: '長三和音', compareNote: '音', compareA: 'A 周波数', compareB: 'B 周波数', compareDifference: 'B − A', playA: 'Aを再生', playB: 'Bを再生', switchAB: 'A/Bを切り替え', playSequence: 'A → Bで聞く', compareIdle: '—', comparePlaying: '{side}を再生しています。A/B切り替えで同じ再生位置のまま比較できます。', compareSwitched: '{side}へ切り替えました。', sequenceStarted: 'Aを再生し、約1.8秒後にBへ切り替えます。', invalidABFrequency: 'A/B音律の周波数設定を確認してください。', scoreTitle: '簡易譜面', scoreIntro: '五線譜をクリックまたはタップして音符を追加します。同じ位置に追加すると和音になります。', scoreLength: '2小節', scoreInputMode: '入力', scoreModeNote: '音符', scoreModeRest: '休符', scoreDuration: '音価', durationWhole: '全', durationHalf: '2分', durationQuarter: '4分', durationEighth: '8分', scoreAccidental: '臨時記号', scoreTempo: 'テンポ', scoreTimeSignature: '拍子', scoreUndo: '元に戻す', scoreRedo: 'やり直す', scoreClear: '譜面をクリア', scoreCanvasLabel: 'クリックまたはタップで入力する簡易五線譜', scoreEmptyHint: '五線譜をクリックすると音符を追加できます', scoreNoSelection: '音符を選択すると編集できます', scoreDelete: '選択を削除', scorePlayA: 'Aで譜面を再生', scorePlayB: 'Bで譜面を再生', scoreEmpty: '譜面に音符または休符を追加してください。', scorePlaying: '音律{side}で譜面を再生しています。', scoreStopped: '譜面の再生を停止しました。', scoreAdded: '{note}を追加しました。', scoreRestAdded: '休符を追加しました。', scoreDeleted: '選択した音を削除しました。', scoreCleared: '譜面をクリアしました。', scoreUndone: '元に戻しました。', scoreRedone: 'やり直しました。', scoreWhole: '全音符', scoreHalf: '2分音符', scoreQuarter: '4分音符', scoreEighth: '8分音符', milestone: 'Score Editor MVP · v0.4.0', title: '周波数をそのまま鳴らして確かめる',
+        brandMeta: '音律をA/Bで聞き比べ', introTitle: '同じ音を、異なる音律で聞き比べる', introLead: '平均律・純正律・カスタム音律を同じ音色、同じ音量条件で切り替えて比較できます。', localBadge: '完全ローカル処理', mobileNavLabel: 'スマートフォン用ナビゲーション', mobileCompare: '比較', mobileScore: '譜面', mobileTuning: '音律', mobileSound: '音', undoAction: '元に戻す', compareTitle: 'A/B 音律比較', compareIntro: 'AとBを独立して設定し、同じ音を同じ再生位置から切り替えて聞き比べます。', compareActive: '再生中', slotTuning: '音律', slotReferenceNote: '基準音', slotReferenceFrequency: '基準周波数', slotTonic: '純正律の主音', customFrequencies: 'カスタム周波数', customHint: 'C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。', comparePreset: '比較する音', compareRoot: '基準の音', presetMajorThird: '長三度', presetPerfectFifth: '完全五度', presetMajorTriad: '長三和音', compareNote: '音', compareA: 'A 周波数', compareB: 'B 周波数', compareDifference: 'B − A', playA: 'Aを再生', playB: 'Bを再生', switchAB: 'A/Bを切り替え', playSequence: 'A → Bで聞く', compareIdle: '—', comparePlaying: '{side}を再生しています。A/B切り替えで同じ再生位置のまま比較できます。', compareSwitched: '{side}へ切り替えました。', sequenceStarted: 'Aを再生し、約1.8秒後にBへ切り替えます。', invalidABFrequency: 'A/B音律の周波数設定を確認してください。', scoreTitle: '簡易譜面', scoreIntro: '五線譜をクリックまたはタップして音符を追加します。同じ位置に追加すると和音になります。', scoreLength: '2小節', scoreInputMode: '入力', scoreModeNote: '音符', scoreModeRest: '休符', scoreDuration: '音価', durationWhole: '全', durationHalf: '2分', durationQuarter: '4分', durationEighth: '8分', scoreAccidental: '臨時記号', scoreTempo: 'テンポ', scoreTimeSignature: '拍子', scoreUndo: '元に戻す', scoreRedo: 'やり直す', scoreClear: '譜面をクリア', scoreCanvasLabel: 'クリックまたはタップで入力する簡易五線譜', scoreEmptyHint: '五線譜をクリックすると音符を追加できます', scoreNoSelection: '音符を選択すると編集できます', scoreDelete: '選択を削除', scorePlayA: 'Aで譜面を再生', scorePlayB: 'Bで譜面を再生', scoreEmpty: '譜面に音符または休符を追加してください。', scorePlaying: '音律{side}で譜面を再生しています。', scoreStopped: '譜面の再生を停止しました。', scoreAdded: '{note}を追加しました。', scoreRestAdded: '休符を追加しました。', scoreDeleted: '選択した音を削除しました。', scoreCleared: '譜面をクリアしました。', scoreUndone: '元に戻しました。', scoreRedone: 'やり直しました。', scoreWhole: '全音符', scoreHalf: '2分音符', scoreQuarter: '4分音符', scoreEighth: '8分音符', milestone: 'Mobile / Score UX · v0.5.0', title: '周波数をそのまま鳴らして確かめる',
         lead: '12平均律、5-limit純正律、カスタム音律の実周波数を確認し、そのまま試聴できます。音律A/B比較と譜面は次の開発段階で追加します。',
         localNote: '入力した周波数と設定は外部へ送信されません',
         tuningTitle: '音律を詳しく確認', tuningIntro: '選んだ音律のC4〜C5を周波数・比率・centで確認し、1音ずつ試聴できます。', tuningType: '音律', tuningEqual: '12平均律', tuningJust: '純正律 5-limit', tuningCustom: 'カスタム', referenceNote: '基準音', referenceFrequency: '基準周波数', tonic: '純正律の主音', copyToCustom: '現在値をカスタムへコピー', note: '音', frequency: '周波数', ratio: '主音比', equalDifference: '平均律との差', audition: '試聴', equalDescription: '12平均律では、基準音から1半音ごとに同じ比率で周波数を計算します。', justDescription: '5-limit純正律では、選択した主音から定義済みの整数比で各音を計算します。すべての和音が常に純正になる方式ではありません。', customDescription: 'カスタムではC4〜B4のHzを直接編集します。ほかのオクターブは2:1で生成します。', play: '試聴', customCopied: '現在の周波数をカスタム音律へコピーしました。', derivedOctave: 'C5はC4の2倍として自動生成', invalidReference: '基準周波数は20〜20,000 Hzで指定してください。',
         auditionTitle: '単音・和音を試聴', auditionIntro: '数値を直接入力して鳴らします。音名は入力を助けるためのショートカットです。',
         singleFrequency: '単音の周波数', playSingle: '単音を試聴', frequencyHelp: '20〜20,000 Hz。327.5 Hzのような値も指定できます。', chordTitle: '和音の周波数', playChord: '和音を試聴', stopAll: 'すべて停止',
         soundTitle: '音の設定', soundIntro: '音程の比較を邪魔しない、控えめな倍音を使えます。', timbre: '音色', timbreSine: '正弦波', timbreSoft: 'やわらかい倍音', timbreRich: '豊かな倍音', volume: '音量', advanced: '詳細設定', attack: '立ち上がり', release: '余韻', audioState: '音声', activeVoices: '鳴っている音', audioWaiting: '未開始', audioReady: '準備完了', audioUnsupported: 'このブラウザでは音声を再生できません', footer: 'ブラウザ内で音を生成',
-        helpButtonLabel: '使い方', helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: 'AとBそれぞれの音律を設定します。平均律と純正律では基準音、純正律では主音も指定できます。', helpStep2: '長三度・完全五度・長三和音から比較対象を選び、AまたはBを再生します。「A/Bを切り替え」では同じ再生位置のまま音律だけを切り替えます。', helpStep3: '簡易譜面では五線譜をクリック/タップして音符を追加します。同じ開始位置に追加すると和音になり、休符・音価・BPM・3/4 / 4/4も変更できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。', helpNotesTitle: '注意事項', helpNoteVolume: '突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。', helpNoteRange: '20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。', helpNoteMilestone: 'v0.4.0では簡易譜面の作成とA/B音律での再生に対応しています。スマホ操作の磨き込みとWAV出力は後続バージョンで追加します。', helpNoteStorage: 'ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。',
+        helpButtonLabel: '使い方', helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: 'AとBそれぞれの音律を設定します。平均律と純正律では基準音、純正律では主音も指定できます。', helpStep2: '長三度・完全五度・長三和音から比較対象を選び、AまたはBを再生します。「A/Bを切り替え」では同じ再生位置のまま音律だけを切り替えます。', helpStep3: '簡易譜面では五線譜をクリック/タップして音符を追加します。同じ開始位置に追加すると和音になり、休符・音価・BPM・3/4 / 4/4も変更できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。', helpNotesTitle: '注意事項', helpNoteVolume: '突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。', helpNoteRange: '20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。', helpNoteMilestone: 'v0.5.0ではスマホ用4ページナビ、2段譜面、選択中の固定編集バー、Undo導線まで対応しています。WAV出力は後続バージョンで追加します。', helpNoteStorage: 'ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。',
         invalidFrequency: '20〜20,000 Hzの範囲で周波数を入力してください。', noChordNotes: '有効な周波数を1つ以上選んでください。', playbackFailed: '音を再生できませんでした。ブラウザの音声設定を確認して、もう一度お試しください。', playingSingle: '{frequency} Hzを試聴しています。', playingChord: '{count}音の和音を試聴しています。', stopped: '音を停止しました。', settingsSaved: '設定を端末内に保存しました。'
       },
       en: {
-        brandMeta: 'Compare tunings by ear', introTitle: 'Hear the same notes with different tunings', introLead: 'Switch between equal temperament, just intonation, and custom tunings with the same timbre and level.', localBadge: 'Fully local processing', compareTitle: 'A/B tuning comparison', compareIntro: 'Configure A and B independently, then switch tuning at the same playback position.', compareActive: 'Playing', slotTuning: 'Tuning', slotReferenceNote: 'Reference note', slotReferenceFrequency: 'Reference frequency', slotTonic: 'Just-intonation tonic', customFrequencies: 'Custom frequencies', customHint: 'Set C4–B4 directly in Hz. Other octaves are derived at 2:1.', comparePreset: 'Compare', compareRoot: 'Root note', presetMajorThird: 'Major third', presetPerfectFifth: 'Perfect fifth', presetMajorTriad: 'Major triad', compareNote: 'Note', compareA: 'A frequency', compareB: 'B frequency', compareDifference: 'B − A', playA: 'Play A', playB: 'Play B', switchAB: 'Switch A/B', playSequence: 'Play A → B', compareIdle: '—', comparePlaying: 'Playing {side}. Switch A/B to compare at the same playback position.', compareSwitched: 'Switched to {side}.', sequenceStarted: 'Playing A, then switching to B after about 1.8 seconds.', invalidABFrequency: 'Check the A/B tuning frequency settings.', scoreTitle: 'Simple score', scoreIntro: 'Click or tap the staff to add notes. Add another note at the same start position to build a chord.', scoreLength: '2 measures', scoreInputMode: 'Input', scoreModeNote: 'Note', scoreModeRest: 'Rest', scoreDuration: 'Duration', durationWhole: 'Whole', durationHalf: 'Half', durationQuarter: 'Quarter', durationEighth: 'Eighth', scoreAccidental: 'Accidental', scoreTempo: 'Tempo', scoreTimeSignature: 'Time signature', scoreUndo: 'Undo', scoreRedo: 'Redo', scoreClear: 'Clear score', scoreCanvasLabel: 'Simple staff editor; click or tap to enter notes', scoreEmptyHint: 'Click the staff to add a note', scoreNoSelection: 'Select a note to edit it', scoreDelete: 'Delete selection', scorePlayA: 'Play score with A', scorePlayB: 'Play score with B', scoreEmpty: 'Add at least one note or rest to the score.', scorePlaying: 'Playing the score with tuning {side}.', scoreStopped: 'Stopped score playback.', scoreAdded: 'Added {note}.', scoreRestAdded: 'Added a rest.', scoreDeleted: 'Deleted the selected event.', scoreCleared: 'Cleared the score.', scoreUndone: 'Undid the last edit.', scoreRedone: 'Redid the edit.', scoreWhole: 'Whole note', scoreHalf: 'Half note', scoreQuarter: 'Quarter note', scoreEighth: 'Eighth note', milestone: 'Score Editor MVP · v0.4.0', title: 'Play the exact frequency you want to hear',
+        brandMeta: 'Compare tunings by ear', introTitle: 'Hear the same notes with different tunings', introLead: 'Switch between equal temperament, just intonation, and custom tunings with the same timbre and level.', localBadge: 'Fully local processing', mobileNavLabel: 'Mobile navigation', mobileCompare: 'Compare', mobileScore: 'Score', mobileTuning: 'Tuning', mobileSound: 'Sound', undoAction: 'Undo', compareTitle: 'A/B tuning comparison', compareIntro: 'Configure A and B independently, then switch tuning at the same playback position.', compareActive: 'Playing', slotTuning: 'Tuning', slotReferenceNote: 'Reference note', slotReferenceFrequency: 'Reference frequency', slotTonic: 'Just-intonation tonic', customFrequencies: 'Custom frequencies', customHint: 'Set C4–B4 directly in Hz. Other octaves are derived at 2:1.', comparePreset: 'Compare', compareRoot: 'Root note', presetMajorThird: 'Major third', presetPerfectFifth: 'Perfect fifth', presetMajorTriad: 'Major triad', compareNote: 'Note', compareA: 'A frequency', compareB: 'B frequency', compareDifference: 'B − A', playA: 'Play A', playB: 'Play B', switchAB: 'Switch A/B', playSequence: 'Play A → B', compareIdle: '—', comparePlaying: 'Playing {side}. Switch A/B to compare at the same playback position.', compareSwitched: 'Switched to {side}.', sequenceStarted: 'Playing A, then switching to B after about 1.8 seconds.', invalidABFrequency: 'Check the A/B tuning frequency settings.', scoreTitle: 'Simple score', scoreIntro: 'Click or tap the staff to add notes. Add another note at the same start position to build a chord.', scoreLength: '2 measures', scoreInputMode: 'Input', scoreModeNote: 'Note', scoreModeRest: 'Rest', scoreDuration: 'Duration', durationWhole: 'Whole', durationHalf: 'Half', durationQuarter: 'Quarter', durationEighth: 'Eighth', scoreAccidental: 'Accidental', scoreTempo: 'Tempo', scoreTimeSignature: 'Time signature', scoreUndo: 'Undo', scoreRedo: 'Redo', scoreClear: 'Clear score', scoreCanvasLabel: 'Simple staff editor; click or tap to enter notes', scoreEmptyHint: 'Click the staff to add a note', scoreNoSelection: 'Select a note to edit it', scoreDelete: 'Delete selection', scorePlayA: 'Play score with A', scorePlayB: 'Play score with B', scoreEmpty: 'Add at least one note or rest to the score.', scorePlaying: 'Playing the score with tuning {side}.', scoreStopped: 'Stopped score playback.', scoreAdded: 'Added {note}.', scoreRestAdded: 'Added a rest.', scoreDeleted: 'Deleted the selected event.', scoreCleared: 'Cleared the score.', scoreUndone: 'Undid the last edit.', scoreRedone: 'Redid the edit.', scoreWhole: 'Whole note', scoreHalf: 'Half note', scoreQuarter: 'Quarter note', scoreEighth: 'Eighth note', milestone: 'Mobile / Score UX · v0.5.0', title: 'Play the exact frequency you want to hear',
         lead: 'Calculate and audition actual frequencies for 12-tone equal temperament, 5-limit just intonation, and a custom per-note tuning. A/B comparison and the score editor arrive in the next milestones.',
         localNote: 'Entered frequencies and settings are not sent outside this device',
         tuningTitle: 'Inspect a tuning', tuningIntro: 'Inspect C4–C5 by frequency, ratio, and cents, and audition each note individually.', tuningType: 'Tuning', tuningEqual: '12-tone equal temperament', tuningJust: 'Just intonation 5-limit', tuningCustom: 'Custom', referenceNote: 'Reference note', referenceFrequency: 'Reference frequency', tonic: 'Just-intonation tonic', copyToCustom: 'Copy current values to Custom', note: 'Note', frequency: 'Frequency', ratio: 'Tonic ratio', equalDifference: 'Difference from equal', audition: 'Audition', equalDescription: 'Equal temperament calculates every semitone with the same frequency ratio from the reference pitch.', justDescription: '5-limit just intonation uses defined integer ratios from the selected tonic. It does not make every chord perfectly just in every context.', customDescription: 'Custom mode edits C4–B4 directly in Hz. Other octaves are generated at a 2:1 ratio.', play: 'Play', customCopied: 'Copied the current frequencies into Custom tuning.', derivedOctave: 'C5 is generated automatically at twice C4', invalidReference: 'Set the reference frequency between 20 and 20,000 Hz.',
         auditionTitle: 'Audition notes and chords', auditionIntro: 'Enter exact numbers. Note-name shortcuts are only there to make common frequencies quicker to try.',
         singleFrequency: 'Single-note frequency', playSingle: 'Play note', frequencyHelp: '20–20,000 Hz. Values such as 327.5 Hz are supported.', chordTitle: 'Chord frequencies', playChord: 'Play chord', stopAll: 'Stop all',
         soundTitle: 'Sound settings', soundIntro: 'Use restrained harmonics that keep pitch differences easy to hear.', timbre: 'Timbre', timbreSine: 'Sine', timbreSoft: 'Soft harmonics', timbreRich: 'Rich harmonics', volume: 'Volume', advanced: 'Advanced settings', attack: 'Attack', release: 'Release', audioState: 'Audio', activeVoices: 'Active voices', audioWaiting: 'Not started', audioReady: 'Ready', audioUnsupported: 'Audio playback is not supported in this browser', footer: 'Audio generated in your browser',
-        helpButtonLabel: 'How to use', helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Configure tuning A and B independently. Equal and just modes use a reference pitch, and just intonation also uses a tonic.', helpStep2: 'Choose Major third, Perfect fifth, or Major triad, then play A or B. Switch A/B changes tuning without restarting the synchronized comparison.', helpStep3: 'In the simple score, click or tap the staff to add notes. Notes at the same start position form a chord; rests, duration, BPM, and 3/4 or 4/4 can also be changed.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Entered frequencies and settings are processed only in this browser and are not sent outside by the app. Audio is generated on the device.', helpNotesTitle: 'Notes', helpNoteVolume: 'Start with a modest device volume to avoid unexpectedly loud audio.', helpNoteRange: 'You can enter 20–20,000 Hz, but audible range and playback quality vary by device, speaker, and listener.', helpNoteMilestone: 'v0.4.0 adds simple score editing and playback with tuning A or B. Mobile score polish and WAV export arrive later.', helpNoteStorage: 'Clearing browser site data may remove settings stored on this device.',
+        helpButtonLabel: 'How to use', helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Configure tuning A and B independently. Equal and just modes use a reference pitch, and just intonation also uses a tonic.', helpStep2: 'Choose Major third, Perfect fifth, or Major triad, then play A or B. Switch A/B changes tuning without restarting the synchronized comparison.', helpStep3: 'In the simple score, click or tap the staff to add notes. Notes at the same start position form a chord; rests, duration, BPM, and 3/4 or 4/4 can also be changed.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Entered frequencies and settings are processed only in this browser and are not sent outside by the app. Audio is generated on the device.', helpNotesTitle: 'Notes', helpNoteVolume: 'Start with a modest device volume to avoid unexpectedly loud audio.', helpNoteRange: 'You can enter 20–20,000 Hz, but audible range and playback quality vary by device, speaker, and listener.', helpNoteMilestone: 'v0.5.0 adds mobile page navigation, wrapped score systems, a sticky selection editor, and Undo affordances. WAV export arrives later.', helpNoteStorage: 'Clearing browser site data may remove settings stored on this device.',
         invalidFrequency: 'Enter a frequency between 20 and 20,000 Hz.', noChordNotes: 'Enable at least one valid frequency.', playbackFailed: 'Could not play audio. Check the browser audio settings and try again.', playingSingle: 'Playing {frequency} Hz.', playingChord: 'Playing a {count}-note chord.', stopped: 'Stopped audio.', settingsSaved: 'Settings saved locally.'
       }
     };
@@ -1640,14 +1758,39 @@
       const letter=normalized.charAt(0), octaveMatch=normalized.match(/(-?\d+)$/), octave=octaveMatch?Number(octaveMatch[1]):4;
       const index=SCORE_NATURAL_NOTES.indexOf(letter+octave); return index>=0?index:0;
     }
-    function scoreYForStep(step){ return 142-step*6; }
-    function scoreXForBeat(beat){ return SCORE_VIEW.left+(Math.max(0,Math.min(scoreTotalBeats(),beat))/scoreTotalBeats())*(SCORE_VIEW.right-SCORE_VIEW.left); }
-    function scoreBeatFromX(x){
-      const ratio=(x-SCORE_VIEW.left)/(SCORE_VIEW.right-SCORE_VIEW.left);
-      const raw=Math.max(0,Math.min(scoreTotalBeats()-.5,ratio*scoreTotalBeats()));
-      return Math.round(raw*2)/2;
+
+    function scoreIsCompact(){ return window.matchMedia?.('(max-width:600px)').matches ?? false; }
+    function scoreLayout(){
+      if(scoreIsCompact()) return {width:480,height:360,left:70,right:452,systemTops:[58,218],compact:true,hitWidth:60};
+      return {width:960,height:230,left:92,right:930,systemTops:[76],compact:false,hitWidth:48};
     }
-    function scoreStepFromY(y){ return Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,Math.round((142-y)/6))); }
+    function scoreMeasureIndexForBeat(beat){ return Math.max(0,Math.min(1,Math.floor(Math.max(0,beat)/scoreBeatsPerMeasure()))); }
+    function scoreSystemTop(measure,layout=scoreLayout()){ return layout.compact?layout.systemTops[measure]:layout.systemTops[0]; }
+    function scoreYForStep(step,measure=0,layout=scoreLayout()){ return scoreSystemTop(measure,layout)+66-step*6; }
+    function scoreXForBeat(beat,layout=scoreLayout()){
+      if(layout.compact){
+        const measure=scoreMeasureIndexForBeat(beat), local=beat-measure*scoreBeatsPerMeasure();
+        return layout.left+(Math.max(0,Math.min(scoreBeatsPerMeasure(),local))/scoreBeatsPerMeasure())*(layout.right-layout.left);
+      }
+      return layout.left+(Math.max(0,Math.min(scoreTotalBeats(),beat))/scoreTotalBeats())*(layout.right-layout.left);
+    }
+    function scorePointToPosition(x,y){
+      const layout=scoreLayout(), beatsPerMeasure=scoreBeatsPerMeasure();
+      if(x<layout.left||x>layout.right) return null;
+      let measure=0, top=layout.systemTops[0];
+      if(layout.compact){
+        const candidates=layout.systemTops.map((systemTop,index)=>({index,top:systemTop,distance:Math.abs(y-(systemTop+30))})).sort((a,b)=>a.distance-b.distance);
+        measure=candidates[0].index; top=candidates[0].top;
+        if(y<top-28||y>top+100) return null;
+      } else if(y<48||y>160) return null;
+      const ratio=(x-layout.left)/(layout.right-layout.left);
+      const span=layout.compact?beatsPerMeasure:scoreTotalBeats();
+      const raw=Math.max(0,Math.min(span-.5,ratio*span));
+      const localBeat=Math.round(raw*2)/2;
+      const beat=layout.compact?measure*beatsPerMeasure+localBeat:localBeat;
+      const step=Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,Math.round((top+66-y)/6)));
+      return {beat,step,measure};
+    }
     function scoreSnapshot(){ return {events:scoreState.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))})),selectedId:scoreState.selectedId,nextId:scoreState.nextId,timeSignature:scoreState.timeSignature,tempo:scoreState.tempo}; }
     function restoreScoreSnapshot(snapshot){
       scoreState.events=snapshot.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))}));
@@ -1683,28 +1826,28 @@
       const node=document.createElementNS('http://www.w3.org/2000/svg',name);
       Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,String(value))); return node;
     }
-    function drawLedgerLines(svg,x,step){
-      const y=scoreYForStep(step), lineYs=[];
-      if(y>=140) lineYs.push(140);
-      if(y<=68) for(let ly=68;ly>=y;ly-=12) lineYs.push(ly);
+    function drawLedgerLines(svg,x,step,measure,layout){
+      const y=scoreYForStep(step,measure,layout), top=scoreSystemTop(measure,layout), lineYs=[];
+      if(y>=top+64) lineYs.push(top+64);
+      if(y<=top-8) for(let ly=top-8;ly>=y;ly-=12) lineYs.push(ly);
       lineYs.forEach(ly=>svg.append(scoreSvgElement('line',{x1:x-12,y1:ly,x2:x+12,y2:ly,class:'ledger'})));
     }
-    function renderRest(svg,event,x){
-      const y=104, path=scoreSvgElement('path',{class:'rest-mark'});
+    function renderRest(svg,event,x,measure,layout){
+      const y=scoreSystemTop(measure,layout)+28, path=scoreSvgElement('path',{class:'rest-mark'});
       if(event.duration>=4) path.setAttribute('d','M'+(x-8)+' '+(y-5)+'h16v5h-16z');
       else if(event.duration>=2) path.setAttribute('d','M'+(x-8)+' '+y+'h16v5h-16z');
       else if(event.duration>=1) path.setAttribute('d','M'+(x-3)+' '+(y-16)+'l7 8-7 7 7 7-7 11');
       else path.setAttribute('d','M'+(x-2)+' '+(y-12)+'c8 0 8 8 1 10l7 13');
       svg.append(path);
-      if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-15,y:y-22,width:30,height:44,rx:7,class:'selected-ring'}));
+      if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-18,y:y-25,width:36,height:50,rx:8,class:'selected-ring'}));
     }
-    function renderNote(svg,event,note,x,noteIndex){
-      const step=scoreStepForNatural(note.display), y=scoreYForStep(step), offset=(noteIndex-(event.notes.length-1)/2)*3, nx=x+offset;
-      drawLedgerLines(svg,nx,step);
+    function renderNote(svg,event,note,x,noteIndex,measure,layout){
+      const step=scoreStepForNatural(note.display), y=scoreYForStep(step,measure,layout), offset=(noteIndex-(event.notes.length-1)/2)*3, nx=x+offset;
+      drawLedgerLines(svg,nx,step,measure,layout);
       const head=scoreSvgElement('ellipse',{cx:nx,cy:y,rx:8.2,ry:5.6,class:'note-head'+(event.duration>=2?' open':'')});
       head.setAttribute('transform','rotate(-18 '+nx+' '+y+')'); svg.append(head);
       if(event.duration<4){
-        const stemUp=y>=104, stemX=stemUp?nx+7:nx-7, stemY2=stemUp?y-34:y+34;
+        const middle=scoreSystemTop(measure,layout)+28, stemUp=y>=middle, stemX=stemUp?nx+7:nx-7, stemY2=stemUp?y-34:y+34;
         svg.append(scoreSvgElement('line',{x1:stemX,y1:y,x2:stemX,y2:stemY2,class:'note-stem'}));
         if(event.duration<=.5){
           const d=stemUp?'M'+stemX+' '+stemY2+'c12 5 13 12 5 18':'M'+stemX+' '+stemY2+'c-12-5-13-12-5-18';
@@ -1712,30 +1855,60 @@
         }
       }
       if(note.accidental!=='natural'){ const acc=scoreSvgElement('text',{x:nx-20,y:y+5,class:'accidental'}); acc.textContent=note.accidental==='sharp'?'♯':'♭'; svg.append(acc); }
-      if(event.id===scoreState.selectedId&&noteIndex===0) svg.append(scoreSvgElement('ellipse',{cx:nx,cy:y,rx:13,ry:10,class:'selected-ring'}));
+      if(event.id===scoreState.selectedId&&noteIndex===0) svg.append(scoreSvgElement('ellipse',{cx:nx,cy:y,rx:14,ry:11,class:'selected-ring'}));
+    }
+
+    function drawScoreSystem(svg,measure,layout){
+      const top=scoreSystemTop(measure,layout), beatsPerMeasure=scoreBeatsPerMeasure();
+      const clef=scoreSvgElement('text',{x:layout.compact?18:38,y:top+49,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
+      const timeX=layout.compact?55:73;
+      if(!layout.compact||measure===0){
+        const topNum=scoreSvgElement('text',{x:timeX,y:top+23,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
+        const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
+      }
+      for(let i=0;i<5;i++){ const y=top+i*12; svg.append(scoreSvgElement('line',{x1:layout.left,y1:y,x2:layout.right,y2:y,class:'staff-line'})); }
+      if(layout.compact){
+        for(let local=0;local<=beatsPerMeasure;local+=.5){
+          const globalBeat=measure*beatsPerMeasure+local, x=scoreXForBeat(globalBeat,layout);
+          if(local===0||Math.abs(local-beatsPerMeasure)<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
+          else if(Math.abs(local-Math.round(local))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
+        }
+        const label=scoreSvgElement('text',{x:layout.left+5,y:top-15,class:'measure-number'}); label.textContent=String(measure+1); svg.append(label);
+        svg.append(scoreSvgElement('rect',{x:layout.left,y:top-28,width:layout.right-layout.left,height:100,class:'score-hitbox','data-score-input':'true'}));
+        return;
+      }
+      for(let beat=0;beat<=scoreTotalBeats();beat+=.5){
+        const x=scoreXForBeat(beat,layout);
+        if(Math.abs((beat/beatsPerMeasure)-Math.round(beat/beatsPerMeasure))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
+        else if(Math.abs(beat-Math.round(beat))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
+      }
+      [0,1].forEach(index=>{ const label=scoreSvgElement('text',{x:scoreXForBeat(index*beatsPerMeasure,layout)+5,y:top-15,class:'measure-number'}); label.textContent=String(index+1); svg.append(label); });
+      svg.append(scoreSvgElement('rect',{x:layout.left,y:top-28,width:layout.right-layout.left,height:100,class:'score-hitbox','data-score-input':'true'}));
+    }
+    function setScoreMobileEditor(selected){
+      const editor=$('#scoreMobileEditor'); if(!editor) return;
+      editor.hidden=!selected; $('#mobileScorePage')?.classList.toggle('has-mobile-selection',Boolean(selected)); if(!selected) return;
+      const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
+      $('#scoreMobileSelected').textContent=notes; $('#scoreMobileDuration').value=String(selected.duration);
     }
     function renderScore(){
-      const svg=$('#scoreSvg'); svg.replaceChildren();
-      const beats=scoreTotalBeats(), width=SCORE_VIEW.right-SCORE_VIEW.left, beatsPerMeasure=scoreBeatsPerMeasure();
-      const hitbox=scoreSvgElement('rect',{x:SCORE_VIEW.left,y:48,width:SCORE_VIEW.right-SCORE_VIEW.left,height:112,class:'score-hitbox','data-score-input':'true'}); svg.append(hitbox);
-      const clef=scoreSvgElement('text',{x:38,y:125,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
-      const topNum=scoreSvgElement('text',{x:73,y:99,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
-      const bottomNum=scoreSvgElement('text',{x:73,y:122,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
-      for(let i=0;i<5;i++){ const y=SCORE_VIEW.staffTop+i*SCORE_VIEW.staffGap; svg.append(scoreSvgElement('line',{x1:SCORE_VIEW.left,y1:y,x2:SCORE_VIEW.right,y2:y,class:'staff-line'})); }
-      for(let beat=0;beat<=beats;beat+=.5){
-        const x=scoreXForBeat(beat);
-        if(Math.abs((beat/beatsPerMeasure)-Math.round(beat/beatsPerMeasure))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:68,x2:x,y2:134,class:'bar-line'}));
-        else if(Math.abs(beat-Math.round(beat))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:68,x2:x,y2:134,class:'beat-guide'}));
-      }
-      [0,1].forEach(index=>{ const label=scoreSvgElement('text',{x:scoreXForBeat(index*beatsPerMeasure)+5,y:60,class:'measure-number'}); label.textContent=String(index+1); svg.append(label); });
+      const svg=$('#scoreSvg'), layout=scoreLayout(); svg.replaceChildren();
+      svg.setAttribute('viewBox','0 0 '+layout.width+' '+layout.height);
+      if(layout.compact){ drawScoreSystem(svg,0,layout); drawScoreSystem(svg,1,layout); } else drawScoreSystem(svg,0,layout);
+      const beatsPerMeasure=scoreBeatsPerMeasure();
       scoreState.events.forEach(event=>{
-        const x=scoreXForBeat(event.start)+(width/beats/4);
-        if(event.rest) renderRest(svg,event,x); else event.notes.forEach((note,index)=>renderNote(svg,event,note,x,index));
-        svg.append(scoreSvgElement('rect',{x:x-20,y:46,width:40,height:116,class:'score-event-hitbox','data-event-id':event.id}));
+        const measure=layout.compact?scoreMeasureIndexForBeat(event.start):0;
+        const cellSpan=(layout.right-layout.left)/(layout.compact?beatsPerMeasure:scoreTotalBeats());
+        const x=scoreXForBeat(event.start,layout)+cellSpan*.20;
+        if(event.rest) renderRest(svg,event,x,measure,layout); else event.notes.forEach((note,index)=>renderNote(svg,event,note,x,index,measure,layout));
+        const top=scoreSystemTop(measure,layout);
+        const eventYs=event.rest?[top+28]:event.notes.map(note=>scoreYForStep(scoreStepForNatural(note.display),measure,layout));
+        const minY=Math.min(...eventYs), maxY=Math.max(...eventYs), hitTop=Math.max(top-28,minY-24), hitBottom=Math.min(top+72,maxY+24);
+        svg.append(scoreSvgElement('rect',{x:x-layout.hitWidth/2,y:hitTop,width:layout.hitWidth,height:Math.max(46,hitBottom-hitTop),rx:8,class:'score-event-hitbox','data-event-id':event.id}));
       });
-      if(scoreState.playbackStartedAt!=null) svg.append(scoreSvgElement('line',{id:'scoreCursor',x1:SCORE_VIEW.left,y1:48,x2:SCORE_VIEW.left,y2:160,class:'cursor-line'}));
+      if(scoreState.playbackStartedAt!=null){ const cursor=scoreSvgElement('line',{id:'scoreCursor',class:'cursor-line'}); svg.append(cursor); setScoreCursorPosition(0); }
       $('#scoreEmptyHint').hidden=scoreState.events.length>0; $('#scoreEventCount').textContent=String(scoreState.events.length);
-      const selected=scoreSelectedEvent(); $('#scoreDelete').disabled=!selected;
+      const selected=scoreSelectedEvent(); $('#scoreDelete').disabled=!selected; setScoreMobileEditor(selected);
       if(selected){
         const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
         const sel=$('#scoreSelection'); sel.replaceChildren(); const strong=document.createElement('strong'); strong.textContent=notes; sel.append(strong,document.createTextNode(' · '+scoreDurationLabel(selected.duration)));
@@ -1749,33 +1922,45 @@
     function handleScorePointer(event){
       const target=event.target.closest?event.target.closest('[data-event-id]'):null;
       if(target){ scoreState.selectedId=Number(target.getAttribute('data-event-id')); renderScore(); return; }
-      const p=scorePointerToLocal(event); if(!p||p.x<SCORE_VIEW.left||p.x>SCORE_VIEW.right||p.y<48||p.y>160) return;
-      addScoreInput(scoreBeatFromX(p.x),scoreStepFromY(p.y));
+      const p=scorePointerToLocal(event), pos=p?scorePointToPosition(p.x,p.y):null;
+      if(!pos) return; addScoreInput(pos.beat,pos.step);
     }
     function deleteScoreSelection(){
       const index=scoreState.events.findIndex(event=>event.id===scoreState.selectedId); if(index<0) return;
       pushScoreHistory(); scoreState.events.splice(index,1); scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreDeleted'));
+      AppToast.show({message:t('scoreDeleted'),actionLabel:t('undoAction'),duration:5000,onAction:scoreUndo});
     }
-    function clearScore(){ if(!scoreState.events.length) return; pushScoreHistory(); scoreState.events=[]; scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreCleared')); }
+    function clearScore(){
+      if(!scoreState.events.length) return;
+      pushScoreHistory(); scoreState.events=[]; scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreCleared'));
+      AppToast.show({message:t('scoreCleared'),actionLabel:t('undoAction'),duration:5000,onAction:scoreUndo});
+    }
     function scoreUndo(){ if(!scoreState.undo.length) return; scoreState.redo.push(scoreSnapshot()); restoreScoreSnapshot(scoreState.undo.pop()); setScoreStatus(t('scoreUndone')); }
     function scoreRedo(){ if(!scoreState.redo.length) return; scoreState.undo.push(scoreSnapshot()); restoreScoreSnapshot(scoreState.redo.pop()); setScoreStatus(t('scoreRedone')); }
     function setScoreMode(mode){ scoreState.mode=mode==='rest'?'rest':'note'; $('#scoreModeNote').setAttribute('aria-pressed',String(scoreState.mode==='note')); $('#scoreModeRest').setAttribute('aria-pressed',String(scoreState.mode==='rest')); }
     function setScoreDuration(duration){
       const next=Number(duration), selected=scoreSelectedEvent();
       if(selected&&selected.duration!==next){ pushScoreHistory(); selected.duration=next; }
-      scoreState.duration=next; $('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
+      scoreState.duration=next; $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
+      if($('#scoreMobileDuration')) $('#scoreMobileDuration').value=String(scoreState.duration);
       if(selected){ renderScore(); scheduleSave(); }
     }
-    function setScoreAccidental(accidental){ scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural'; $('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental))); }
+    function setScoreAccidental(accidental){ scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural'; $$('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental))); }
     function scoreSequenceForSide(side){
       const secondsPerBeat=60/scoreState.tempo;
       return scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>({startSeconds:event.start*secondsPerBeat,durationSeconds:Math.max(.08,event.duration*secondsPerBeat),frequencies:event.rest?[]:event.notes.map(note=>abFrequency(side,note.note))}));
     }
     function stopScoreCursor(){ cancelAnimationFrame(scoreState.playbackFrame); scoreState.playbackFrame=0; scoreState.playbackStartedAt=null; scoreState.playbackDuration=0; renderScore(); }
+    function setScoreCursorPosition(globalBeat){
+      const cursor=$('#scoreCursor'); if(!cursor) return;
+      const layout=scoreLayout(), measure=layout.compact?scoreMeasureIndexForBeat(globalBeat):0, top=scoreSystemTop(measure,layout), x=scoreXForBeat(globalBeat,layout);
+      cursor.setAttribute('x1',String(x)); cursor.setAttribute('x2',String(x)); cursor.setAttribute('y1',String(top-28)); cursor.setAttribute('y2',String(top+70));
+    }
     function animateScoreCursor(){
       if(scoreState.playbackStartedAt==null||!engine.context) return;
-      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt, progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration))), cursor=$('#scoreCursor');
-      if(cursor){ const x=SCORE_VIEW.left+progress*(SCORE_VIEW.right-SCORE_VIEW.left); cursor.setAttribute('x1',String(x)); cursor.setAttribute('x2',String(x)); }
+      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt, secondsPerBeat=60/scoreState.tempo;
+      const globalBeat=Math.max(0,Math.min(scoreTotalBeats(),elapsed/secondsPerBeat)), progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration)));
+      setScoreCursorPosition(globalBeat);
       if(progress>=1){ stopScoreCursor(); return; } scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor);
     }
     async function playScore(side){
@@ -2090,6 +2275,8 @@
     $('#scoreRedo').addEventListener('click',scoreRedo);
     $('#scoreClear').addEventListener('click',clearScore);
     $('#scoreDelete').addEventListener('click',deleteScoreSelection);
+    $('#scoreMobileDelete').addEventListener('click',deleteScoreSelection);
+    $('#scoreMobileDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
     $('#scorePlayA').addEventListener('click',()=>playScore('a'));
     $('#scorePlayB').addEventListener('click',()=>playScore('b'));
     $('#scoreStop').addEventListener('click',stopScore);
@@ -2097,6 +2284,7 @@
     $('#masterVolume').addEventListener('input', () => { $('#volumeValue').textContent = `${$('#masterVolume').value}%`; engine.setMasterVolume(Number($('#masterVolume').value) / 100); scheduleSave(); });
     document.querySelectorAll('input,select').forEach(control => { if (control.id !== 'masterVolume') control.addEventListener('change', scheduleSave); });
     window.addEventListener('pagehide', () => engine.stopAll({ releaseMs: 10 }));
+    window.matchMedia?.('(max-width:600px)').addEventListener?.('change',()=>renderScore());
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && !helpDialog.open) stopAll();
       if ((event.key === 'Delete' || event.key === 'Backspace') && scoreState.selectedId != null && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)) { event.preventDefault(); deleteScoreSelection(); }
@@ -2107,6 +2295,7 @@
 
     initializeTuningControls();
     initializeABControls();
+    const mobileBottomBar = window.AppMobileBottomBar.mount($('#appMobileBottomBar'));
     restoreSettings();
     ensureCustomInitialized(false);
     ensureABCustom('a', false);
