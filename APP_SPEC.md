@@ -187,7 +187,17 @@ Sample replacement still confirms before replacing a non-empty score and remains
 - Undo / Redo
 - no runtime network dependency
 
-## 15. Acceptance criteria
+## 15. RC UX polish
+
+Additional v0.9.0 hands-on fixes:
+
+- score playback uses the same Play A / Play B / Stop labels and active-button state as the A/B comparison
+- sample-score replacement and project import use the template `AppConfirm` dialog; native `window.confirm` is not used
+- mobile bottom navigation scrolls the active page to just below the actual sticky-header height, with a small gap, so content from the previous page does not peek above the selected card
+- the Sound Settings card uses a stacked, roomier form layout with a separated Advanced Settings panel and playback-state block
+- on smartphone widths, the template confirmation dialog presents as the template bottom-sheet variant
+
+## 16. Acceptance criteria
 
 - A/B reference-note and tonic dropdowns are populated and selectable
 - only Play A / Play B / Stop remain in A/B playback
@@ -204,6 +214,6 @@ Sample replacement still confirms before replacing a non-empty score and remains
 - score layout works on desktop and smartphone
 - standalone build and repository validation pass
 
-## 16. Remaining roadmap
+## 17. Remaining roadmap
 
 - v1.0.0: Formal Release
