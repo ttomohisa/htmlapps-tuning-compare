@@ -2924,8 +2924,8 @@
     $('#scoreSvg').addEventListener('pointercancel',finishScoreDrag);
     $('#scoreModeNote').addEventListener('click',()=>setScoreMode('note'));
     $('#scoreModeRest').addEventListener('click',()=>setScoreMode('rest'));
-    $('#scoreDurationGroup [data-duration]').forEach(button=>button.addEventListener('click',()=>setScoreDuration(button.dataset.duration)));
-    $('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.addEventListener('click',()=>setScoreAccidental(button.dataset.accidental)));
+    $$('[data-duration]').filter(button=>button.closest('#scoreDurationGroup')).forEach(button=>button.addEventListener('click',()=>setScoreDuration(button.dataset.duration)));
+    $$('[data-accidental]').filter(button=>button.closest('#scoreAccidentalGroup')).forEach(button=>button.addEventListener('click',()=>setScoreAccidental(button.dataset.accidental)));
     $('#scoreTempo').addEventListener('change',()=>{ const value=Math.max(30,Math.min(300,Number($('#scoreTempo').value)||90)); scoreState.tempo=value; $('#scoreTempo').value=String(value); scheduleSave(); });
     $('#scoreTimeSignature').addEventListener('change',()=>{ pushScoreHistory(); scoreState.timeSignature=$('#scoreTimeSignature').value==='3/4'?'3/4':'4/4'; const maxStart=scoreTotalBeats()-.5; scoreState.events=scoreState.events.filter(event=>event.start<=maxStart); scoreState.selectedId=null; renderScore(); scheduleSave(); });
     $('#scoreUndo').addEventListener('click',scoreUndo);
