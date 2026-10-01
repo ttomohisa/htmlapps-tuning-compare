@@ -1,54 +1,66 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty app for comparing tunings by ear with measurable A/B differences, short sample scores, custom tuning tools, WAV export, and project files.
+A Browser Kitty app for comparing tunings with A/B playback, a short score editor, WAV export, and project JSON — all processed locally in the browser.
 
-**v0.8.0 is the UX / Learning Support milestone.**
+**v0.9.0 is the Release Candidate milestone.**
 
-## v0.8.0 additions
+## v0.9.0 changes
 
-### What to listen for
+### A/B tuning comparison
 
-For the current A/B comparison, the app identifies:
+Playback is reduced to three controls:
 
-- largest cents difference
-- the note where it occurs
-- whether B is higher or lower than A
-- largest absolute Hz difference
+- **Play A**
+- **Play B**
+- **Stop**
 
-This is descriptive rather than evaluative. It reports the current tuning settings instead of claiming one tuning is universally better.
+The currently playing side is visibly selected and also shown by the A/B status indicator.
 
-Short listening prompts change for Major third, Perfect fifth, and Major triad.
+Reference note, reference frequency, and just-intonation tonic remain selectable regardless of the current tuning type.
 
-### Sample scores
+v0.9.0 also fixes listener registration that used the single-element `$` helper where the multi-element `$$` helper was required. That runtime error could stop initialization before A/B options and score playback were ready.
 
-Four embedded examples are available:
+### Simple score
 
-- **Major third** — sustained C4 + E4
-- **Major triad** — sustained C4 + E4 + G4
-- **C major scale** — quarter notes from C4 through C5
-- **I–IV–V–I** — C / F / G / C chord progression
+The score now has **four measures**.
 
-If a score already contains events, the app confirms before replacing it.
+Input positions snap to the selected duration. In 4/4, the primary starts per measure are:
 
-Loading a sample is undoable.
+- whole: 1
+- half: 2
+- quarter: 4
+- eighth: 8
 
-## Existing features
+Also added or refined:
+
+- drag notes vertically to change pitch
+- drag horizontally to move event start
+- shared chord stems
+- smaller note-selection targets so nearby staff positions remain usable
+- no silent note → rest overwrite
+- no silent rest → note overwrite
+- playback cursor across all four measures
+
+## Main features
 
 - 12-tone equal temperament
 - 5-limit just intonation
 - Custom tuning in Hz / Ratio / Cents
-- synchronized A/B comparison
-- two-measure score editor
-- four-page mobile UI
-- Undo / Redo
-- A-only / B-only / A→B WAV export
+- A/B frequency and cents comparison
+- listening guidance
+- four-measure score editor
+- sample scores
+- score playback with tuning A or B
+- WAV export
 - project JSON
+- Undo / Redo
 - Japanese / English UI
 - local autosave
+- no runtime network dependency
 
 ## Privacy
 
-Score data, tunings, comparison calculations, project JSON, and WAV generation stay in the browser. User input and generated audio are not uploaded.
+Score data, tunings, comparison calculations, JSON, and WAV generation stay in the browser. User input and generated audio are not uploaded.
 
 ## Development
 
@@ -61,7 +73,6 @@ pwsh -NoProfile -File .\scripts\check-repository.ps1
 
 ## Roadmap
 
-- v0.9.0: Release Candidate
 - v1.0.0: Formal Release
 
 ## License

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.0
+
+- Fixed runtime initialization failures caused by using the single-element ` helper for multi-element score listeners.
+- Kept A/B reference note, reference frequency, and just-intonation tonic selectors available and correctly initialized.
+- Simplified A/B playback to Play A, Play B, and Stop, with a visible active-side state.
+- Expanded the score from two to four measures.
+- Added duration-aware horizontal snapping so quarter/eighth input follows the selected rhythmic value.
+- Reworked note hit targets so nearby staff positions remain available for input.
+- Reworked chord notation to use a shared stem and adjacent-note head offsets.
+- Added note drag editing: vertical pitch movement and horizontal event movement with Undo support.
+- Prevented rests from silently overwriting notes and notes from silently overwriting rests.
+- Updated four built-in samples and playback cursor behavior for the four-measure score.
+
 ## 0.8.0
 
 - Added a dynamic “What to listen for” panel to the A/B comparison.

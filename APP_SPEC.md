@@ -3,192 +3,207 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 0.8.0
-- **Current milestone:** UX / Learning Support
-- **Purpose:** Help users understand where two tunings differ and provide short score examples that make those differences easier to explore by ear.
+- **Version:** 0.9.0
+- **Current milestone:** Release Candidate
+- **Purpose:** Compare tuning A and B by ear and by frequency/cents, edit a short score, export WAV audio, and save the full project locally.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
-## 2. Existing application contract
+## 2. Template contract
 
-v0.8.0 preserves:
+The app continues to follow the current `htmlapps-template` shell:
 
-- current `htmlapps-template` shell and responsive patterns
-- A/B tuning comparison
-- equal temperament / 5-limit just intonation / custom tuning
-- two-measure score editor
-- mobile four-page navigation
-- WAV export
-- project JSON
-- local autosave
-- favicon/app icon pipeline
-- `connect-src 'none'`
-- single-HTML build
+- template header and version badge
+- APP / HELP markers
+- canonical favicon/app-icon pipeline
+- dialogs and Toast pattern
+- mobile bottom navigation
+- local-only CSP and single-HTML build
 
 No third-party runtime dependency is added.
 
-## 3. Learning support goal
+## 3. Release-candidate fixes
 
-The learning UI must explain the current A/B configuration, not replace it with generic theory.
+v0.9.0 addresses the interaction problems found during hands-on testing of v0.8.0.
 
-The app does not state that one tuning is universally better. It shows measurable differences and gives listening prompts.
+### Runtime initialization
 
-## 4. A/B listening insight
+All multi-element listeners must use the app's `$$` helper rather than calling array methods on the single-element `$` helper.
 
-The Compare page includes a “What to listen for” panel.
+Initialization must reach:
 
-For the currently selected comparison notes, calculate:
+- tuning-control option population
+- A/B reference note / tonic option population
+- saved-state restore
+- score playback event binding
+- final render
 
-- frequency for tuning A
-- frequency for tuning B
-- cents difference, B relative to A
-- absolute Hz difference
+A JavaScript listener-registration error must not stop the remainder of app initialization.
 
-From those rows display:
+## 4. A/B tuning controls
 
-- the note with the largest absolute cents difference
-- the signed cents difference for that note
-- the note with the largest absolute Hz difference
-- the absolute Hz difference
+Each A/B slot keeps independently editable:
 
-When the largest absolute cents difference is below 0.05 cents, explain that A and B are nearly identical for the current comparison notes.
+- tuning type
+- reference note
+- reference frequency
+- just-intonation tonic
+- custom frequencies
 
-## 5. Direction wording
+Reference note, reference frequency, and tonic remain selectable even when the current tuning type does not use all of them. This lets users prepare the next tuning setting before switching type.
 
-For the note with the largest cents difference:
+## 5. A/B playback
 
-- positive cents: B is higher than A
-- negative cents: B is lower than A
+The Compare page has only:
 
-The wording is descriptive only and must not describe one tuning as better.
+- **Play A**
+- **Play B**
+- **Stop**
 
-## 6. Contextual listening tips
+The previous Switch A/B and automatic A → B controls are removed.
 
-Use one short tip based on the current A/B preset:
+While A is playing:
 
-- **Major third:** listen to how the upper note moves when switching A/B
-- **Perfect fifth:** keep the root as reference and listen to the upper note position
-- **Major triad:** listen to both individual pitch movement and the chord as a whole
+- Play A has the active visual state
+- the existing “playing” indicator displays A
 
-Tips update whenever the preset, root, or A/B tuning settings change.
+While B is playing the same applies to B.
 
-## 7. Sample scores
+Stop and natural playback completion clear the active state.
 
-The Score page provides four built-in examples:
+## 6. Score length
 
-### Major third
+The score is fixed at **four measures** in v0.9.0.
 
-- C4 + E4
-- whole-note chord in each measure
-- 4/4
-- 64 BPM
+- 4/4 → 16 total beats
+- 3/4 → 12 total beats
 
-### Major triad
+Desktop displays two measures per system.
 
-- C4 + E4 + G4
-- whole-note chord in each measure
-- 4/4
-- 64 BPM
+Smartphone displays one measure per system.
 
-### C major scale
+No page-level horizontal scrolling is required.
 
-- C4 D4 E4 F4 | G4 A4 B4 C5
-- quarter notes
-- 4/4
-- 92 BPM
+## 7. Duration-aware horizontal input
 
-### I–IV–V–I
+Horizontal note/rest positions are snapped using the selected duration.
 
-- C major: C4 E4 G4
-- F major: C4 F4 A4
-- G major: G4 B4 D5
-- C major: C4 E4 G4
-- half-note chords
-- 4/4
-- 72 BPM
+In 4/4:
 
-Sample scores do not change tuning A or tuning B.
+- whole note → 1 valid start per measure
+- half note → 2 primary starts
+- quarter note → 4 starts
+- eighth note → 8 starts
 
-## 8. Sample replacement safety
+The same rule is applied when dragging an event horizontally.
 
-Sample scores must never silently overwrite an existing score.
+An entered duration is constrained to start inside its current measure rather than silently creating the previous “eight quarter-note positions” behavior.
 
-If the score contains events:
+## 8. Nearby pitch input
 
-1. ask for confirmation
-2. only replace the score after confirmation
+Existing score events must not reserve a tall transparent selection rectangle spanning the chord.
 
-Loading a sample:
+Selection/drag targets are attached to:
 
-- pushes the previous score into Undo history
-- resets score selection
-- applies sample BPM / time signature
-- can be reversed through Toast + Undo
+- the visible note head
+- a narrow target centered on the note head
+- a compact target around a rest
 
-If the score is empty, the sample can load directly.
+This keeps adjacent staff positions available for adding nearby pitches.
 
-## 9. Mobile behavior
+## 9. Chord notation
 
-The learning panel remains on the Compare mobile page.
+A chord is one score event with multiple notes.
 
-Sample score controls remain on the Score mobile page.
+Chord rendering uses:
 
-At phone widths:
+- one note head per pitch
+- horizontal note-head offset for adjacent seconds
+- one shared stem per chord
+- one shared eighth-note flag when needed
+- one selection outline around the chord
 
-- learning metrics may stack or use a compact two-column layout
-- sample buttons remain at least the existing mobile touch-target height
-- neither feature may introduce page-level horizontal scrolling
-- fixed score selection UI and bottom navigation must remain unobstructed
+The previous “one stem per note” appearance is removed.
 
-## 10. Language and accessibility
+## 10. Drag editing
 
-All new learning and sample-score text is available in Japanese and English.
+A visible note can be dragged.
 
-The metrics use text plus numbers rather than color alone.
+- vertical drag changes that note's pitch
+- horizontal drag moves the whole event start position
+- horizontal movement uses duration-aware snapping
+- movement into an occupied start position does not merge or overwrite the other event
+- accidental type is preserved when the dragged note changes staff position
+- the move is one Undo operation
 
-Sample controls use normal buttons with visible labels.
+No long-press is required.
 
-Dynamic listening insight updates are part of the existing rendered comparison UI and remain readable without relying on hover.
+## 11. Rest behavior
 
-## 11. Existing project / WAV behavior
+Rest input must not silently overwrite notes.
 
-Sample score data becomes normal score data after loading.
+- note already at target → keep the note, select it, and show a message
+- rest already at target → allow duration update
+- empty target → create rest
 
-Therefore it automatically participates in:
+Likewise, note input must not silently replace a rest. The rest must be deleted first.
 
+## 12. Score playback
+
+Score playback remains available for tuning A and tuning B.
+
+The runtime-initialization fix must ensure the playback buttons are actually bound.
+
+Before playback:
+
+- at least one audible score event must exist
+- resolved frequencies must be valid
+
+Playback uses the Web Audio timeline and the current timbre / volume / attack / release settings.
+
+The playback cursor follows all four measures and moves between systems correctly.
+
+## 13. Sample scores
+
+The built-in samples now use the four-measure score:
+
+- Major third: sustained C4 + E4 across four measures
+- Major triad: sustained C4 + E4 + G4 across four measures
+- C major scale: ascending two measures and descending two measures
+- I–IV–V–I: one whole-measure chord per measure
+
+Sample replacement still confirms before replacing a non-empty score and remains Undoable.
+
+## 14. Existing features retained
+
+- 12-tone equal temperament
+- 5-limit just intonation
+- custom tuning in Hz / ratio / cents
+- A/B numeric comparison and listening guidance
+- Japanese / English
 - local autosave
 - project JSON export/import
-- A/B score playback
 - WAV export
+- four-page smartphone navigation
 - Undo / Redo
+- no runtime network dependency
 
-No separate sample-specific file format is introduced.
+## 15. Acceptance criteria
 
-## 12. Privacy and network
-
-- all calculations remain in the browser
-- sample scores are embedded static data
-- no external content is fetched
-- no analytics/telemetry is introduced
-- `connect-src 'none'` remains required
-
-## 13. Acceptance criteria
-
-- Compare page displays largest cents and Hz differences
-- listening summary updates when A/B settings change
-- direction text correctly distinguishes B higher/lower than A
-- near-identical comparison displays an appropriate message
-- contextual tips change for major third / fifth / triad
-- four sample score buttons are available
-- sample load does not alter A/B tunings
-- non-empty score requires confirmation before sample replacement
-- loaded sample can be undone
-- loaded sample can be played as A and B
-- loaded sample can be exported as WAV
-- loaded sample survives autosave and project JSON export
-- Japanese and English text both render
+- A/B reference-note and tonic dropdowns are populated and selectable
+- only Play A / Play B / Stop remain in A/B playback
+- playing side is visually identifiable
+- initialization reaches the final app render without listener-registration exceptions
+- quarter-note input in 4/4 exposes four starts per measure
+- eighth-note input in 4/4 exposes eight starts per measure
+- adjacent staff positions remain clickable next to existing notes
+- chords use a shared stem
+- score playback works for A and B
+- score has four measures
+- note dragging changes pitch/time and is Undoable
+- rest input does not silently overwrite notes
+- score layout works on desktop and smartphone
 - standalone build and repository validation pass
 
-## 14. Remaining roadmap
+## 16. Remaining roadmap
 
-- v0.9.0: Release Candidate
 - v1.0.0: Formal Release

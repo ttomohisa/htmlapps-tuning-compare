@@ -3,9 +3,9 @@
   "name": "Tuning Compare",
   "nameJa": "音律聞き比べ",
   "slug": "tuning-compare",
-  "version": "0.8.0",
-  "description": "Compare tunings with guided A/B metrics, load sample scores for listening practice, edit custom tunings, save projects, and export WAV audio.",
-  "descriptionJa": "音律をA/B比較し、差の大きい音を数値で確認しながら、サンプル譜面・カスタム音律・プロジェクト保存・WAV出力を利用できます。",
+  "version": "0.9.0",
+  "description": "Release candidate for comparing tunings with simplified A/B playback, a four-measure draggable score editor, custom tuning, project JSON, and WAV export.",
+  "descriptionJa": "A/B再生を整理し、4小節・音価スナップ・ドラッグ移動に対応した簡易譜面、カスタム音律、JSON保存、WAV出力を備えたリリース候補です。",
   "defaultLanguage": "auto",
   "repository": {
     "owner": "ttomohisa",
