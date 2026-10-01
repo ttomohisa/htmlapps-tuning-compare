@@ -2,7 +2,7 @@
 
 [![Validate standalone HTML](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](tuning-compare.html)
+[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
 [![Version](https://img.shields.io/badge/version-v1.0.0-16624F)](CHANGELOG.md)
 
 [English README](README.md)
@@ -13,7 +13,13 @@
 
 譜面、音律設定、生成した音声をアプリから外部サーバーへ送信せず、ブラウザ内で処理します。
 
-[![音律聞き比べの画面](assets/screenshot.png)](tuning-compare.html)
+## 🚀 デモ
+
+### [GitHub Pagesで音律聞き比べを開く](https://ttomohisa.github.io/htmlapps-tuning-compare/)
+
+GitHub Pagesから最初のHTMLを読み込んだ後、音律計算、譜面編集、再生、WAV生成、プロジェクトJSONはブラウザ内で処理します。譜面や音律設定、生成した音声をアプリから外部へ送信しません。
+
+[![音律聞き比べの画面](assets/screenshot.png)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
 
 ## 主な機能
 
@@ -21,8 +27,8 @@
 - **12平均律と5-limit純正律** — 基準音・基準周波数を指定し、純正律ではプリセットの比率を使う主音も選べます。
 - **カスタム音律を直接編集** — Hz・比率・cent差で値を変更し、1音ずつ試聴しながら調整できます。
 - **数値でも違いを確認** — A/Bそれぞれの周波数とcent差を、聞き比べと一緒に確認できます。
-- **4小節の簡易譜面** — 単音・和音・休符・臨時記号、3/4・4/4、全音符・2分音符・4分音符・8分音符に対応します。
-- **五線譜上で編集** — 音符のドラッグ移動、臨時記号の変更、削除、Undo / Redoを利用できます。
+- **4小節の簡易譜面** — 単音・和音・休符・臨時記号、3/4・4/4、全音符・2分音符・4分音符・8分音符・16分音符に対応します。
+- **五線譜上で編集** — 和音は長押しで複製、左右ドラッグでは構成音の高さを保ったまま移動できます。休符も左右移動でき、選択中の和音では縦のガイドから狙った高さへ音を追加できます。
 - **比較しやすいサンプル** — 長三度、長三和音、Cメジャースケール、I–IV–V–Iを読み込めます。
 - **WAVを端末内で生成** — Aのみ、Bのみ、A → B比較を44.1 kHz / 48 kHz・16-bit mono WAVで保存できます。
 - **実験条件をJSONで保存** — 譜面、音律、音色、WAV設定などをプロジェクトJSONとして書き出し・読み込みできます。
@@ -31,6 +37,10 @@
 ## すぐに使う
 
 インストールやアカウント登録は不要です。
+
+### Webで使う
+
+[GitHub Pages版を開く](https://ttomohisa.github.io/htmlapps-tuning-compare/)だけで利用できます。
 
 ### 単一HTMLをダウンロードして使う
 
@@ -85,11 +95,15 @@ v1.0.0で扱えるもの：
 - ト音記号
 - 単音・和音
 - 休符
-- 全音符・2分音符・4分音符・8分音符
+- 全音符・2分音符・4分音符・8分音符・16分音符
 - ♭ / ♮ / ♯
 - 4/4・3/4
 - 30〜300 BPM
-- ドラッグによる音高・開始位置の変更
+- 単音のドラッグによる音高・開始位置の変更
+- 和音の横ドラッグ（構成音の高さを固定）
+- 和音の長押し複製
+- 選択中の和音へ音を追加しやすい縦ガイド
+- 休符の横ドラッグ
 - Undo / Redo
 
 PCでは1段2小節、スマートフォンでは1段1小節に折り返し、長い横スクロールを避けます。
