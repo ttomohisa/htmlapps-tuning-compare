@@ -46,5 +46,7 @@ jobs:
           git add tuning-compare.html
           if (-not (git diff --cached --quiet)) {
             git commit -m "chore: refresh v1.0.0 standalone HTML"
+            git fetch origin "${{ github.head_ref }}"
+            git rebase "origin/${{ github.head_ref }}"
             git push origin HEAD:${{ github.head_ref }}
           }
