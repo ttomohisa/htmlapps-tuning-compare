@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+- Replaced the canonical favicon/app icon with the supplied final Tuning Compare SVG.
+- Added local 16-bit mono PCM WAV export at 48 kHz or 44.1 kHz.
+- Added A-only, B-only, and A → B comparison export targets.
+- Added OfflineAudioContext rendering using the same score timing, tuning, timbre, volume, attack, and release settings as live playback.
+- Added one shared A/B peak-safety scale instead of per-side normalization.
+- Added editable/sanitized WAV filenames and local persistence for export settings.
+
 ## 0.5.0
 
 - Added template-style smartphone bottom page tabs for Compare, Score, Tuning, and Sound.

@@ -3,9 +3,9 @@
   "name": "Tuning Compare",
   "nameJa": "音律聞き比べ",
   "slug": "tuning-compare",
-  "version": "0.5.0",
-  "description": "Compare tunings and edit a short score with a mobile-first four-page workflow, wrapped staff systems, and local browser audio.",
-  "descriptionJa": "音律を聞き比べ、スマホでは4ページ切替・2段譜面・固定編集バーで短い譜面を操作できるブラウザアプリです。",
+  "version": "0.6.0",
+  "description": "Compare tunings, edit a short score, and export tuning A, tuning B, or an A-to-B comparison as a local 16-bit PCM WAV file.",
+  "descriptionJa": "音律を聞き比べ、短い譜面を作り、Aのみ・Bのみ・A→B比較を16-bit PCM WAVとしてブラウザ内で書き出せます。",
   "defaultLanguage": "auto",
   "repository": {
     "owner": "ttomohisa",

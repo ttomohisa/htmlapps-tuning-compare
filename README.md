@@ -1,33 +1,40 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty app for comparing equal temperament, just intonation, and custom tunings with a short score editor.
+A Browser Kitty app for comparing tunings, editing a short score, and saving the result as a WAV file.
 
-**v0.5.0 is the Mobile / Score UX milestone.** On smartphones, the long tool becomes four bottom-tab pages: Compare, Score, Tuning, and Sound.
+**v0.6.0 is the WAV Export milestone.**
 
-## v0.5.0 features
+## v0.6.0 features
 
-- Four-page smartphone bottom navigation
-- Safe-area-aware fixed bottom bar
-- Normal full document flow remains on desktop
-- Two-measure score wraps to one measure per system on phones
-- No horizontal panning required for score input
-- Fixed selected-event editor above the mobile navigation
-- Change duration or delete the selected event from the fixed editor
-- Toast + Undo after event deletion or score clear
+- Export the score with tuning A only
+- Export the score with tuning B only
+- Export one A → B comparison WAV
+- 0.6 seconds of silence between A and B
+- PCM 16-bit / Mono
+- 48 kHz / 44.1 kHz
+- Editable filename
+- Offline A/B rendering under identical audio settings
+- One shared peak-safety scale when needed
+- `OfflineAudioContext` instead of real-time recording
+- No external encoder, API, or WASM dependency
+- Final supplied SVG used for both favicon and header app icon
+
+Existing features remain available:
+
 - Independent A/B equal, 5-limit just, or custom tuning
 - Synchronized A/B comparison
 - Two-measure simple score editor
+- Four-page mobile navigation
 - Rests, chords, flat / natural / sharp
 - Whole / half / quarter / eighth durations
 - 3/4 and 4/4, 30–300 BPM
-- Score playback with tuning A or B
+- Undo / Redo
 - Japanese / English UI
 - Local persistence
-- No runtime network dependency
 
 ## Privacy
 
-Score data, frequencies, and tuning settings are processed in the browser. There is no runtime API, CDN, analytics, or telemetry dependency.
+Score data, frequencies, tuning settings, and WAV generation stay in the browser. Audio and user input are not uploaded.
 
 ## Development
 
@@ -40,7 +47,6 @@ pwsh -NoProfile -File .\scripts\check-repository.ps1
 
 ## Roadmap
 
-- v0.6.0: WAV Export
 - v0.7.0: Custom Tuning / Project Data
 - v0.8.0: UX / Learning Support
 - v0.9.0: Release Candidate

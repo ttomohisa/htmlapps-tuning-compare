@@ -3,126 +3,153 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 0.5.0
-- **Current milestone:** Mobile / Score UX
-- **Purpose:** Make tuning comparison and short-score editing practical on smartphones without regressing the desktop workflow.
+- **Version:** 0.6.0
+- **Current milestone:** WAV Export
+- **Purpose:** Compare tunings, edit a short score, and export the resulting performance as a local WAV file without server processing.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
-## 2. Template UI contract
+## 2. Template / icon contract
 
-The current `htmlapps-template` header, design tokens, page intro, dialog, toast, and responsive patterns remain the UI base.
+The app continues to use the current `htmlapps-template` shell, mobile navigation pattern, build placeholders, CSP, and single-HTML pipeline.
 
-For long smartphone workflows, v0.5.0 adopts the template's mobile bottom-bar / page-tab pattern.
+`assets/favicon.svg` is the canonical icon source for both the browser favicon and the app icon shown in the header.
 
-## 3. Smartphone navigation
+## 3. WAV export scope
 
-At widths up to 600 px, the app is divided into four pages:
+v0.6.0 exports the current score as:
 
-- Compare
-- Score
-- Tuning
-- Sound
+- tuning A only
+- tuning B only
+- A → B comparison in one file
 
-The bottom bar:
+The A → B comparison contains the complete A render, 0.6 seconds of silence, then the complete B render.
 
-- uses SVG icons plus text labels
-- supports safe-area insets
-- keeps state when switching pages
-- does not change the desktop document-flow layout
-- keeps only one smartphone page visible at a time
+## 4. WAV format
 
-Desktop continues to show all sections normally.
+Initial export format:
 
-## 4. Score layout on mobile
+- PCM
+- 16-bit signed integer
+- mono
+- selectable 48 kHz or 44.1 kHz
+- default 48 kHz
 
-The two-measure score is not merely scaled down.
+No external encoder, codec service, WASM dependency, or network request is used.
 
-- desktop: both measures stay on one system
-- smartphone: one measure per system, two systems vertically
-- event selection targets are enlarged and vertically bounded around the notation
-- the page itself must not gain horizontal scrolling
-- tapping the staff remains eighth-note-step input
+## 5. Offline rendering
 
-## 5. Mobile selected-event editor
+WAV export uses `OfflineAudioContext` (or the browser-prefixed equivalent when available).
 
-When a score event is selected on smartphone:
+The offline renderer follows the same score data and audio parameters used by live playback:
 
-- a fixed editor appears directly above the bottom navigation
-- it shows the selected note/chord/rest
-- duration can be changed from the fixed editor
-- the selected event can be deleted
-- score content gains enough bottom padding that the fixed editor does not hide content
+- note frequencies are resolved through tuning slot A or B
+- timbre uses the same harmonic coefficient sets
+- master volume is shared
+- attack and release are shared
+- event timing uses the score tempo
+- rests produce no oscillator
 
-No long-press interaction is required.
+The export does not record real-time playback.
 
-## 6. Undo affordance
+## 6. A/B level fairness
 
-Reversible destructive actions follow the template's Toast + Undo pattern.
+A and B are rendered separately using identical audio settings.
 
-- delete selected event → Toast with Undo
-- clear score → Toast with Undo
+Before encoding:
 
-No blocking confirmation dialog is required for these reversible actions.
+1. inspect the peak sample of A
+2. inspect the peak sample of B
+3. use the larger peak to determine one shared safety scale
+4. apply that same scale to both A and B
 
-## 7. Score playback
+No independent A-only/B-only loudness normalization is performed.
 
-The v0.4.0 AudioContext-timed score playback remains unchanged in principle.
+If neither side exceeds the safety peak, the shared scale is 1.0.
 
-- Play A resolves notes through tuning slot A
-- Play B resolves notes through tuning slot B
-- cursor position derives from AudioContext time
-- on mobile, the cursor moves between the first and second score systems correctly
+## 7. Filename
 
-## 8. Existing behavior retained
+The user can edit the WAV filename before export.
 
-The following remain available:
+Unsafe filesystem characters are replaced. If the filename has no `.wav` extension, the app adds it automatically.
+
+Suggested names follow the current export target:
+
+- `tuning-compare-a.wav`
+- `tuning-compare-b.wav`
+- `tuning-compare-ab.wav`
+
+## 8. Download behavior
+
+After local rendering and encoding:
+
+- create an `audio/wav` Blob
+- create a temporary Blob URL
+- trigger a browser download
+- revoke the Blob URL shortly afterward
+
+User score/audio data is not uploaded.
+
+## 9. UI / state behavior
+
+The WAV panel is part of the Score page on mobile and the normal score section on desktop.
+
+The export button is disabled when:
+
+- the score contains no audible note
+- offline audio rendering is unavailable
+
+Status text covers:
+
+- rendering A
+- rendering B
+- encoding WAV
+- success
+- failure
+- unsupported browser
+- empty score
+
+Export target, sample rate, and filename persist locally with the other app settings.
+
+## 10. Existing behavior retained
+
+v0.6.0 preserves:
 
 - Audio Core
 - equal temperament
 - fixed 5-limit just intonation
-- custom Hz tuning
+- exact custom Hz tuning
 - synchronized A/B comparison
-- detailed tuning table
-- arbitrary-frequency audition
-- score editing
-- score persistence
+- simple score editing
+- mobile four-page navigation
+- wrapped mobile score
 - Undo / Redo
+- local persistence
 - Japanese / English
 
-## 9. Privacy and network
+## 11. Privacy and network
 
 - no runtime fetch, XHR, WebSocket, CDN, analytics, telemetry, or remote font
 - `connect-src 'none'`
-- score data and generated audio remain local to the browser
+- WAV rendering and encoding occur locally in the browser
+- generated audio remains local until the browser saves the file
 
-## 10. Mobile acceptance criteria
+## 12. Acceptance criteria
 
-Check at 320, 360, 390–393, and 430 px widths:
+- uploaded final SVG is used as `assets/favicon.svg`
+- favicon and header app icon come from the same canonical SVG
+- score with at least one note can export A-only WAV
+- score with at least one note can export B-only WAV
+- score with at least one note can export one A → B comparison WAV
+- export is mono 16-bit PCM
+- 48 kHz and 44.1 kHz are selectable
+- A and B use one shared peak-safety scale
+- output filename is sanitized and ends in `.wav`
+- no real-time recording is used
+- no external encoder/network dependency is added
+- standalone build and repository validation pass
 
-- no page-level horizontal scrolling
-- fixed bottom bar does not hide content
-- selected-event editor does not overlap the bottom bar
-- score displays as two systems
-- score can be tapped without requiring horizontal panning
-- navigation labels fit without overflow
-- dialog remains usable
-- long note/chord labels do not break the page
-- A/B, score, tuning, and sound state survive tab switching
+## 13. Remaining roadmap
 
-## 11. General acceptance criteria
-
-- desktop remains normal document flow
-- template header and design language remain unchanged
-- mobile page tabs use the template's bottom-bar conventions
-- score selection and editing remain available without long press
-- delete and clear are reversible via Undo Toast
-- v0.4 score data survives reload
-- v0.3 A/B comparison continues to work
-- standalone build and repository checks pass
-
-## 12. Remaining roadmap
-
-- v0.6.0: WAV Export
 - v0.7.0: Custom Tuning / Project Data
 - v0.8.0: UX / Learning Support
 - v0.9.0: Release Candidate
