@@ -2,7 +2,7 @@
 
 [![Validate standalone HTML](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](tuning-compare.html)
+[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
 [![Version](https://img.shields.io/badge/version-v1.0.0-16624F)](CHANGELOG.md)
 
 [日本語版 README](README.ja.md)
@@ -11,7 +11,13 @@ A browser-based tool for comparing **12-tone equal temperament**, **5-limit just
 
 You can compare tunings by ear, inspect frequencies and cents differences, edit a short four-measure score, adjust custom frequencies directly, and export the result as WAV — without uploading the score, tuning settings, or generated audio.
 
-[![Tuning Compare screenshot](assets/screenshot-en.png)](tuning-compare.html)
+## 🚀 Live demo
+
+### [Open Tuning Compare on GitHub Pages](https://ttomohisa.github.io/htmlapps-tuning-compare/)
+
+GitHub Pages serves the initial HTML. After it loads, tuning calculations, score editing, playback, WAV rendering, and project JSON are handled locally in the browser. The app does not upload the score, tuning settings, or generated audio.
+
+[![Tuning Compare screenshot](assets/screenshot-en.png)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
 
 ## Features
 
@@ -19,8 +25,8 @@ You can compare tunings by ear, inspect frequencies and cents differences, edit 
 - **12-tone equal temperament and 5-limit just intonation** — Select the reference pitch and, for just intonation, the tonic used by the built-in ratio table.
 - **Edit custom tunings directly** — Work in Hz, ratio, or cents and audition individual notes while adjusting them.
 - **See the difference numerically** — Inspect A/B frequency values and cents differences alongside the listening comparison.
-- **Use a four-measure score** — Enter notes, chords, rests, accidentals, 3/4 or 4/4 time, and whole/half/quarter/eighth durations.
-- **Edit the score without leaving the staff** — Drag notes to change pitch or timing, apply accidentals, delete events, and use Undo / Redo.
+- **Use a four-measure score** — Enter notes, chords, rests, accidentals, 3/4 or 4/4 time, and whole/half/quarter/eighth/sixteenth durations.
+- **Edit the score without leaving the staff** — Long-press a chord to duplicate it, drag a chord horizontally without changing its pitches, move rests horizontally, and use the selected-chord pitch lane to add a note at the intended height more easily.
 - **Start with useful examples** — Load a major third, major triad, C major scale, or I–IV–V–I sample.
 - **Export audio locally** — Render A only, B only, or an A → B comparison as 16-bit mono WAV at 44.1 kHz or 48 kHz.
 - **Save the whole experiment** — Export and import project JSON containing the score, tunings, sound settings, and WAV settings.
@@ -29,6 +35,10 @@ You can compare tunings by ear, inspect frequencies and cents differences, edit 
 ## Quick start
 
 No installation or account is required.
+
+### Use the web demo
+
+Just [open the GitHub Pages version](https://ttomohisa.github.io/htmlapps-tuning-compare/).
 
 ### Use the standalone HTML
 
@@ -83,11 +93,15 @@ Supported in v1.0.0:
 - Treble clef
 - Single notes and chords
 - Rests
-- Whole, half, quarter, and eighth durations
+- Whole, half, quarter, eighth, and sixteenth durations
 - Flat, natural, and sharp accidentals
 - 4/4 and 3/4
 - 30–300 BPM
-- Drag editing
+- Drag editing for individual notes
+- Horizontal chord drag with voicing preserved
+- Long-press chord duplication
+- Selected-chord pitch lane for easier note addition
+- Horizontal rest dragging
 - Undo / Redo
 
 On desktop, the score uses two measures per system. On smartphones, it wraps to one measure per system instead of forcing a long horizontal canvas.
