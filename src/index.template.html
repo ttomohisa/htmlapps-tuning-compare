@@ -2349,6 +2349,12 @@
         y:scoreYForStep(entry.step,measure,layout),
         x:x+(offsets.get(entry.index)||0)
       }));
+      if(event.id===scoreState.selectedId&&event.notes.length>1&&scoreState.mode==='note'){
+        svg.append(scoreSvgElement('rect',{
+          x:x-22,y:top-10,width:44,height:72,rx:9,class:'score-chord-add-lane',
+          'data-chord-add-id':event.id
+        }));
+      }
       positions.forEach(position=>{
         drawLedgerLines(svg,position.x,position.step,measure,layout);
         const head=scoreSvgElement('ellipse',{cx:position.x,cy:position.y,rx:8.2,ry:5.6,class:'note-head'+(event.duration>=2?' open':''),'data-event-id':event.id,'data-note-index':position.index});
@@ -2375,12 +2381,6 @@
       }
       if(event.id===scoreState.selectedId){
         const selectionY=yMin-12,selectionHeight=Math.max(24,yMax-yMin+24);
-        if(event.notes.length>1&&scoreState.mode==='note'){
-          svg.append(scoreSvgElement('rect',{
-            x:x-22,y:top-10,width:44,height:72,rx:9,class:'score-chord-add-lane',
-            'data-chord-add-id':event.id
-          }));
-        }
         svg.append(scoreSvgElement('rect',{x:x-19,y:selectionY,width:42,height:selectionHeight,rx:9,class:'chord-selection'}));
         if(event.notes.length>1){
           svg.append(scoreSvgElement('rect',{
