@@ -1754,14 +1754,39 @@
       const letter=normalized.charAt(0), octaveMatch=normalized.match(/(-?\d+)$/), octave=octaveMatch?Number(octaveMatch[1]):4;
       const index=SCORE_NATURAL_NOTES.indexOf(letter+octave); return index>=0?index:0;
     }
-    function scoreYForStep(step){ return 142-step*6; }
-    function scoreXForBeat(beat){ return SCORE_VIEW.left+(Math.max(0,Math.min(scoreTotalBeats(),beat))/scoreTotalBeats())*(SCORE_VIEW.right-SCORE_VIEW.left); }
-    function scoreBeatFromX(x){
-      const ratio=(x-SCORE_VIEW.left)/(SCORE_VIEW.right-SCORE_VIEW.left);
-      const raw=Math.max(0,Math.min(scoreTotalBeats()-.5,ratio*scoreTotalBeats()));
-      return Math.round(raw*2)/2;
+
+    function scoreIsCompact(){ return window.matchMedia?.('(max-width:600px)').matches ?? false; }
+    function scoreLayout(){
+      if(scoreIsCompact()) return {width:480,height:360,left:70,right:452,systemTops:[58,218],compact:true,hitWidth:64};
+      return {width:960,height:230,left:92,right:930,systemTops:[76],compact:false,hitWidth:48};
     }
-    function scoreStepFromY(y){ return Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,Math.round((142-y)/6))); }
+    function scoreMeasureIndexForBeat(beat){ return Math.max(0,Math.min(1,Math.floor(Math.max(0,beat)/scoreBeatsPerMeasure()))); }
+    function scoreSystemTop(measure,layout=scoreLayout()){ return layout.compact?layout.systemTops[measure]:layout.systemTops[0]; }
+    function scoreYForStep(step,measure=0,layout=scoreLayout()){ return scoreSystemTop(measure,layout)+66-step*6; }
+    function scoreXForBeat(beat,layout=scoreLayout()){
+      if(layout.compact){
+        const measure=scoreMeasureIndexForBeat(beat), local=beat-measure*scoreBeatsPerMeasure();
+        return layout.left+(Math.max(0,Math.min(scoreBeatsPerMeasure(),local))/scoreBeatsPerMeasure())*(layout.right-layout.left);
+      }
+      return layout.left+(Math.max(0,Math.min(scoreTotalBeats(),beat))/scoreTotalBeats())*(layout.right-layout.left);
+    }
+    function scorePointToPosition(x,y){
+      const layout=scoreLayout(), beatsPerMeasure=scoreBeatsPerMeasure();
+      if(x<layout.left||x>layout.right) return null;
+      let measure=0, top=layout.systemTops[0];
+      if(layout.compact){
+        const candidates=layout.systemTops.map((systemTop,index)=>({index,top:systemTop,distance:Math.abs(y-(systemTop+30))})).sort((a,b)=>a.distance-b.distance);
+        measure=candidates[0].index; top=candidates[0].top;
+        if(y<top-28||y>top+100) return null;
+      } else if(y<48||y>160) return null;
+      const ratio=(x-layout.left)/(layout.right-layout.left);
+      const span=layout.compact?beatsPerMeasure:scoreTotalBeats();
+      const raw=Math.max(0,Math.min(span-.5,ratio*span));
+      const localBeat=Math.round(raw*2)/2;
+      const beat=layout.compact?measure*beatsPerMeasure+localBeat:localBeat;
+      const step=Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,Math.round((top+66-y)/6)));
+      return {beat,step,measure};
+    }
     function scoreSnapshot(){ return {events:scoreState.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))})),selectedId:scoreState.selectedId,nextId:scoreState.nextId,timeSignature:scoreState.timeSignature,tempo:scoreState.tempo}; }
     function restoreScoreSnapshot(snapshot){
       scoreState.events=snapshot.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))}));
@@ -1797,28 +1822,28 @@
       const node=document.createElementNS('http://www.w3.org/2000/svg',name);
       Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,String(value))); return node;
     }
-    function drawLedgerLines(svg,x,step){
-      const y=scoreYForStep(step), lineYs=[];
-      if(y>=140) lineYs.push(140);
-      if(y<=68) for(let ly=68;ly>=y;ly-=12) lineYs.push(ly);
+    function drawLedgerLines(svg,x,step,measure,layout){
+      const y=scoreYForStep(step,measure,layout), top=scoreSystemTop(measure,layout), lineYs=[];
+      if(y>=top+64) lineYs.push(top+64);
+      if(y<=top-8) for(let ly=top-8;ly>=y;ly-=12) lineYs.push(ly);
       lineYs.forEach(ly=>svg.append(scoreSvgElement('line',{x1:x-12,y1:ly,x2:x+12,y2:ly,class:'ledger'})));
     }
-    function renderRest(svg,event,x){
-      const y=104, path=scoreSvgElement('path',{class:'rest-mark'});
+    function renderRest(svg,event,x,measure,layout){
+      const y=scoreSystemTop(measure,layout)+28, path=scoreSvgElement('path',{class:'rest-mark'});
       if(event.duration>=4) path.setAttribute('d','M'+(x-8)+' '+(y-5)+'h16v5h-16z');
       else if(event.duration>=2) path.setAttribute('d','M'+(x-8)+' '+y+'h16v5h-16z');
       else if(event.duration>=1) path.setAttribute('d','M'+(x-3)+' '+(y-16)+'l7 8-7 7 7 7-7 11');
       else path.setAttribute('d','M'+(x-2)+' '+(y-12)+'c8 0 8 8 1 10l7 13');
       svg.append(path);
-      if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-15,y:y-22,width:30,height:44,rx:7,class:'selected-ring'}));
+      if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-18,y:y-25,width:36,height:50,rx:8,class:'selected-ring'}));
     }
-    function renderNote(svg,event,note,x,noteIndex){
-      const step=scoreStepForNatural(note.display), y=scoreYForStep(step), offset=(noteIndex-(event.notes.length-1)/2)*3, nx=x+offset;
-      drawLedgerLines(svg,nx,step);
+    function renderNote(svg,event,note,x,noteIndex,measure,layout){
+      const step=scoreStepForNatural(note.display), y=scoreYForStep(step,measure,layout), offset=(noteIndex-(event.notes.length-1)/2)*3, nx=x+offset;
+      drawLedgerLines(svg,nx,step,measure,layout);
       const head=scoreSvgElement('ellipse',{cx:nx,cy:y,rx:8.2,ry:5.6,class:'note-head'+(event.duration>=2?' open':'')});
       head.setAttribute('transform','rotate(-18 '+nx+' '+y+')'); svg.append(head);
       if(event.duration<4){
-        const stemUp=y>=104, stemX=stemUp?nx+7:nx-7, stemY2=stemUp?y-34:y+34;
+        const middle=scoreSystemTop(measure,layout)+28, stemUp=y>=middle, stemX=stemUp?nx+7:nx-7, stemY2=stemUp?y-34:y+34;
         svg.append(scoreSvgElement('line',{x1:stemX,y1:y,x2:stemX,y2:stemY2,class:'note-stem'}));
         if(event.duration<=.5){
           const d=stemUp?'M'+stemX+' '+stemY2+'c12 5 13 12 5 18':'M'+stemX+' '+stemY2+'c-12-5-13-12-5-18';
@@ -1826,30 +1851,53 @@
         }
       }
       if(note.accidental!=='natural'){ const acc=scoreSvgElement('text',{x:nx-20,y:y+5,class:'accidental'}); acc.textContent=note.accidental==='sharp'?'♯':'♭'; svg.append(acc); }
-      if(event.id===scoreState.selectedId&&noteIndex===0) svg.append(scoreSvgElement('ellipse',{cx:nx,cy:y,rx:13,ry:10,class:'selected-ring'}));
+      if(event.id===scoreState.selectedId&&noteIndex===0) svg.append(scoreSvgElement('ellipse',{cx:nx,cy:y,rx:14,ry:11,class:'selected-ring'}));
+    }
+    function drawScoreSystem(svg,measure,layout){
+      const top=scoreSystemTop(measure,layout), beatsPerMeasure=scoreBeatsPerMeasure();
+      const clef=scoreSvgElement('text',{x:layout.compact?18:38,y:top+49,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
+      if(!layout.compact||measure===0){
+        const timeX=layout.compact?55:73;
+        const topNum=scoreSvgElement('text',{x:timeX,y:top+23,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
+        const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
+      }
+      for(let i=0;i<5;i++){ const y=top+i*12; svg.append(scoreSvgElement('line',{x1:layout.left,y1:y,x2:layout.right,y2:y,class:'staff-line'})); }
+      for(let local=0;local<=beatsPerMeasure;local+=.5){
+        const globalBeat=measure*beatsPerMeasure+local, x=scoreXForBeat(globalBeat,layout);
+        if(local===0||Math.abs(local-beatsPerMeasure)<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
+        else if(Math.abs(local-Math.round(local))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
+      }
+      const label=scoreSvgElement('text',{x:layout.left+5,y:top-15,class:'measure-number'}); label.textContent=String(measure+1); svg.append(label);
+      svg.append(scoreSvgElement('rect',{x:layout.left,y:top-28,width:layout.right-layout.left,height:100,class:'score-hitbox','data-score-input':'true'}));
+    }
+    function setScoreMobileEditor(selected){
+      const editor=$('#scoreMobileEditor'); if(!editor) return;
+      editor.hidden=!selected; if(!selected) return;
+      const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
+      $('#scoreMobileSelected').textContent=notes; $('#scoreMobileDuration').value=String(selected.duration);
     }
     function renderScore(){
-      const svg=$('#scoreSvg'); svg.replaceChildren();
-      const beats=scoreTotalBeats(), width=SCORE_VIEW.right-SCORE_VIEW.left, beatsPerMeasure=scoreBeatsPerMeasure();
-      const hitbox=scoreSvgElement('rect',{x:SCORE_VIEW.left,y:48,width:SCORE_VIEW.right-SCORE_VIEW.left,height:112,class:'score-hitbox','data-score-input':'true'}); svg.append(hitbox);
-      const clef=scoreSvgElement('text',{x:38,y:125,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
-      const topNum=scoreSvgElement('text',{x:73,y:99,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
-      const bottomNum=scoreSvgElement('text',{x:73,y:122,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
-      for(let i=0;i<5;i++){ const y=SCORE_VIEW.staffTop+i*SCORE_VIEW.staffGap; svg.append(scoreSvgElement('line',{x1:SCORE_VIEW.left,y1:y,x2:SCORE_VIEW.right,y2:y,class:'staff-line'})); }
-      for(let beat=0;beat<=beats;beat+=.5){
-        const x=scoreXForBeat(beat);
-        if(Math.abs((beat/beatsPerMeasure)-Math.round(beat/beatsPerMeasure))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:68,x2:x,y2:134,class:'bar-line'}));
-        else if(Math.abs(beat-Math.round(beat))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:68,x2:x,y2:134,class:'beat-guide'}));
+      const svg=$('#scoreSvg'), layout=scoreLayout(); svg.replaceChildren();
+      svg.setAttribute('viewBox','0 0 '+layout.width+' '+layout.height);
+      if(layout.compact){ drawScoreSystem(svg,0,layout); drawScoreSystem(svg,1,layout); }
+      else {
+        drawScoreSystem(svg,0,layout);
+        const beatsPerMeasure=scoreBeatsPerMeasure(), top=layout.systemTops[0], middleX=scoreXForBeat(beatsPerMeasure,layout);
+        svg.append(scoreSvgElement('line',{x1:middleX,y1:top-8,x2:middleX,y2:top+58,class:'bar-line'}));
+        const label2=scoreSvgElement('text',{x:middleX+5,y:top-15,class:'measure-number'}); label2.textContent='2'; svg.append(label2);
       }
-      [0,1].forEach(index=>{ const label=scoreSvgElement('text',{x:scoreXForBeat(index*beatsPerMeasure)+5,y:60,class:'measure-number'}); label.textContent=String(index+1); svg.append(label); });
+      const beatsPerMeasure=scoreBeatsPerMeasure();
       scoreState.events.forEach(event=>{
-        const x=scoreXForBeat(event.start)+(width/beats/4);
-        if(event.rest) renderRest(svg,event,x); else event.notes.forEach((note,index)=>renderNote(svg,event,note,x,index));
-        svg.append(scoreSvgElement('rect',{x:x-20,y:46,width:40,height:116,class:'score-event-hitbox','data-event-id':event.id}));
+        const measure=layout.compact?scoreMeasureIndexForBeat(event.start):0;
+        const cellSpan=(layout.right-layout.left)/(layout.compact?beatsPerMeasure:scoreTotalBeats());
+        const x=scoreXForBeat(event.start,layout)+cellSpan*.20;
+        if(event.rest) renderRest(svg,event,x,measure,layout); else event.notes.forEach((note,index)=>renderNote(svg,event,note,x,index,measure,layout));
+        const top=scoreSystemTop(measure,layout);
+        svg.append(scoreSvgElement('rect',{x:x-layout.hitWidth/2,y:top-30,width:layout.hitWidth,height:104,class:'score-event-hitbox','data-event-id':event.id}));
       });
-      if(scoreState.playbackStartedAt!=null) svg.append(scoreSvgElement('line',{id:'scoreCursor',x1:SCORE_VIEW.left,y1:48,x2:SCORE_VIEW.left,y2:160,class:'cursor-line'}));
+      if(scoreState.playbackStartedAt!=null){ const cursor=scoreSvgElement('line',{id:'scoreCursor',class:'cursor-line'}); svg.append(cursor); setScoreCursorPosition(0); }
       $('#scoreEmptyHint').hidden=scoreState.events.length>0; $('#scoreEventCount').textContent=String(scoreState.events.length);
-      const selected=scoreSelectedEvent(); $('#scoreDelete').disabled=!selected;
+      const selected=scoreSelectedEvent(); $('#scoreDelete').disabled=!selected; setScoreMobileEditor(selected);
       if(selected){
         const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
         const sel=$('#scoreSelection'); sel.replaceChildren(); const strong=document.createElement('strong'); strong.textContent=notes; sel.append(strong,document.createTextNode(' · '+scoreDurationLabel(selected.duration)));
@@ -1863,33 +1911,45 @@
     function handleScorePointer(event){
       const target=event.target.closest?event.target.closest('[data-event-id]'):null;
       if(target){ scoreState.selectedId=Number(target.getAttribute('data-event-id')); renderScore(); return; }
-      const p=scorePointerToLocal(event); if(!p||p.x<SCORE_VIEW.left||p.x>SCORE_VIEW.right||p.y<48||p.y>160) return;
-      addScoreInput(scoreBeatFromX(p.x),scoreStepFromY(p.y));
+      const p=scorePointerToLocal(event), pos=p?scorePointToPosition(p.x,p.y):null;
+      if(!pos) return; addScoreInput(pos.beat,pos.step);
     }
     function deleteScoreSelection(){
       const index=scoreState.events.findIndex(event=>event.id===scoreState.selectedId); if(index<0) return;
       pushScoreHistory(); scoreState.events.splice(index,1); scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreDeleted'));
+      AppToast.show({message:t('scoreDeleted'),actionLabel:t('undoAction'),duration:5000,onAction:scoreUndo});
     }
-    function clearScore(){ if(!scoreState.events.length) return; pushScoreHistory(); scoreState.events=[]; scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreCleared')); }
+    function clearScore(){
+      if(!scoreState.events.length) return;
+      pushScoreHistory(); scoreState.events=[]; scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreCleared'));
+      AppToast.show({message:t('scoreCleared'),actionLabel:t('undoAction'),duration:5000,onAction:scoreUndo});
+    }
     function scoreUndo(){ if(!scoreState.undo.length) return; scoreState.redo.push(scoreSnapshot()); restoreScoreSnapshot(scoreState.undo.pop()); setScoreStatus(t('scoreUndone')); }
     function scoreRedo(){ if(!scoreState.redo.length) return; scoreState.undo.push(scoreSnapshot()); restoreScoreSnapshot(scoreState.redo.pop()); setScoreStatus(t('scoreRedone')); }
     function setScoreMode(mode){ scoreState.mode=mode==='rest'?'rest':'note'; $('#scoreModeNote').setAttribute('aria-pressed',String(scoreState.mode==='note')); $('#scoreModeRest').setAttribute('aria-pressed',String(scoreState.mode==='rest')); }
     function setScoreDuration(duration){
       const next=Number(duration), selected=scoreSelectedEvent();
       if(selected&&selected.duration!==next){ pushScoreHistory(); selected.duration=next; }
-      scoreState.duration=next; $('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
+      scoreState.duration=next; $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
+      if($('#scoreMobileDuration')) $('#scoreMobileDuration').value=String(scoreState.duration);
       if(selected){ renderScore(); scheduleSave(); }
     }
-    function setScoreAccidental(accidental){ scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural'; $('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental))); }
+    function setScoreAccidental(accidental){ scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural'; $$('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental))); }
     function scoreSequenceForSide(side){
       const secondsPerBeat=60/scoreState.tempo;
       return scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>({startSeconds:event.start*secondsPerBeat,durationSeconds:Math.max(.08,event.duration*secondsPerBeat),frequencies:event.rest?[]:event.notes.map(note=>abFrequency(side,note.note))}));
     }
     function stopScoreCursor(){ cancelAnimationFrame(scoreState.playbackFrame); scoreState.playbackFrame=0; scoreState.playbackStartedAt=null; scoreState.playbackDuration=0; renderScore(); }
+    function setScoreCursorPosition(globalBeat){
+      const cursor=$('#scoreCursor'); if(!cursor) return;
+      const layout=scoreLayout(), measure=layout.compact?scoreMeasureIndexForBeat(globalBeat):0, top=scoreSystemTop(measure,layout), x=scoreXForBeat(globalBeat,layout);
+      cursor.setAttribute('x1',String(x)); cursor.setAttribute('x2',String(x)); cursor.setAttribute('y1',String(top-28)); cursor.setAttribute('y2',String(top+70));
+    }
     function animateScoreCursor(){
       if(scoreState.playbackStartedAt==null||!engine.context) return;
-      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt, progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration))), cursor=$('#scoreCursor');
-      if(cursor){ const x=SCORE_VIEW.left+progress*(SCORE_VIEW.right-SCORE_VIEW.left); cursor.setAttribute('x1',String(x)); cursor.setAttribute('x2',String(x)); }
+      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt, secondsPerBeat=60/scoreState.tempo;
+      const globalBeat=Math.max(0,Math.min(scoreTotalBeats(),elapsed/secondsPerBeat)), progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration)));
+      setScoreCursorPosition(globalBeat);
       if(progress>=1){ stopScoreCursor(); return; } scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor);
     }
     async function playScore(side){
