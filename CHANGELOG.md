@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+- Realigned the header, page intro, design tokens, dialogs, toast, spacing, cards, and responsive behavior with the current htmlapps-template UI.
+- Added independent tuning slots A and B for equal temperament, 5-limit just intonation, and custom Hz maps.
+- Added major-third, perfect-fifth, and major-triad quick comparison presets.
+- Added synchronized dual-layer A/B playback with same-position crossfade switching and A → B automatic comparison.
+- Added an A/B frequency and cent-difference table plus local persistence for both tuning slots.
+
 ## 0.2.0
 
 - Added 12-tone equal-temperament calculation from an editable reference note/frequency.

@@ -4,171 +4,707 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self' blob:; base-uri 'none'; form-action 'none'">
-  <link rel="icon" href="__APP_ICON_DATA_URI__" type="image/svg+xml">
+  <meta name="theme-color" content="#f5f5f2">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; media-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="__APP_ICON_DATA_URI__">
   <title>Tuning Compare</title>
   <style>
+
     :root {
-      --brand: #16624F;
-      --brand-strong: #0f4d3e;
-      --brand-soft: #e8f2ef;
-      --bg: #f7f9f8;
+      color-scheme: light;
+      --bg: #f5f5f2;
       --surface: #ffffff;
-      --text: #17201d;
-      --muted: #64706c;
-      --border: #d9e1de;
-      --danger: #a33a32;
-      --focus: #0b6f57;
-      --shadow: 0 10px 30px rgba(23, 32, 29, .08);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background: var(--bg);
+      --surface-muted: #f0f0ed;
+      --surface-hover: #e9e9e5;
+      --text: #20211f;
+      --muted: #666963;
+      --line: #dadbd6;
+      --line-strong: #bfc1ba;
+      --accent: #16624f;
+      --accent-hover: #0e503f;
+      --accent-soft: #e1f0ea;
+      --danger: #b3261e;
+      --focus: #4d8bc7;
+      --shadow-sm: 0 1px 2px rgba(25, 28, 24, .08), 0 1px 6px rgba(25, 28, 24, .04);
+      --shadow-md: 0 12px 34px rgba(25, 28, 24, .10);
+      --radius: 12px;
+      --header-height: 66px;
     }
     * { box-sizing: border-box; }
-    html { min-width: 320px; background: var(--bg); }
-    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); }
-    button, input, select { font: inherit; }
-    button, input, select { min-height: 44px; }
-    button { cursor: pointer; }
-    button:disabled { cursor: not-allowed; opacity: .55; }
-    :focus-visible { outline: 3px solid color-mix(in srgb, var(--focus) 35%, transparent); outline-offset: 2px; }
-    .shell { width: min(1120px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 48px; }
-    .app-header { display: flex; align-items: center; gap: 12px; min-height: 52px; }
-    .brand-lockup { min-width: 0; display: flex; align-items: center; gap: 11px; flex: 1; }
-    #appBrandIcon { width: 42px; height: 42px; flex: 0 0 auto; border-radius: 11px; }
-    .brand-text { min-width: 0; }
-    .brand-name { margin: 0; font-size: 18px; font-weight: 760; letter-spacing: -.01em; }
-    .brand-meta { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
-    .header-actions { display: flex; align-items: center; gap: 7px; }
-    .header-button, .version-badge { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; color: var(--text); min-height: 38px; padding: 7px 10px; }
-    .version-badge { display: inline-flex; align-items: center; color: var(--muted); font-size: 12px; }
-    .help-button { width: 38px; padding: 0; display: inline-grid; place-items: center; font-weight: 800; border-radius: 50%; }
-    main { display: grid; gap: 16px; margin-top: 20px; }
-    .hero { padding: 22px; border: 1px solid var(--border); background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); }
-    .eyebrow { color: var(--brand); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-    h1 { margin: 6px 0 8px; font-size: clamp(26px, 4vw, 38px); line-height: 1.12; letter-spacing: -.025em; }
-    .lead { margin: 0; max-width: 760px; color: var(--muted); line-height: 1.7; }
-    .local-note { margin-top: 14px; display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 7px 10px; background: var(--brand-soft); color: var(--brand-strong); font-size: 12px; font-weight: 700; }
-    .local-note svg { width: 16px; height: 16px; }
-    .tuning-controls { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
-    .tuning-control { min-width: 0; }
-    .tuning-control .unit-field, .tuning-control select { width: 100%; }
-    .tuning-actions { display: flex; justify-content: flex-end; }
-    .tuning-note { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
-    .tuning-table-wrap { margin-top: 14px; overflow: auto; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
-    .tuning-table { width: 100%; min-width: 690px; border-collapse: collapse; font-size: 13px; }
-    .tuning-table th, .tuning-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
-    .tuning-table th { position: sticky; top: 0; background: #f5f8f7; color: var(--muted); font-size: 12px; z-index: 1; }
-    .tuning-table tr:last-child td { border-bottom: 0; }
-    .tuning-table .note-name { font-weight: 800; font-size: 14px; }
-    .tuning-table .number { font-variant-numeric: tabular-nums; }
-    .tuning-table .cent-positive, .tuning-table .cent-negative { font-variant-numeric: tabular-nums; }
-    .tuning-table .cent-positive { color: #7a4e00; }
-    .tuning-table .cent-negative { color: #245e8a; }
-    .tuning-table .frequency-edit { width: 125px; min-height: 38px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 9px; font-variant-numeric: tabular-nums; }
-    .tuning-table .play-row { min-height: 34px; padding: 5px 9px; border: 1px solid var(--border); border-radius: 9px; background: #fff; font-weight: 700; }
-    .disabled-control { opacity: .5; }
-    .grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); gap: 16px; align-items: start; }
-    .card { border: 1px solid var(--border); background: var(--surface); border-radius: 18px; padding: 18px; }
-    .card h2 { margin: 0 0 5px; font-size: 18px; }
-    .card-intro { margin: 0 0 16px; color: var(--muted); line-height: 1.55; font-size: 14px; }
-    .field-label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 700; }
-    .frequency-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
-    .unit-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; border: 1px solid var(--border); border-radius: 12px; background: #fff; overflow: hidden; }
-    .unit-field:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(22,98,79,.10); }
-    .unit-field input { width: 100%; border: 0; outline: 0; padding: 9px 11px; min-width: 0; background: transparent; }
-    .unit { display: grid; place-items: center; padding: 0 11px; color: var(--muted); border-left: 1px solid var(--border); font-size: 13px; }
-    .primary, .secondary, .danger-button { border: 1px solid transparent; border-radius: 12px; padding: 9px 14px; font-weight: 750; }
-    .primary { background: var(--brand); color: white; }
-    .primary:hover { background: var(--brand-strong); }
-    .secondary { background: var(--surface); border-color: var(--border); color: var(--text); }
-    .danger-button { background: #fff; border-color: #e7c7c3; color: var(--danger); }
-    .quick-notes { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0 0; }
-    .note-chip { min-height: 36px; padding: 6px 10px; border: 1px solid var(--border); background: #fff; border-radius: 999px; color: var(--text); }
-    .note-chip small { color: var(--muted); }
-    .divider { height: 1px; background: var(--border); margin: 18px 0; }
-    .chord-list { display: grid; gap: 8px; }
-    .chord-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: center; }
-    .chord-toggle { width: 44px; height: 44px; display: grid; place-items: center; }
-    .chord-toggle input { width: 20px; height: 20px; accent-color: var(--brand); }
-    .transport { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .setting { min-width: 0; }
-    .setting select, .setting input[type="range"] { width: 100%; }
-    select { width: 100%; border: 1px solid var(--border); border-radius: 12px; background: #fff; padding: 8px 34px 8px 10px; }
-    input[type="range"] { min-height: 36px; accent-color: var(--brand); }
-    .range-line { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; }
-    .range-value { min-width: 60px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
-    details { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 12px; }
-    summary { cursor: pointer; font-weight: 700; }
-    .advanced-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-    .engine-state { margin-top: 16px; padding: 12px; border-radius: 12px; background: #f4f7f6; display: grid; gap: 4px; font-size: 13px; }
-    .state-row { display: flex; justify-content: space-between; gap: 12px; }
-    .state-value { font-variant-numeric: tabular-nums; font-weight: 750; }
-    .status { min-height: 22px; margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
-    .status.error { color: var(--danger); }
-    .footer { margin-top: 18px; color: var(--muted); font-size: 12px; text-align: center; }
-    dialog { width: min(680px, calc(100% - 28px)); max-height: min(82vh, 760px); border: 0; border-radius: 18px; padding: 0; box-shadow: 0 24px 80px rgba(0,0,0,.22); }
-    dialog::backdrop { background: rgba(13, 24, 20, .38); }
-    .dialog-shell { display: grid; grid-template-rows: auto minmax(0,1fr); max-height: inherit; }
-    .dialog-head { position: sticky; top: 0; z-index: 1; background: #fff; border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .dialog-head h2 { margin: 0; font-size: 18px; }
-    .dialog-body { overflow: auto; padding: 16px 18px calc(22px + env(safe-area-inset-bottom)); line-height: 1.7; }
-    .dialog-body h3 { margin: 18px 0 6px; font-size: 15px; }
-    .dialog-body h3:first-child { margin-top: 0; }
-    .dialog-body p, .dialog-body li { color: #46534f; }
-    .icon-button { width: 42px; padding: 0; border: 1px solid var(--border); background: #fff; border-radius: 50%; display: grid; place-items: center; }
-    .toast { position: fixed; z-index: 20; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; max-width: calc(100% - 24px); padding: 10px 13px; border-radius: 12px; background: #16221e; color: white; box-shadow: 0 10px 30px rgba(0,0,0,.22); font-size: 13px; }
-    .toast.show { opacity: 1; transform: translate(-50%, 0); }
-    .toast button { min-height: 32px; margin-left: 10px; border: 0; background: transparent; color: #a9e1d2; font-weight: 800; }
-    @media (max-width: 760px) {
-      .shell { width: min(100% - 20px, 680px); padding-top: 10px; }
+    html { min-height: 100%; background: var(--bg); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, textarea, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, textarea:focus-visible, input:focus-visible, summary:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 55%, transparent);
+      outline-offset: 2px;
+    }
+    .app-header {
+      position: sticky;
+      z-index: 30;
+      top: 0;
+      min-height: var(--header-height);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(16px) saturate(1.2);
+    }
+    .header-inner {
+      width: min(1180px, 100%);
+      min-height: var(--header-height);
+      margin: 0 auto;
+      padding: 10px clamp(14px, 2.8vw, 30px);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-mark {
+      display: block;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      border-radius: 11px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .brand-mark img { width: 100%; height: 100%; display: block; }
+    .brand-copy { min-width: 0; }
+    .brand-name {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+      letter-spacing: .01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 7px;
+      padding: 1px 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--surface-muted);
+      font-size: 10px;
+      font-weight: 650;
+      vertical-align: 2px;
+    }
+    .brand-meta {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .button {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .button:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .button:active { transform: translateY(1px); }
+    .language-button {
+      min-width: 0;
+      padding: 5px 1px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: color .16s ease, opacity .16s ease;
+    }
+    .language-button:hover { color: var(--text); }
+    .language-button:active { opacity: .65; }
+    .icon-button {
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .icon-button:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .icon-button:active { transform: translateY(1px); }
+    .icon-button svg { width: 18px; height: 18px; display: block; }
+    .header-icon-button {
+      width: auto;
+      height: auto;
+      padding: 5px 1px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      transition: color .16s ease, opacity .16s ease;
+    }
+    .header-icon-button:hover { border-color: transparent; background: transparent; color: var(--text); }
+    .header-icon-button:active { transform: none; opacity: .65; }
+    .header-icon-button svg { width: 20px; height: 20px; }
+    .main {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 22px clamp(14px, 2.8vw, 30px) 54px;
+    }
+    .page-intro {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 2px 18px;
+    }
+    .page-intro h2 {
+      margin: 0;
+      font-size: clamp(21px, 3vw, 26px);
+      line-height: 1.3;
+      letter-spacing: -.025em;
+    }
+    .page-intro p { margin: 5px 0 0; max-width: 760px; color: var(--muted); font-size: 13px; }
+    .local-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+      margin-top: 3px;
+      padding: 7px 10px;
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+      border-radius: 999px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .local-badge svg { width: 15px; height: 15px; display: block; }
+    .workspace {
+      margin: 0 0 28px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .workspace-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 15px; }
+    .workspace h2, .section-title { margin: 0; letter-spacing: -.02em; }
+    .workspace h2 { font-size: 19px; }
+    .workspace-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .stats { display: flex; flex-wrap: wrap; gap: 7px; }
+    .stat { min-width: 70px; padding: 7px 10px; border-radius: 10px; background: var(--surface-muted); text-align: center; }
+    .stat-value { display: block; font-size: 15px; font-weight: 780; line-height: 1.2; }
+    .stat-label { color: var(--muted); font-size: 10px; }
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      background: #fbfbf9;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    textarea:hover { border-color: var(--line-strong); }
+    .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .button { min-height: 40px; padding: 8px 14px; font-weight: 700; }
+    .button.primary { border-color: var(--accent); color: white; background: var(--accent); }
+    .button.primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+    .button.danger { color: var(--danger); }
+    .save-status { align-self: center; color: var(--muted); font-size: 12px; }
+    .export-row { display: flex; align-items: end; gap: 10px; margin-top: 12px; }
+    .export-field { display: grid; gap: 5px; min-width: min(100%, 320px); }
+    .export-label { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .filename-control { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .filename-control:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent); }
+    .filename-input { width: 100%; min-width: 0; min-height: 40px; padding: 8px 10px; border: 0; outline: 0; background: transparent; color: var(--text); }
+    .filename-extension { padding: 0 10px; color: var(--muted); font-size: 12px; user-select: none; }
+    .section { padding: 26px 0; }
+    .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; margin-bottom: 15px; }
+    .section-title { font-size: 20px; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 13px; }
+    .card-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .card { min-height: 150px; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-sm); }
+    .card-number { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+    .card h3 { margin: 17px 0 6px; font-size: 15px; }
+    .card p { margin: 0; color: var(--muted); font-size: 12px; }
+    details { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; box-shadow: var(--shadow-sm); }
+    summary { cursor: pointer; padding: 14px 16px; font-weight: 720; }
+    .build-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 16px 16px; }
+    .build-item { padding: 11px; border-radius: 10px; background: var(--surface-muted); }
+    .build-item span { display: block; color: var(--muted); font-size: 10px; }
+    .build-item strong { display: block; overflow-wrap: anywhere; font-size: 12px; }
+    footer { width: min(1180px, 100%); margin: 0 auto; padding: 0 clamp(14px, 2.8vw, 30px) 34px; color: var(--muted); font-size: 12px; }
+    /* Reusable toast / Undo component. Canonical source: components/toast.html */
+    .app-toast {
+      position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 60;
+      display: flex; align-items: center; gap: 12px; max-width: min(420px, calc(100vw - 36px));
+      padding: 10px 12px 10px 14px; border: 1px solid var(--line); border-radius: 12px;
+      background: var(--surface); color: var(--text); box-shadow: var(--shadow-md); opacity: 0;
+      transform: translateY(12px); pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+    }
+    .app-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .app-toast[data-tone="success"] { border-color: color-mix(in srgb, var(--accent) 34%, var(--line)); }
+    .app-toast[data-tone="warning"] { border-color: #c58a24; }
+    .app-toast-message { min-width: 0; flex: 1 1 auto; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+    .app-toast-action { flex: 0 0 auto; min-height: 34px; padding: 5px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--accent); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .app-toast-action:hover { background: var(--surface-hover); }
+    .app-toast-action[hidden] { display: none; }
+    dialog {
+      width: min(640px, calc(100% - 28px));
+      max-height: min(760px, calc(100dvh - 28px));
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow-md);
+    }
+    dialog::backdrop { background: rgba(15, 17, 14, .52); backdrop-filter: blur(4px); }
+    #helpDialog[open] {
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 0 0 auto;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .dialog-header h2 { margin: 0; font-size: 17px; }
+    .dialog-body {
+      min-height: 0;
+      flex: 1 1 auto;
+      padding: 20px 20px calc(28px + env(safe-area-inset-bottom));
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dialog-body h3 {
+      margin: 25px 0 8px;
+      padding-top: 19px;
+      border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+      font-size: 14px;
+    }
+    .dialog-body h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+    .dialog-body p, .dialog-body li { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .dialog-body p { margin: 8px 0 0; }
+    .dialog-body ul, .dialog-body ol { margin: 8px 0 0; padding-left: 22px; }
+    .dialog-body li + li { margin-top: 7px; }
+    .dialog-note {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--text) !important;
+    }
+
+    /* Reusable confirmation component. Canonical source: components/confirm-dialog.html */
+    .app-confirm-dialog { width: min(420px, calc(100% - 24px)); max-width: 100%; }
+    .app-confirm-dialog::backdrop { background: rgba(15, 17, 14, .48); backdrop-filter: blur(3px); }
+    .app-confirm-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 18px 13px;
+      border-bottom: 1px solid var(--line);
+    }
+    .app-confirm-title { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+    .app-confirm-close {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .app-confirm-close:hover { background: var(--surface-hover); }
+    .app-confirm-close svg { width: 19px; height: 19px; }
+    .app-confirm-body { padding: 18px; }
+    .app-confirm-message {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+    .app-confirm-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .app-confirm-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 760;
+      cursor: pointer;
+    }
+    .app-confirm-button:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .app-confirm-button.primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .app-confirm-button.primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+    .app-confirm-button.danger { border-color: var(--danger); background: var(--danger); color: #fff; }
+    .app-confirm-button:focus-visible, .app-confirm-close:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 55%, transparent);
+      outline-offset: 2px;
+    }
+
+    code { padding: 1px 5px; border-radius: 5px; background: var(--surface-muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    @media (max-width: 820px) {
+      .page-intro { align-items: stretch; flex-direction: column; gap: 10px; }
+      .local-badge { align-self: flex-start; }
+      .workspace-head, .section-head { align-items: stretch; flex-direction: column; }
+      .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .build-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      :root { --header-height: 58px; }
+      .header-inner { padding-block: 8px; }
+      .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
+      .brand-name { font-size: 15px; }
       .brand-meta { display: none; }
-      .version-badge { display: none; }
-      .tuning-controls { grid-template-columns: 1fr 1fr; }
-      .tuning-actions { grid-column: 1 / -1; justify-content: stretch; }
-      .tuning-actions button { width: 100%; }
-      .grid { grid-template-columns: 1fr; }
-      .hero, .card { border-radius: 16px; padding: 16px; }
-      .settings-grid, .advanced-grid { grid-template-columns: 1fr; }
-      .frequency-row { grid-template-columns: 1fr; }
-      .frequency-row .primary { width: 100%; }
-      .transport > button { flex: 1 1 140px; }
-      dialog { width: 100%; max-width: none; height: min(88vh, 760px); max-height: 88vh; margin: auto 0 0; border-radius: 18px 18px 0 0; }
+      .header-actions { gap: 11px; }
+      .language-button { padding-block: 6px; }
+      .header-icon-button { padding-block: 6px; }
+      .main { padding-top: 18px; }
+      .page-intro { padding-bottom: 14px; }
+      .workspace { padding: 14px; border-radius: 14px; }
+      .stats { width: 100%; }
+      .stat { flex: 1 1 0; min-width: 0; }
+      .card-grid { grid-template-columns: 1fr; }
+      .toolbar, .button-row { width: 100%; }
+      .button-row .button { flex: 1 1 auto; }
+      .export-row, .export-field { width: 100%; }
+      .app-toast { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: none; }
+      textarea { min-height: 235px; }
+      #helpDialog {
+        width: calc(100% - 20px);
+        max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      }
+      #helpDialog .dialog-body {
+        padding: 18px 18px calc(24px + env(safe-area-inset-bottom));
+      }
+      .app-confirm-dialog {
+        width: 100%;
+        max-width: none;
+        margin: auto 0 0;
+        border-width: 1px 0 0;
+        border-radius: 22px 22px 0 0;
+      }
+      .app-confirm-dialog::backdrop { background: rgba(0, 0, 0, .42); backdrop-filter: blur(2px); }
+      .app-confirm-header { padding: 14px 18px 12px; }
+      .app-confirm-body { padding: 12px 18px calc(env(safe-area-inset-bottom) + 18px); }
+      .app-confirm-message { font-size: 14px; line-height: 1.75; }
+      .app-confirm-actions { grid-template-columns: 1fr; gap: 10px; margin-top: 16px; }
+      .app-confirm-button { min-height: 48px; font-size: 14px; }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
     }
+  
+
+    /* APP:BEGIN — Tuning Compare application styles */
+    select { font: inherit; color: inherit; }
+    select:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 55%, transparent);
+      outline-offset: 2px;
+    }
+    .compare-workspace { margin-bottom: 16px; }
+    .compare-active {
+      display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto;
+      padding: 7px 10px; border-radius: 10px; background: var(--surface-muted);
+      color: var(--muted); font-size: 11px;
+    }
+    .compare-active strong { color: var(--accent); font-size: 13px; }
+    .ab-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .ab-slot {
+      min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 14px;
+      background: #fbfbf9;
+    }
+    .ab-slot-head { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
+    .ab-badge {
+      display: inline-grid; place-items: center; width: 28px; height: 28px;
+      border-radius: 9px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 850;
+    }
+    .ab-slot[data-slot="b"] .ab-badge { background: var(--text); }
+    .ab-slot-name { font-size: 14px; font-weight: 780; }
+    .ab-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field-label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 720; }
+    .ab-fields select, .tuning-control select, .setting select {
+      width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 10px;
+      padding: 7px 30px 7px 9px; background: var(--surface);
+    }
+    .unit-field {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch;
+      overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    }
+    .unit-field:focus-within {
+      border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent);
+    }
+    .unit-field input {
+      width: 100%; min-width: 0; min-height: 40px; padding: 7px 9px;
+      border: 0; outline: 0; background: transparent; color: var(--text);
+    }
+    .unit {
+      display: grid; place-items: center; padding: 0 9px; border-left: 1px solid var(--line);
+      color: var(--muted); font-size: 11px;
+    }
+    .ab-custom-details { margin-top: 11px; box-shadow: none; background: var(--surface); }
+    .ab-custom-details[hidden] { display: none; }
+    .ab-custom-details summary { padding: 10px 12px; font-size: 12px; }
+    .ab-custom-hint { margin: 0; padding: 0 12px 10px; color: var(--muted); font-size: 11px; }
+    .ab-custom-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+      padding: 0 12px 12px;
+    }
+    .ab-custom-item { min-width: 0; }
+    .ab-custom-note { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 760; }
+    .ab-custom-item input {
+      width: 100%; min-height: 36px; padding: 6px 7px; border: 1px solid var(--line);
+      border-radius: 9px; background: var(--surface); font-variant-numeric: tabular-nums;
+    }
+    .compare-builder {
+      display: grid; grid-template-columns: minmax(180px, 1fr) minmax(130px, .7fr);
+      gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+    }
+    .compare-builder select {
+      width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 10px;
+      padding: 7px 30px 7px 9px; background: var(--surface);
+    }
+    .comparison-table-wrap {
+      margin-top: 12px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px;
+      background: var(--surface);
+    }
+    .comparison-table, .tuning-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .comparison-table { min-width: 520px; }
+    .tuning-table { min-width: 690px; }
+    .comparison-table th, .comparison-table td, .tuning-table th, .tuning-table td {
+      padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap;
+    }
+    .comparison-table th, .tuning-table th {
+      background: var(--surface-muted); color: var(--muted); font-size: 11px; font-weight: 750;
+    }
+    .comparison-table tr:last-child td, .tuning-table tr:last-child td { border-bottom: 0; }
+    .number, .comparison-number { font-variant-numeric: tabular-nums; }
+    .note-name { font-weight: 800; }
+    .compare-transport, .transport { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .button, .primary, .secondary, .danger-button, .play-row, .note-chip {
+      min-height: 40px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 10px;
+      background: var(--surface); color: var(--text); font: inherit; font-weight: 720; cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .button:hover, .secondary:hover, .play-row:hover, .note-chip:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .button:active, .primary:active, .secondary:active, .danger-button:active, .play-row:active, .note-chip:active { transform: translateY(1px); }
+    .button.primary, .primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .button.primary:hover, .primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+    .danger-button { color: var(--danger); }
+    button:disabled, select:disabled, input:disabled { cursor: not-allowed; opacity: .52; }
+    .ab-status, .status { min-height: 20px; margin: 9px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .status.error, .ab-status.error { color: var(--danger); }
+    .card {
+      min-height: 0; margin: 0 0 16px; padding: 18px; border: 1px solid var(--line);
+      border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-sm);
+    }
+    .card h2 { margin: 0 0 4px; font-size: 18px; letter-spacing: -.02em; }
+    .card-intro { margin: 0 0 15px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .tuning-controls {
+      display: grid; grid-template-columns: 1.1fr .9fr 1fr .9fr auto; gap: 10px; align-items: end;
+    }
+    .tuning-control { min-width: 0; }
+    .tuning-actions { display: flex; justify-content: flex-end; }
+    .tuning-note { margin: 11px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .tuning-table-wrap { margin-top: 12px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    .frequency-edit {
+      width: 118px; min-height: 36px; padding: 6px 7px; border: 1px solid var(--line);
+      border-radius: 9px; background: var(--surface); font-variant-numeric: tabular-nums;
+    }
+    .cent-positive { color: #7a4e00; }
+    .cent-negative { color: #245e8a; }
+    .disabled-control { opacity: .55; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr); gap: 16px; align-items: start; }
+    .frequency-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+    .quick-notes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .note-chip { min-height: 36px; padding: 6px 9px; border-radius: 999px; font-size: 12px; }
+    .note-chip small { color: var(--muted); }
+    .divider { height: 1px; margin: 16px 0; background: var(--line); }
+    .chord-list { display: grid; gap: 8px; }
+    .chord-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 8px; align-items: center; }
+    .chord-toggle { display: grid; place-items: center; width: 42px; height: 40px; }
+    .chord-toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+    .settings-grid, .advanced-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+    .setting { min-width: 0; }
+    input[type="range"] { width: 100%; min-height: 36px; accent-color: var(--accent); }
+    .range-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+    .range-value { min-width: 58px; text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .engine-state {
+      display: grid; gap: 5px; margin-top: 14px; padding: 11px 12px; border-radius: 10px;
+      background: var(--surface-muted); font-size: 12px;
+    }
+    .state-row { display: flex; justify-content: space-between; gap: 12px; }
+    .state-value { font-weight: 760; font-variant-numeric: tabular-nums; }
+    .sr-only-app { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    @media (max-width: 820px) {
+      .ab-grid, .grid { grid-template-columns: 1fr; }
+      .tuning-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tuning-actions { grid-column: 1 / -1; }
+      .tuning-actions .secondary { width: 100%; }
+    }
+    @media (max-width: 620px) {
+      .ab-fields, .compare-builder, .settings-grid, .advanced-grid { grid-template-columns: 1fr; }
+      .ab-custom-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .frequency-row { grid-template-columns: 1fr; }
+      .frequency-row .primary { width: 100%; }
+      .compare-transport > button, .transport > button { flex: 1 1 145px; }
+    }
+    @media (max-width: 520px) {
+      .card { padding: 14px; }
+      .compare-workspace { padding: 14px; }
+      .ab-slot { padding: 12px; }
+      .ab-custom-grid { grid-template-columns: 1fr 1fr; }
+      .tuning-controls { grid-template-columns: 1fr; }
+      .tuning-actions { grid-column: auto; }
+      .compare-active { align-self: flex-start; }
+    }
+    /* APP:END */
+
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="app-header">
-      <div class="brand-lockup">
-        <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="" width="42" height="42">
-        <div class="brand-text">
-          <p class="brand-name" id="brandName">音律聞き比べ</p>
-          <p class="brand-meta" data-i18n="brandMeta">周波数を指定して音を試聴</p>
+  <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <img id="appBrandIcon" src="__APP_ICON_DATA_URI__" alt="">
+          </div>
+          <div class="brand-copy">
+            <p class="brand-name"><span id="brandName">音律聞き比べ</span><span class="version-badge" id="versionBadge">v0.3.0</span></p>
+            <p class="brand-meta" data-i18n="brandMeta">音律をA/Bで聞き比べ</p>
+          </div>
         </div>
-      </div>
-      <div class="header-actions">
-        <span class="version-badge" id="versionBadge">v0.2.0</span>
-        <button type="button" class="header-button" id="languageButton" aria-label="Switch language">EN</button>
-        <button type="button" class="header-button help-button" id="helpButton" data-i18n-aria-label="helpButtonLabel" aria-label="使い方"><span aria-hidden="true">?</span></button>
+        <div class="header-actions">
+          <button class="language-button" id="languageButton" type="button" aria-label="Switch language">EN</button>
+          <button class="icon-button header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.35 2.35 0 1 1 3.72 1.9c-.92.67-1.52 1.12-1.52 2.1"/><path d="M12 17h.01"/></svg>
+          </button>
+        </div>
       </div>
     </header>
 
     <!-- APP:BEGIN -->
-    <main>
-      <section class="hero" aria-labelledby="pageTitle">
-        <div class="eyebrow" data-i18n="milestone">Tuning Engine · v0.2.0</div>
-        <h1 id="pageTitle" data-i18n="title">周波数をそのまま鳴らして確かめる</h1>
-        <p class="lead" data-i18n="lead">12平均律、5-limit純正律、カスタム音律の実周波数を確認し、そのまま試聴できます。音律A/B比較と譜面は次の開発段階で追加します。</p>
-        <div class="local-note">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span data-i18n="localNote">入力した周波数と設定は外部へ送信されません</span>
+    <main class="main">
+
+    <section class="page-intro" aria-labelledby="heroTitle">
+      <div>
+        <h2 id="heroTitle" data-i18n="introTitle">同じ音を、異なる音律で聞き比べる</h2>
+        <p data-i18n="introLead">平均律・純正律・カスタム音律を同じ音色、同じ音量条件で切り替えて比較できます。</p>
+      </div>
+      <div class="local-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
+        <span data-i18n="localBadge">完全ローカル処理</span>
+      </div>
+    </section>
+
+    <section class="workspace compare-workspace" aria-labelledby="compareTitle">
+      <div class="workspace-head">
+        <div>
+          <h2 id="compareTitle" data-i18n="compareTitle">A/B 音律比較</h2>
+          <p data-i18n="compareIntro">AとBを独立して設定し、同じ音を同じ再生位置から切り替えて聞き比べます。</p>
         </div>
-      </section>
+        <div class="compare-active"><span data-i18n="compareActive">再生中</span><strong id="abActiveSide">—</strong></div>
+      </div>
+
+      <div class="ab-grid">
+        <section class="ab-slot" data-slot="a" aria-labelledby="abATitle">
+          <div class="ab-slot-head"><span class="ab-badge">A</span><strong class="ab-slot-name" id="abATitle">12平均律</strong></div>
+          <div class="ab-fields">
+            <label><span class="field-label" data-i18n="slotTuning">音律</span><select id="abAType"><option value="equal" data-i18n="tuningEqual">12平均律</option><option value="just" data-i18n="tuningJust">純正律 5-limit</option><option value="custom" data-i18n="tuningCustom">カスタム</option></select></label>
+            <label><span class="field-label" data-i18n="slotReferenceNote">基準音</span><select id="abAReferenceNote"></select></label>
+            <label><span class="field-label" data-i18n="slotReferenceFrequency">基準周波数</span><span class="unit-field"><input id="abAReferenceFrequency" type="number" inputmode="decimal" min="20" max="20000" step="0.001" value="440.000"><span class="unit">Hz</span></span></label>
+            <label><span class="field-label" data-i18n="slotTonic">純正律の主音</span><select id="abATonic"></select></label>
+          </div>
+          <details class="ab-custom-details" id="abACustomDetails" hidden>
+            <summary data-i18n="customFrequencies">カスタム周波数</summary>
+            <p class="ab-custom-hint" data-i18n="customHint">C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。</p>
+            <div class="ab-custom-grid" id="abACustomGrid"></div>
+          </details>
+        </section>
+
+        <section class="ab-slot" data-slot="b" aria-labelledby="abBTitle">
+          <div class="ab-slot-head"><span class="ab-badge">B</span><strong class="ab-slot-name" id="abBTitle">純正律 5-limit</strong></div>
+          <div class="ab-fields">
+            <label><span class="field-label" data-i18n="slotTuning">音律</span><select id="abBType"><option value="equal" data-i18n="tuningEqual">12平均律</option><option value="just" selected data-i18n="tuningJust">純正律 5-limit</option><option value="custom" data-i18n="tuningCustom">カスタム</option></select></label>
+            <label><span class="field-label" data-i18n="slotReferenceNote">基準音</span><select id="abBReferenceNote"></select></label>
+            <label><span class="field-label" data-i18n="slotReferenceFrequency">基準周波数</span><span class="unit-field"><input id="abBReferenceFrequency" type="number" inputmode="decimal" min="20" max="20000" step="0.001" value="440.000"><span class="unit">Hz</span></span></label>
+            <label><span class="field-label" data-i18n="slotTonic">純正律の主音</span><select id="abBTonic"></select></label>
+          </div>
+          <details class="ab-custom-details" id="abBCustomDetails" hidden>
+            <summary data-i18n="customFrequencies">カスタム周波数</summary>
+            <p class="ab-custom-hint" data-i18n="customHint">C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。</p>
+            <div class="ab-custom-grid" id="abBCustomGrid"></div>
+          </details>
+        </section>
+      </div>
+
+      <div class="compare-builder">
+        <label><span class="field-label" data-i18n="comparePreset">比較する音</span><select id="abPreset"><option value="majorThird" data-i18n="presetMajorThird">長三度</option><option value="perfectFifth" data-i18n="presetPerfectFifth">完全五度</option><option value="majorTriad" selected data-i18n="presetMajorTriad">長三和音</option></select></label>
+        <label><span class="field-label" data-i18n="compareRoot">基準の音</span><select id="abRoot"></select></label>
+      </div>
+
+      <div class="comparison-table-wrap">
+        <table class="comparison-table">
+          <thead><tr><th data-i18n="compareNote">音</th><th data-i18n="compareA">A 周波数</th><th data-i18n="compareB">B 周波数</th><th data-i18n="compareDifference">B − A</th></tr></thead>
+          <tbody id="abComparisonBody"></tbody>
+        </table>
+      </div>
+
+      <div class="compare-transport">
+        <button type="button" class="button primary" id="abPlayA" data-i18n="playA">Aを再生</button>
+        <button type="button" class="button" id="abPlayB" data-i18n="playB">Bを再生</button>
+        <button type="button" class="button" id="abSwitch" data-i18n="switchAB">A/Bを切り替え</button>
+        <button type="button" class="button" id="abSequence" data-i18n="playSequence">A → Bで聞く</button>
+        <button type="button" class="button danger" id="abStop" data-i18n="stopAll">すべて停止</button>
+      </div>
+      <p class="ab-status" id="abStatus" role="status" aria-live="polite"></p>
+    </section>
 
       <section class="card" aria-labelledby="tuningTitle">
         <h2 id="tuningTitle" data-i18n="tuningTitle">音律</h2>
@@ -296,40 +832,37 @@
     </main>
     <!-- APP:END -->
 
-    <p class="footer"><span id="footerName">音律聞き比べ</span> · <span data-i18n="footer">ブラウザ内で音を生成</span></p>
-  </div>
+    <footer><span id="footerName">音律聞き比べ</span> · <span data-i18n="footer">ブラウザ内で音を生成</span></footer>
 
   <dialog id="helpDialog">
-    <div class="dialog-shell">
-      <div class="dialog-head">
-        <h2 data-i18n="helpTitle">使い方と注意事項</h2>
-        <button type="button" class="icon-button" id="closeHelpButton" data-i18n-aria-label="close" aria-label="閉じる">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-      <div class="dialog-body">
-        <!-- APP:HELP:BEGIN -->
-        <h3 data-i18n="helpBasicsTitle">基本操作</h3>
-        <ol>
-          <li data-i18n="helpStep1">単音の周波数へHzを入力し、「単音を試聴」を押します。</li>
-          <li data-i18n="helpStep2">複数の周波数を同時に聞く場合は、使う行にチェックを入れて「和音を試聴」を押します。</li>
-          <li data-i18n="helpStep3">音色・音量・立ち上がり・余韻を変えると、次の試聴から反映されます。</li>
-        </ol>
-        <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
-        <p data-i18n="helpPrivacyBody">入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。</p>
-        <h3 data-i18n="helpNotesTitle">注意事項</h3>
-        <ul>
-          <li data-i18n="helpNoteVolume">突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。</li>
-          <li data-i18n="helpNoteRange">20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。</li>
-          <li data-i18n="helpNoteMilestone">v0.2.0は音声エンジンの段階です。平均律・純正律のA/B比較、譜面、WAV出力は後続バージョンで追加します。</li>
-          <li data-i18n="helpNoteStorage">ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。</li>
-        </ul>
-        <!-- APP:HELP:END -->
-      </div>
+    <div class="dialog-header">
+      <h2 data-i18n="helpTitle">使い方と注意事項</h2>
+      <button class="icon-button" id="closeHelpButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="dialog-body">
+      <!-- APP:HELP:BEGIN -->
+      <h3 data-i18n="helpBasicsTitle">基本操作</h3>
+      <ol>
+        <li data-i18n="helpStep1">AとBそれぞれの音律を設定します。平均律と純正律では基準音、純正律では主音も指定できます。</li>
+        <li data-i18n="helpStep2">長三度・完全五度・長三和音から比較対象を選び、AまたはBを再生します。「A/Bを切り替え」では同じ再生位置のまま音律だけを切り替えます。</li>
+        <li data-i18n="helpStep3">カスタム音律ではC4〜B4をHzで直接変更できます。下の周波数表と手動試聴も引き続き利用できます。</li>
+      </ol>
+      <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
+      <p data-i18n="helpPrivacyBody">入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。</p>
+      <h3 data-i18n="helpNotesTitle">注意事項</h3>
+      <ul>
+        <li data-i18n="helpNoteVolume">突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。</li>
+        <li data-i18n="helpNoteRange">20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。</li>
+        <li data-i18n="helpNoteMilestone">v0.3.0ではA/B比較まで対応しています。譜面とWAV出力は後続バージョンで追加します。</li>
+        <li data-i18n="helpNoteStorage">ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。</li>
+      </ul>
+      <!-- APP:HELP:END -->
     </div>
   </dialog>
 
-  <div class="toast" id="appToast" role="status" aria-live="polite"><span id="appToastMessage"></span><button type="button" id="appToastAction" hidden></button></div>
+  <div class="app-toast" id="appToast" role="status" aria-live="polite"><span class="app-toast-message" id="appToastMessage"></span><button class="app-toast-action" type="button" id="appToastAction" hidden></button></div>
 
   <script type="application/json" id="embedded-assets">__EMBEDDED_ASSET_BUNDLE_JSON__</script>
   <script>
@@ -340,7 +873,7 @@
     const BUILD_MANIFEST = __BUILD_MANIFEST_JSON__;
     const EMBEDDED_ASSETS = JSON.parse(document.getElementById('embedded-assets').textContent || '{}');
 
-    // Keep the template asset API available even though v0.2.0 has no dependencies.
+    // Keep the template asset API available even though v0.3.0 has no dependencies.
     const assetCache = new Map();
     const blobUrls = new Set();
     const decodeBase64 = value => {
@@ -389,25 +922,25 @@
 
     const translations = {
       ja: {
-        brandMeta: '周波数を指定して音を試聴', milestone: 'Tuning Engine · v0.2.0', title: '周波数をそのまま鳴らして確かめる',
+        brandMeta: '音律をA/Bで聞き比べ', introTitle: '同じ音を、異なる音律で聞き比べる', introLead: '平均律・純正律・カスタム音律を同じ音色、同じ音量条件で切り替えて比較できます。', localBadge: '完全ローカル処理', compareTitle: 'A/B 音律比較', compareIntro: 'AとBを独立して設定し、同じ音を同じ再生位置から切り替えて聞き比べます。', compareActive: '再生中', slotTuning: '音律', slotReferenceNote: '基準音', slotReferenceFrequency: '基準周波数', slotTonic: '純正律の主音', customFrequencies: 'カスタム周波数', customHint: 'C4〜B4をHzで直接指定します。他オクターブは2:1で生成します。', comparePreset: '比較する音', compareRoot: '基準の音', presetMajorThird: '長三度', presetPerfectFifth: '完全五度', presetMajorTriad: '長三和音', compareNote: '音', compareA: 'A 周波数', compareB: 'B 周波数', compareDifference: 'B − A', playA: 'Aを再生', playB: 'Bを再生', switchAB: 'A/Bを切り替え', playSequence: 'A → Bで聞く', compareIdle: '—', comparePlaying: '{side}を再生しています。A/B切り替えで同じ再生位置のまま比較できます。', compareSwitched: '{side}へ切り替えました。', sequenceStarted: 'Aを再生し、約1.8秒後にBへ切り替えます。', invalidABFrequency: 'A/B音律の周波数設定を確認してください。', milestone: 'A/B Compare · v0.3.0', title: '周波数をそのまま鳴らして確かめる',
         lead: '12平均律、5-limit純正律、カスタム音律の実周波数を確認し、そのまま試聴できます。音律A/B比較と譜面は次の開発段階で追加します。',
         localNote: '入力した周波数と設定は外部へ送信されません',
-        tuningTitle: '音律', tuningIntro: '基準音と主音から各音の周波数を計算します。カスタムではHzを直接変更できます。', tuningType: '音律', tuningEqual: '12平均律', tuningJust: '純正律 5-limit', tuningCustom: 'カスタム', referenceNote: '基準音', referenceFrequency: '基準周波数', tonic: '純正律の主音', copyToCustom: '現在値をカスタムへコピー', note: '音', frequency: '周波数', ratio: '主音比', equalDifference: '平均律との差', audition: '試聴', equalDescription: '12平均律では、基準音から1半音ごとに同じ比率で周波数を計算します。', justDescription: '5-limit純正律では、選択した主音から定義済みの整数比で各音を計算します。すべての和音が常に純正になる方式ではありません。', customDescription: 'カスタムではC4〜B4のHzを直接編集します。ほかのオクターブは2:1で生成します。', play: '試聴', customCopied: '現在の周波数をカスタム音律へコピーしました。', derivedOctave: 'C5はC4の2倍として自動生成', invalidReference: '基準周波数は20〜20,000 Hzで指定してください。',
+        tuningTitle: '音律を詳しく確認', tuningIntro: '選んだ音律のC4〜C5を周波数・比率・centで確認し、1音ずつ試聴できます。', tuningType: '音律', tuningEqual: '12平均律', tuningJust: '純正律 5-limit', tuningCustom: 'カスタム', referenceNote: '基準音', referenceFrequency: '基準周波数', tonic: '純正律の主音', copyToCustom: '現在値をカスタムへコピー', note: '音', frequency: '周波数', ratio: '主音比', equalDifference: '平均律との差', audition: '試聴', equalDescription: '12平均律では、基準音から1半音ごとに同じ比率で周波数を計算します。', justDescription: '5-limit純正律では、選択した主音から定義済みの整数比で各音を計算します。すべての和音が常に純正になる方式ではありません。', customDescription: 'カスタムではC4〜B4のHzを直接編集します。ほかのオクターブは2:1で生成します。', play: '試聴', customCopied: '現在の周波数をカスタム音律へコピーしました。', derivedOctave: 'C5はC4の2倍として自動生成', invalidReference: '基準周波数は20〜20,000 Hzで指定してください。',
         auditionTitle: '単音・和音を試聴', auditionIntro: '数値を直接入力して鳴らします。音名は入力を助けるためのショートカットです。',
         singleFrequency: '単音の周波数', playSingle: '単音を試聴', frequencyHelp: '20〜20,000 Hz。327.5 Hzのような値も指定できます。', chordTitle: '和音の周波数', playChord: '和音を試聴', stopAll: 'すべて停止',
         soundTitle: '音の設定', soundIntro: '音程の比較を邪魔しない、控えめな倍音を使えます。', timbre: '音色', timbreSine: '正弦波', timbreSoft: 'やわらかい倍音', timbreRich: '豊かな倍音', volume: '音量', advanced: '詳細設定', attack: '立ち上がり', release: '余韻', audioState: '音声', activeVoices: '鳴っている音', audioWaiting: '未開始', audioReady: '準備完了', audioUnsupported: 'このブラウザでは音声を再生できません', footer: 'ブラウザ内で音を生成',
-        helpButtonLabel: '使い方', helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: '音律を選び、平均律・純正律では基準音を設定します。純正律では主音も選びます。', helpStep2: '周波数表の「試聴」で各音を確認できます。カスタムではC4〜B4のHzを直接編集できます。', helpStep3: '単音・和音の手入力や、音色・音量・立ち上がり・余韻の調整もそのまま使えます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。', helpNotesTitle: '注意事項', helpNoteVolume: '突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。', helpNoteRange: '20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。', helpNoteMilestone: 'v0.2.0では12平均律、5-limit純正律、カスタム音律の計算と試聴に対応しています。A/B比較、譜面、WAV出力は後続バージョンで追加します。', helpNoteStorage: 'ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。',
+        helpButtonLabel: '使い方', helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: 'AとBそれぞれの音律を設定します。平均律と純正律では基準音、純正律では主音も指定できます。', helpStep2: '長三度・完全五度・長三和音から比較対象を選び、AまたはBを再生します。「A/Bを切り替え」では同じ再生位置のまま音律だけを切り替えます。', helpStep3: 'カスタム音律ではC4〜B4をHzで直接変更できます。下の周波数表と手動試聴も引き続き利用できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '入力した周波数と設定はブラウザ内だけで処理され、このアプリから外部へ送信されません。音も端末内で生成します。', helpNotesTitle: '注意事項', helpNoteVolume: '突然大きな音が出ないよう、最初は端末の音量を控えめにしてください。', helpNoteRange: '20〜20,000 Hzを入力できますが、実際に聞こえる範囲や再生品質は端末・スピーカー・年齢などで変わります。', helpNoteMilestone: 'v0.3.0ではA/B比較まで対応しています。譜面とWAV出力は後続バージョンで追加します。', helpNoteStorage: 'ブラウザのサイトデータを削除すると、この端末に保存した設定も消える場合があります。',
         invalidFrequency: '20〜20,000 Hzの範囲で周波数を入力してください。', noChordNotes: '有効な周波数を1つ以上選んでください。', playbackFailed: '音を再生できませんでした。ブラウザの音声設定を確認して、もう一度お試しください。', playingSingle: '{frequency} Hzを試聴しています。', playingChord: '{count}音の和音を試聴しています。', stopped: '音を停止しました。', settingsSaved: '設定を端末内に保存しました。'
       },
       en: {
-        brandMeta: 'Audition exact frequencies', milestone: 'Tuning Engine · v0.2.0', title: 'Play the exact frequency you want to hear',
+        brandMeta: 'Compare tunings by ear', introTitle: 'Hear the same notes with different tunings', introLead: 'Switch between equal temperament, just intonation, and custom tunings with the same timbre and level.', localBadge: 'Fully local processing', compareTitle: 'A/B tuning comparison', compareIntro: 'Configure A and B independently, then switch tuning at the same playback position.', compareActive: 'Playing', slotTuning: 'Tuning', slotReferenceNote: 'Reference note', slotReferenceFrequency: 'Reference frequency', slotTonic: 'Just-intonation tonic', customFrequencies: 'Custom frequencies', customHint: 'Set C4–B4 directly in Hz. Other octaves are derived at 2:1.', comparePreset: 'Compare', compareRoot: 'Root note', presetMajorThird: 'Major third', presetPerfectFifth: 'Perfect fifth', presetMajorTriad: 'Major triad', compareNote: 'Note', compareA: 'A frequency', compareB: 'B frequency', compareDifference: 'B − A', playA: 'Play A', playB: 'Play B', switchAB: 'Switch A/B', playSequence: 'Play A → B', compareIdle: '—', comparePlaying: 'Playing {side}. Switch A/B to compare at the same playback position.', compareSwitched: 'Switched to {side}.', sequenceStarted: 'Playing A, then switching to B after about 1.8 seconds.', invalidABFrequency: 'Check the A/B tuning frequency settings.', milestone: 'A/B Compare · v0.3.0', title: 'Play the exact frequency you want to hear',
         lead: 'Calculate and audition actual frequencies for 12-tone equal temperament, 5-limit just intonation, and a custom per-note tuning. A/B comparison and the score editor arrive in the next milestones.',
         localNote: 'Entered frequencies and settings are not sent outside this device',
-        tuningTitle: 'Tuning', tuningIntro: 'Calculate note frequencies from a reference pitch and tonic. Custom mode lets you edit exact Hz values.', tuningType: 'Tuning', tuningEqual: '12-tone equal temperament', tuningJust: 'Just intonation 5-limit', tuningCustom: 'Custom', referenceNote: 'Reference note', referenceFrequency: 'Reference frequency', tonic: 'Just-intonation tonic', copyToCustom: 'Copy current values to Custom', note: 'Note', frequency: 'Frequency', ratio: 'Tonic ratio', equalDifference: 'Difference from equal', audition: 'Audition', equalDescription: 'Equal temperament calculates every semitone with the same frequency ratio from the reference pitch.', justDescription: '5-limit just intonation uses defined integer ratios from the selected tonic. It does not make every chord perfectly just in every context.', customDescription: 'Custom mode edits C4–B4 directly in Hz. Other octaves are generated at a 2:1 ratio.', play: 'Play', customCopied: 'Copied the current frequencies into Custom tuning.', derivedOctave: 'C5 is generated automatically at twice C4', invalidReference: 'Set the reference frequency between 20 and 20,000 Hz.',
+        tuningTitle: 'Inspect a tuning', tuningIntro: 'Inspect C4–C5 by frequency, ratio, and cents, and audition each note individually.', tuningType: 'Tuning', tuningEqual: '12-tone equal temperament', tuningJust: 'Just intonation 5-limit', tuningCustom: 'Custom', referenceNote: 'Reference note', referenceFrequency: 'Reference frequency', tonic: 'Just-intonation tonic', copyToCustom: 'Copy current values to Custom', note: 'Note', frequency: 'Frequency', ratio: 'Tonic ratio', equalDifference: 'Difference from equal', audition: 'Audition', equalDescription: 'Equal temperament calculates every semitone with the same frequency ratio from the reference pitch.', justDescription: '5-limit just intonation uses defined integer ratios from the selected tonic. It does not make every chord perfectly just in every context.', customDescription: 'Custom mode edits C4–B4 directly in Hz. Other octaves are generated at a 2:1 ratio.', play: 'Play', customCopied: 'Copied the current frequencies into Custom tuning.', derivedOctave: 'C5 is generated automatically at twice C4', invalidReference: 'Set the reference frequency between 20 and 20,000 Hz.',
         auditionTitle: 'Audition notes and chords', auditionIntro: 'Enter exact numbers. Note-name shortcuts are only there to make common frequencies quicker to try.',
         singleFrequency: 'Single-note frequency', playSingle: 'Play note', frequencyHelp: '20–20,000 Hz. Values such as 327.5 Hz are supported.', chordTitle: 'Chord frequencies', playChord: 'Play chord', stopAll: 'Stop all',
         soundTitle: 'Sound settings', soundIntro: 'Use restrained harmonics that keep pitch differences easy to hear.', timbre: 'Timbre', timbreSine: 'Sine', timbreSoft: 'Soft harmonics', timbreRich: 'Rich harmonics', volume: 'Volume', advanced: 'Advanced settings', attack: 'Attack', release: 'Release', audioState: 'Audio', activeVoices: 'Active voices', audioWaiting: 'Not started', audioReady: 'Ready', audioUnsupported: 'Audio playback is not supported in this browser', footer: 'Audio generated in your browser',
-        helpButtonLabel: 'How to use', helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Choose a tuning. Equal and just tuning use the reference pitch; just tuning also uses the selected tonic.', helpStep2: 'Use Play in the frequency table to audition each note. In Custom mode, edit C4–B4 directly in Hz.', helpStep3: 'Manual single-note/chord audition and timbre, volume, attack, and release controls remain available.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Entered frequencies and settings are processed only in this browser and are not sent outside by the app. Audio is generated on the device.', helpNotesTitle: 'Notes', helpNoteVolume: 'Start with a modest device volume to avoid unexpectedly loud audio.', helpNoteRange: 'You can enter 20–20,000 Hz, but audible range and playback quality vary by device, speaker, and listener.', helpNoteMilestone: 'v0.2.0 calculates and auditions equal temperament, 5-limit just intonation, and custom tuning. A/B comparison, score editing, and WAV export arrive later.', helpNoteStorage: 'Clearing browser site data may remove settings stored on this device.',
+        helpButtonLabel: 'How to use', helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Configure tuning A and B independently. Equal and just modes use a reference pitch, and just intonation also uses a tonic.', helpStep2: 'Choose Major third, Perfect fifth, or Major triad, then play A or B. Switch A/B changes tuning without restarting the synchronized comparison.', helpStep3: 'Custom tuning lets you edit C4–B4 directly in Hz. The detailed tuning table and manual audition tools remain available below.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Entered frequencies and settings are processed only in this browser and are not sent outside by the app. Audio is generated on the device.', helpNotesTitle: 'Notes', helpNoteVolume: 'Start with a modest device volume to avoid unexpectedly loud audio.', helpNoteRange: 'You can enter 20–20,000 Hz, but audible range and playback quality vary by device, speaker, and listener.', helpNoteMilestone: 'v0.3.0 adds A/B tuning comparison. Score editing and WAV export arrive in later milestones.', helpNoteStorage: 'Clearing browser site data may remove settings stored on this device.',
         invalidFrequency: 'Enter a frequency between 20 and 20,000 Hz.', noChordNotes: 'Enable at least one valid frequency.', playbackFailed: 'Could not play audio. Check the browser audio settings and try again.', playingSingle: 'Playing {frequency} Hz.', playingChord: 'Playing a {count}-note chord.', stopped: 'Stopped audio.', settingsSaved: 'Settings saved locally.'
       }
     };
@@ -452,6 +985,14 @@
       { n: 5, d: 4 }, { n: 4, d: 3 }, { n: 45, d: 32 }, { n: 3, d: 2 },
       { n: 8, d: 5 }, { n: 5, d: 3 }, { n: 9, d: 5 }, { n: 15, d: 8 }
     ];
+
+
+    const AB_PRESETS = Object.freeze({
+      majorThird: [0, 4],
+      perfectFifth: [0, 7],
+      majorTriad: [0, 4, 7]
+    });
+    const abCustomFrequencies = { a: {}, b: {} };
 
     class TuningEngine {
       constructor() { this.custom = {}; }
@@ -520,6 +1061,8 @@
         this.voices = new Set();
         this.periodicWaves = new Map();
         this.onVoiceCountChange = null;
+        this.comparisonSession = null;
+        this.comparisonTimer = 0;
       }
       supported() { return Boolean(window.AudioContext || window.webkitAudioContext); }
       async ensureReady() {
@@ -593,7 +1136,89 @@
         this.notifyCount();
         return group;
       }
+
+      async startComparison(aFrequencies, bFrequencies, { timbre = 'soft', attackMs = 10, releaseMs = 70, durationMs = 6500, masterVolume = .55, initialSide = 'a' } = {}) {
+        const cleanA = aFrequencies.map(Number).filter(value => this.validFrequency(value));
+        const cleanB = bFrequencies.map(Number).filter(value => this.validFrequency(value));
+        if (!cleanA.length || !cleanB.length) throw new Error('No valid comparison frequency');
+        if (cleanA.length + cleanB.length > this.maxVoices) throw new Error('Voice limit exceeded');
+        await this.ensureReady();
+        this.stopAll({ releaseMs: Math.min(30, releaseMs) });
+        this.setMasterVolume(masterVolume);
+
+        const now = this.context.currentTime;
+        const attack = Math.max(.001, Math.min(.5, attackMs / 1000));
+        const release = Math.max(.005, Math.min(2, releaseMs / 1000));
+        const duration = Math.max(.5, Math.min(10, durationMs / 1000));
+        const releaseStart = now + Math.max(attack + .05, duration - release);
+        const perVoiceLevel = Math.min(.9, .82 / Math.sqrt(Math.max(cleanA.length, cleanB.length)));
+        const wave = this.periodicWave(timbre);
+        const aBus = this.context.createGain();
+        const bBus = this.context.createGain();
+        aBus.gain.setValueAtTime(initialSide === 'a' ? 1 : 0, now);
+        bBus.gain.setValueAtTime(initialSide === 'b' ? 1 : 0, now);
+        aBus.connect(this.master);
+        bBus.connect(this.master);
+
+        const session = { aBus, bBus, active: initialSide };
+        this.comparisonSession = session;
+        let remaining = cleanA.length + cleanB.length;
+
+        const createGroup = (frequencies, bus) => {
+          frequencies.forEach(frequency => {
+            const oscillator = this.context.createOscillator();
+            const gain = this.context.createGain();
+            oscillator.frequency.setValueAtTime(frequency, now);
+            if (wave) oscillator.setPeriodicWave(wave); else oscillator.type = 'sine';
+            gain.gain.setValueAtTime(.0001, now);
+            gain.gain.exponentialRampToValueAtTime(Math.max(.0002, perVoiceLevel), now + attack);
+            gain.gain.setValueAtTime(Math.max(.0002, perVoiceLevel), releaseStart);
+            gain.gain.exponentialRampToValueAtTime(.0001, releaseStart + release);
+            oscillator.connect(gain);
+            gain.connect(bus);
+            const voice = { oscillator, gain, stopped: false };
+            this.voices.add(voice);
+            oscillator.addEventListener('ended', () => {
+              this.voices.delete(voice);
+              remaining -= 1;
+              try { oscillator.disconnect(); gain.disconnect(); } catch { /* already disconnected */ }
+              if (remaining === 0) {
+                try { aBus.disconnect(); bBus.disconnect(); } catch { /* already disconnected */ }
+                if (this.comparisonSession === session) this.comparisonSession = null;
+              }
+              this.notifyCount();
+            }, { once: true });
+            oscillator.start(now);
+            oscillator.stop(releaseStart + release + .01);
+          });
+        };
+        createGroup(cleanA, aBus);
+        createGroup(cleanB, bBus);
+        this.notifyCount();
+        return session;
+      }
+      switchComparison(side, crossfadeMs = 24) {
+        const session = this.comparisonSession;
+        if (!session || !this.context || !['a','b'].includes(side)) return null;
+        const now = this.context.currentTime;
+        const end = now + Math.max(.008, Math.min(.12, crossfadeMs / 1000));
+        const aTarget = side === 'a' ? 1 : 0;
+        const bTarget = side === 'b' ? 1 : 0;
+        [session.aBus.gain, session.bBus.gain].forEach(param => {
+          const current = Math.max(0, Math.min(1, Number(param.value) || 0));
+          param.cancelScheduledValues(now);
+          param.setValueAtTime(current, now);
+        });
+        session.aBus.gain.linearRampToValueAtTime(aTarget, end);
+        session.bBus.gain.linearRampToValueAtTime(bTarget, end);
+        session.active = side;
+        return side;
+      }
+
       stopAll({ releaseMs = 70 } = {}) {
+        clearTimeout(this.comparisonTimer);
+        this.comparisonTimer = 0;
+        this.comparisonSession = null;
         if (!this.context || !this.voices.size) return;
         const now = this.context.currentTime;
         const release = Math.max(.005, Math.min(.5, releaseMs / 1000));
@@ -632,6 +1257,200 @@
       });
     }
 
+
+    function abPrefix(side) { return '#ab' + side.toUpperCase(); }
+    function abTypeLabel(type) {
+      return t(type === 'just' ? 'tuningJust' : type === 'custom' ? 'tuningCustom' : 'tuningEqual');
+    }
+    function initializeABControls() {
+      ['a','b'].forEach(side => {
+        const reference = $(abPrefix(side) + 'ReferenceNote');
+        const tonic = $(abPrefix(side) + 'Tonic');
+        NOTE_NAMES.forEach((name, index) => {
+          const refOption = document.createElement('option');
+          refOption.value = name + '4';
+          refOption.textContent = DISPLAY_NOTES[index] + '4';
+          if (name === 'A') refOption.selected = true;
+          reference.append(refOption);
+          const tonicOption = document.createElement('option');
+          tonicOption.value = name;
+          tonicOption.textContent = DISPLAY_NOTES[index];
+          if (name === 'C') tonicOption.selected = true;
+          tonic.append(tonicOption);
+        });
+      });
+      const root = $('#abRoot');
+      NOTE_NAMES.forEach((name, index) => {
+        const option = document.createElement('option');
+        option.value = name + '4';
+        option.textContent = DISPLAY_NOTES[index] + '4';
+        if (name === 'C') option.selected = true;
+        root.append(option);
+      });
+    }
+    function abSlotSettings(side) {
+      const prefix = abPrefix(side);
+      const rawReference = Number($(prefix + 'ReferenceFrequency').value);
+      return {
+        type: $(prefix + 'Type').value || 'equal',
+        referenceNote: $(prefix + 'ReferenceNote').value || 'A4',
+        referenceFrequency: Number.isFinite(rawReference) && rawReference >= 20 && rawReference <= 20000 ? rawReference : 440,
+        tonic: $(prefix + 'Tonic').value || 'C'
+      };
+    }
+    function ensureABCustom(side, force = false) {
+      const settings = abSlotSettings(side);
+      const map = abCustomFrequencies[side];
+      const referenceMidi = tuningEngine.noteToMidi(settings.referenceNote);
+      for (let midi = 60; midi <= 71; midi += 1) {
+        const note = tuningEngine.midiToNote(midi);
+        if (force || !Number.isFinite(Number(map[note]))) {
+          map[note] = tuningEngine.equalFrequency(midi, referenceMidi, settings.referenceFrequency);
+        }
+      }
+    }
+    function abCustomFrequency(side, note) {
+      const midi = tuningEngine.noteToMidi(note);
+      const pitchClass = ((midi % 12) + 12) % 12;
+      const baseMidi = 60 + pitchClass;
+      const baseNote = tuningEngine.midiToNote(baseMidi);
+      const baseFrequency = Number(abCustomFrequencies[side][baseNote]);
+      if (!Number.isFinite(baseFrequency) || baseFrequency <= 0) return NaN;
+      return baseFrequency * Math.pow(2, (midi - baseMidi) / 12);
+    }
+    function abFrequency(side, note) {
+      const settings = abSlotSettings(side);
+      if (settings.type === 'custom') {
+        ensureABCustom(side, false);
+        return abCustomFrequency(side, note);
+      }
+      return tuningEngine.frequency(note, settings.type, settings);
+    }
+    function renderABCustomGrid(side) {
+      ensureABCustom(side, false);
+      const prefix = abPrefix(side);
+      const grid = $(prefix + 'CustomGrid');
+      grid.replaceChildren();
+      for (let midi = 60; midi <= 71; midi += 1) {
+        const note = tuningEngine.midiToNote(midi);
+        const label = document.createElement('label');
+        label.className = 'ab-custom-item';
+        const noteLabel = document.createElement('span');
+        noteLabel.className = 'ab-custom-note';
+        noteLabel.textContent = note.replace('#','♯');
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.inputMode = 'decimal';
+        input.min = '20';
+        input.max = '20000';
+        input.step = '0.001';
+        input.value = formatFrequency(abCustomFrequencies[side][note]);
+        input.setAttribute('aria-label', (side.toUpperCase() + ' ' + note.replace('#','♯') + ' Hz'));
+        input.addEventListener('change', () => {
+          const value = Number(input.value);
+          const valid = Number.isFinite(value) && value >= 20 && value <= 20000;
+          input.setAttribute('aria-invalid', valid ? 'false' : 'true');
+          if (!valid) return;
+          abCustomFrequencies[side][note] = value;
+          renderABComparison();
+          scheduleSave();
+        });
+        label.append(noteLabel, input);
+        grid.append(label);
+      }
+    }
+    function renderABSlot(side) {
+      const prefix = abPrefix(side);
+      const settings = abSlotSettings(side);
+      const custom = settings.type === 'custom';
+      const just = settings.type === 'just';
+      if (custom) ensureABCustom(side, false);
+      $(prefix + 'ReferenceNote').disabled = custom;
+      $(prefix + 'ReferenceFrequency').disabled = custom;
+      $(prefix + 'Tonic').disabled = !just;
+      $(prefix + 'CustomDetails').hidden = !custom;
+      $(prefix + 'Title').textContent = abTypeLabel(settings.type);
+      if (custom) renderABCustomGrid(side);
+    }
+    function comparisonNotes() {
+      const root = $('#abRoot').value || 'C4';
+      const rootMidi = tuningEngine.noteToMidi(root);
+      const intervals = AB_PRESETS[$('#abPreset').value] || AB_PRESETS.majorTriad;
+      return intervals.map(interval => tuningEngine.midiToNote(rootMidi + interval));
+    }
+    function renderABComparison() {
+      renderABSlot('a');
+      renderABSlot('b');
+      const body = $('#abComparisonBody');
+      body.replaceChildren();
+      comparisonNotes().forEach(note => {
+        const a = abFrequency('a', note);
+        const b = abFrequency('b', note);
+        const cents = tuningEngine.centsDifference(b, a);
+        const row = document.createElement('tr');
+        const noteCell = document.createElement('td');
+        noteCell.className = 'note-name';
+        noteCell.textContent = note.replace('#','♯');
+        const aCell = document.createElement('td');
+        aCell.className = 'comparison-number';
+        aCell.textContent = formatFrequency(a) + ' Hz';
+        const bCell = document.createElement('td');
+        bCell.className = 'comparison-number';
+        bCell.textContent = formatFrequency(b) + ' Hz';
+        const diffCell = document.createElement('td');
+        diffCell.className = cents > .005 ? 'cent-positive' : cents < -.005 ? 'cent-negative' : 'comparison-number';
+        diffCell.textContent = formatCents(cents);
+        row.append(noteCell, aCell, bCell, diffCell);
+        body.append(row);
+      });
+    }
+    function abFrequencies(side) { return comparisonNotes().map(note => abFrequency(side, note)); }
+    function setABActive(side) {
+      $('#abActiveSide').textContent = side ? side.toUpperCase() : t('compareIdle');
+    }
+    function setABStatus(message, isError = false) {
+      const status = $('#abStatus');
+      status.textContent = message || '';
+      status.classList.toggle('error', isError);
+    }
+    async function startABComparison(initialSide = 'a', autoSwitch = false) {
+      const a = abFrequencies('a');
+      const b = abFrequencies('b');
+      if (a.some(value => !engine.validFrequency(value)) || b.some(value => !engine.validFrequency(value))) {
+        setABStatus(t('invalidABFrequency'), true);
+        return;
+      }
+      try {
+        await engine.startComparison(a, b, { ...playbackOptions(), durationMs: autoSwitch ? 4200 : 6800, initialSide });
+        setAudioReadyState();
+        setABActive(initialSide);
+        setABStatus(autoSwitch ? t('sequenceStarted') : t('comparePlaying', { side: initialSide.toUpperCase() }));
+        if (autoSwitch) {
+          clearTimeout(engine.comparisonTimer);
+          engine.comparisonTimer = window.setTimeout(() => {
+            if (engine.switchComparison('b')) {
+              setABActive('b');
+              setABStatus(t('compareSwitched', { side: 'B' }));
+            }
+          }, 1800);
+        }
+      } catch (error) {
+        console.error(error);
+        setABStatus(t('playbackFailed'), true);
+      }
+    }
+    async function toggleABComparison() {
+      if (!engine.comparisonSession) {
+        await startABComparison('a', false);
+        return;
+      }
+      const next = engine.comparisonSession.active === 'a' ? 'b' : 'a';
+      if (engine.switchComparison(next)) {
+        setABActive(next);
+        setABStatus(t('compareSwitched', { side: next.toUpperCase() }));
+      }
+    }
+
     function tuningSettings() {
       const referenceFrequency = Number($('#referenceFrequency').value);
       return {
@@ -661,6 +1480,12 @@
         referenceFrequency: $('#referenceFrequency').value,
         tonic: $('#tonic').value,
         customFrequencies: { ...tuningEngine.custom },
+        abCompare: {
+          preset: $('#abPreset').value,
+          root: $('#abRoot').value,
+          a: { ...abSlotSettings('a'), customFrequencies: { ...abCustomFrequencies.a } },
+          b: { ...abSlotSettings('b'), customFrequencies: { ...abCustomFrequencies.b } }
+        },
         singleFrequency: $('#singleFrequency').value,
         chordFrequencies: $$('.chord-frequency').map(input => input.value),
         chordEnabled: $$('.chord-enabled').map(input => input.checked),
@@ -686,6 +1511,26 @@
           Object.entries(saved.customFrequencies).forEach(([note, value]) => {
             const frequency = Number(value);
             if (/^[A-G]#?4$/.test(note) && Number.isFinite(frequency) && frequency >= 20 && frequency <= 20000) tuningEngine.custom[note] = frequency;
+          });
+        }
+
+        if (saved.abCompare && typeof saved.abCompare === 'object') {
+          if (saved.abCompare.preset && AB_PRESETS[saved.abCompare.preset]) $('#abPreset').value = saved.abCompare.preset;
+          if (saved.abCompare.root && [...$('#abRoot').options].some(option => option.value === saved.abCompare.root)) $('#abRoot').value = saved.abCompare.root;
+          ['a','b'].forEach(side => {
+            const savedSlot = saved.abCompare[side];
+            if (!savedSlot || typeof savedSlot !== 'object') return;
+            const prefix = abPrefix(side);
+            if (['equal','just','custom'].includes(savedSlot.type)) $(prefix + 'Type').value = savedSlot.type;
+            if (savedSlot.referenceNote && [...$(prefix + 'ReferenceNote').options].some(option => option.value === savedSlot.referenceNote)) $(prefix + 'ReferenceNote').value = savedSlot.referenceNote;
+            if (savedSlot.referenceFrequency != null) $(prefix + 'ReferenceFrequency').value = savedSlot.referenceFrequency;
+            if (savedSlot.tonic && NOTE_NAMES.includes(savedSlot.tonic)) $(prefix + 'Tonic').value = savedSlot.tonic;
+            if (savedSlot.customFrequencies && typeof savedSlot.customFrequencies === 'object') {
+              Object.entries(savedSlot.customFrequencies).forEach(([note, value]) => {
+                const frequency = Number(value);
+                if (/^[A-G]#?4$/.test(note) && Number.isFinite(frequency) && frequency >= 20 && frequency <= 20000) abCustomFrequencies[side][note] = frequency;
+              });
+            }
           });
         }
         if (saved.singleFrequency != null) $('#singleFrequency').value = saved.singleFrequency;
@@ -803,6 +1648,7 @@
       $('#audioStateValue').textContent = t('audioReady');
     }
     async function playSingle() {
+      setABActive(null);
       const frequency = parseFrequency($('#singleFrequency'));
       if (frequency == null) { setStatus(t('invalidFrequency'), true); $('#singleFrequency').focus(); return; }
       try {
@@ -811,6 +1657,7 @@
       } catch (error) { console.error(error); setStatus(t('playbackFailed'), true); }
     }
     async function playChord() {
+      setABActive(null);
       const frequencies = [];
       const enabled = $$('.chord-enabled');
       $$('.chord-frequency').forEach((input, index) => { if (!enabled[index].checked) return; const frequency = parseFrequency(input); if (frequency != null) frequencies.push(frequency); });
@@ -820,7 +1667,7 @@
         setAudioReadyState(); setStatus(t('playingChord', { count: frequencies.length }));
       } catch (error) { console.error(error); setStatus(t('playbackFailed'), true); }
     }
-    function stopAll() { engine.stopAll({ releaseMs: Number($('#releaseMs').value) || 70 }); setStatus(t('stopped')); }
+    function stopAll() { engine.stopAll({ releaseMs: Number($('#releaseMs').value) || 70 }); setABActive(null); setABStatus(''); setStatus(t('stopped')); }
 
     function applyLanguage() {
       document.documentElement.lang = language;
@@ -829,6 +1676,7 @@
         if (element instanceof HTMLOptionElement) element.textContent = t(key); else element.textContent = t(key);
       });
       document.querySelectorAll('[data-i18n-aria-label]').forEach(element => element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel)));
+      document.querySelectorAll('[data-i18n-title]').forEach(element => element.setAttribute('title', t(element.dataset.i18nTitle)));
       $('#languageButton').textContent = language === 'ja' ? 'EN' : '日本語';
       $('#languageButton').setAttribute('aria-label', language === 'ja' ? '英語に切り替え' : 'Switch to Japanese');
       document.title = language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
@@ -839,6 +1687,7 @@
       else if (!engine.context) state.textContent = t('audioWaiting');
       else state.textContent = t('audioReady');
       if ($('#tuningTableBody')) renderTuningTable();
+      if ($('#abComparisonBody')) renderABComparison();
     }
 
     $('#languageButton').addEventListener('click', () => { language = language === 'ja' ? 'en' : 'ja'; writeStorage(languageKey, language); applyLanguage(); scheduleSave(); });
@@ -855,6 +1704,27 @@
     $('#referenceFrequency').addEventListener('change', () => { if (validateReference()) { renderTuningTable(); scheduleSave(); } });
     $('#tonic').addEventListener('change', () => { renderTuningTable(); scheduleSave(); });
     $('#copyToCustomButton').addEventListener('click', copyCurrentToCustom);
+
+    ['a','b'].forEach(side => {
+      const prefix = abPrefix(side);
+      $(prefix + 'Type').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
+      $(prefix + 'ReferenceNote').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
+      $(prefix + 'ReferenceFrequency').addEventListener('change', event => {
+        const value = Number(event.currentTarget.value);
+        const valid = Number.isFinite(value) && value >= 20 && value <= 20000;
+        event.currentTarget.setAttribute('aria-invalid', valid ? 'false' : 'true');
+        if (valid) { renderABComparison(); scheduleSave(); }
+      });
+      $(prefix + 'Tonic').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
+    });
+    $('#abPreset').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
+    $('#abRoot').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
+    $('#abPlayA').addEventListener('click', () => startABComparison('a', false));
+    $('#abPlayB').addEventListener('click', () => startABComparison('b', false));
+    $('#abSwitch').addEventListener('click', toggleABComparison);
+    $('#abSequence').addEventListener('click', () => startABComparison('a', true));
+    $('#abStop').addEventListener('click', stopAll);
+
     $('#masterVolume').addEventListener('input', () => { $('#volumeValue').textContent = `${$('#masterVolume').value}%`; engine.setMasterVolume(Number($('#masterVolume').value) / 100); scheduleSave(); });
     document.querySelectorAll('input,select').forEach(control => { if (control.id !== 'masterVolume') control.addEventListener('change', scheduleSave); });
     window.addEventListener('pagehide', () => engine.stopAll({ releaseMs: 10 }));
@@ -864,14 +1734,20 @@
     });
 
     initializeTuningControls();
+    initializeABControls();
     restoreSettings();
     ensureCustomInitialized(false);
+    ensureABCustom('a', false);
+    ensureABCustom('b', false);
+    renderABComparison();
+    setABActive(null);
     $('#volumeValue').textContent = `${$('#masterVolume').value}%`;
     $('#versionBadge').textContent = `v${APP_CONFIG.version}`;
     if (!engine.supported()) {
       $('#audioStateValue').dataset.unsupported = 'true';
       $('#audioStateValue').textContent = t('audioUnsupported');
       $('#playSingleButton').disabled = true; $('#playChordButton').disabled = true; $('#stopButton').disabled = true;
+      ['#abPlayA','#abPlayB','#abSwitch','#abSequence','#abStop'].forEach(selector => { $(selector).disabled = true; });
     }
     applyLanguage();
 

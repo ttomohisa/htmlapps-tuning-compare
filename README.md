@@ -1,27 +1,39 @@
 # Tuning Compare / 音律聞き比べ
 
-A Browser Kitty browser app for hearing the same music with different tuning systems.
+A Browser Kitty app for comparing equal temperament, just intonation, and exact custom tunings with the same timbre and playback position.
 
-**v0.2.0 is the Tuning Engine milestone.** It adds equal temperament, a concrete 5-limit just-intonation preset, and direct C4–B4 custom Hz editing on top of the v0.1.0 Audio Core.
+**v0.3.0 is the A/B Compare milestone.** Tuning A and B are configured independently. Both audio layers start on the same AudioContext timeline, so switching A/B changes tuning without restarting the comparison.
 
-## v0.2.0 features
+## v0.3.0 features
 
-- Calculate and audition 12-tone equal temperament from an editable reference pitch
-- Calculate and audition a fixed-ratio 5-limit just-intonation preset with selectable tonic
-- Edit C4–B4 as exact custom Hz values and derive other octaves at 2:1
-- Inspect frequency, just ratio, and cent difference from equal temperament
-- Audition arbitrary frequencies from 20 to 20,000 Hz
-- Play up to four visible manual chord frequencies
-- Audio engine supports up to 16 concurrent voices
+- Independent A/B equal, 5-limit just, or custom tuning
+- Independent reference pitch and just-intonation tonic per side
+- Separate direct C4–B4 custom Hz maps for A and B
+- Major-third, perfect-fifth, and major-triad quick comparisons
+- Synchronized dual-layer playback with an approximately 24 ms A/B crossfade
+- Automatic A → B comparison
+- Exact A/B frequency and cent-difference table
+- v0.2 C4–C5 tuning inspection and per-note audition
+- Arbitrary-Hz single-note and chord audition
 - Sine / Soft harmonics / Rich harmonics
-- Master volume, attack, and release controls
-- Japanese / English UI
-- Local settings persistence
+- Japanese / English UI and local settings persistence
 - No runtime network dependency
+
+## Privacy
+
+Frequencies, tuning settings, and interactions are processed in the browser. There is no runtime API, CDN, analytics, or telemetry dependency.
+
+## Development
+
+The repository follows the current `ttomohisa/htmlapps-template` structure. Edit `src/index.template.html`; do not hand-edit generated HTML.
+
+Windows verification:
+
+    powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-powershell-syntax.ps1
+    pwsh -NoProfile -File .\scripts\check-repository.ps1
 
 ## Roadmap
 
-- v0.3.0: A/B Compare
 - v0.4.0: Score Editor MVP
 - v0.5.0: Mobile / Score UX
 - v0.6.0: WAV Export
@@ -29,23 +41,6 @@ A Browser Kitty browser app for hearing the same music with different tuning sys
 - v0.8.0: UX / Learning Support
 - v0.9.0: Release Candidate
 - v1.0.0: Formal Release
-
-## Privacy
-
-Frequencies and settings are processed in the browser. v0.2.0 has no runtime API, CDN, analytics, or telemetry dependency.
-
-## Development
-
-This implementation overlay targets `ttomohisa/htmlapps-template` `main` at commit `cb908779682fa315ccd0f1eb58549f6c208f36f0` (2026-09-29).
-
-Apply these files over that template, then run on Windows:
-
-```powershell
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-powershell-syntax.ps1
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-repository.ps1
-```
-
-The template build contract generates `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
 
 ## License
 
