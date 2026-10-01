@@ -239,6 +239,20 @@ Play A / Play B buttons reserve the playing-indicator dot area in both idle and 
 
 The indicator changes opacity rather than being inserted only during playback, so button width and neighboring controls must not shift when playback starts or stops.
 
+### Rest engraving and accidental click editing
+
+Score notation follows these additional rules:
+
+- whole rest hangs from the fourth staff line (second line from the top)
+- half rest sits on the middle staff line
+- quarter and eighth rests use standard Unicode music-rest glyphs rather than ad-hoc path approximations
+- staff lines extend behind the treble clef and time signature so both symbols are visually part of the staff
+- staff lines are drawn before clef/time-signature glyphs so the symbols remain legible
+- the score header does not show the redundant "4 measures / event count" badge
+- clicking an existing note without dragging applies the currently selected accidental to that staff position
+- flat / natural / sharp click edits participate in Undo history
+- dragging still changes pitch/time and does not also apply the currently selected accidental on pointer release
+
 ## 16. Acceptance criteria
 
 - A/B reference-note and tonic dropdowns are populated and selectable
@@ -261,6 +275,11 @@ The indicator changes opacity rather than being inserted only during playback, s
 - clearing a non-empty score uses the AppConfirm dialog before deletion
 - clearing remains Undoable after confirmation
 - A/B and score playback buttons do not change width when the playing indicator appears
+- whole and half rests render at standard staff positions
+- quarter and eighth rests use standard music-rest shapes
+- treble clef and time signature appear on the staff rather than outside the staff lines
+- redundant score-header measure/event-count badge is absent
+- clicking an existing note applies the selected flat/natural/sharp without dragging
 - standalone build and repository validation pass
 
 ## 17. Remaining roadmap
