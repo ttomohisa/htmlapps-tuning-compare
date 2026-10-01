@@ -1978,13 +1978,14 @@
 
 
     function scoreBeatsPerMeasure(){ return scoreState.timeSignature==='3/4'?3:4; }
-    function scoreTotalBeats(){ return scoreBeatsPerMeasure()*2; }
+    function scoreMeasureCount(){ return SCORE_MEASURE_COUNT; }
+    function scoreTotalBeats(){ return scoreBeatsPerMeasure()*scoreMeasureCount(); }
     function scoreDurationLabel(value){ return t(SCORE_DURATION_NAMES[value]||'scoreQuarter'); }
     function scorePitchForStep(stepIndex,accidental=scoreState.accidental){
       const natural=SCORE_NATURAL_NOTES[Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,stepIndex))];
       const match=/^([A-G])(\d+)$/.exec(natural);
       if(!match||accidental==='natural') return {note:natural,display:natural,accidental:'natural'};
-      const letter=match[1], octave=Number(match[2]);
+      const letter=match[1],octave=Number(match[2]);
       if(accidental==='sharp'){
         const note=letter==='B'?'C'+(octave+1):letter==='E'?'F'+octave:letter+'#'+octave;
         return {note:note,display:letter+'♯'+octave,accidental:'sharp'};
@@ -1996,70 +1997,119 @@
     }
     function scoreStepForNatural(note){
       const normalized=String(note).replace(/[♯♭]/g,'').replace('#','');
-      const letter=normalized.charAt(0), octaveMatch=normalized.match(/(-?\d+)$/), octave=octaveMatch?Number(octaveMatch[1]):4;
+      const letter=normalized.charAt(0),octaveMatch=normalized.match(/(-?\d+)$/),octave=octaveMatch?Number(octaveMatch[1]):4;
       const index=SCORE_NATURAL_NOTES.indexOf(letter+octave); return index>=0?index:0;
     }
-
     function scoreIsCompact(){ return window.matchMedia?.('(max-width:600px)').matches ?? false; }
     function scoreLayout(){
-      if(scoreIsCompact()) return {width:480,height:360,left:70,right:452,systemTops:[58,218],compact:true,hitWidth:60};
-      return {width:960,height:230,left:92,right:930,systemTops:[76],compact:false,hitWidth:48};
+      const compact=scoreIsCompact(),measuresPerSystem=compact?1:2,systemCount=Math.ceil(scoreMeasureCount()/measuresPerSystem);
+      const firstTop=compact?58:72,systemGap=compact?148:154;
+      const systemTops=Array.from({length:systemCount},(_,index)=>firstTop+index*systemGap);
+      return {
+        width:compact?480:960,
+        height:systemTops[systemTops.length-1]+108,
+        left:compact?70:92,
+        right:compact?452:930,
+        compact,
+        measuresPerSystem,
+        systemTops
+      };
     }
-    function scoreMeasureIndexForBeat(beat){ return Math.max(0,Math.min(1,Math.floor(Math.max(0,beat)/scoreBeatsPerMeasure()))); }
-    function scoreSystemTop(measure,layout=scoreLayout()){ return layout.compact?layout.systemTops[measure]:layout.systemTops[0]; }
-    function scoreYForStep(step,measure=0,layout=scoreLayout()){ return scoreSystemTop(measure,layout)+66-step*6; }
+    function scoreMeasureIndexForBeat(beat){
+      return Math.max(0,Math.min(scoreMeasureCount()-1,Math.floor(Math.max(0,beat)/scoreBeatsPerMeasure())));
+    }
+    function scoreSystemIndexForMeasure(measure,layout=scoreLayout()){
+      return Math.max(0,Math.min(layout.systemTops.length-1,Math.floor(measure/layout.measuresPerSystem)));
+    }
+    function scoreSystemTopForMeasure(measure,layout=scoreLayout()){
+      return layout.systemTops[scoreSystemIndexForMeasure(measure,layout)];
+    }
+    function scoreSystemStartMeasure(systemIndex,layout=scoreLayout()){
+      return systemIndex*layout.measuresPerSystem;
+    }
+    function scoreYForStep(step,measure=0,layout=scoreLayout()){
+      return scoreSystemTopForMeasure(measure,layout)+66-step*6;
+    }
     function scoreXForBeat(beat,layout=scoreLayout()){
-      if(layout.compact){
-        const measure=scoreMeasureIndexForBeat(beat), local=beat-measure*scoreBeatsPerMeasure();
-        return layout.left+(Math.max(0,Math.min(scoreBeatsPerMeasure(),local))/scoreBeatsPerMeasure())*(layout.right-layout.left);
-      }
-      return layout.left+(Math.max(0,Math.min(scoreTotalBeats(),beat))/scoreTotalBeats())*(layout.right-layout.left);
+      const beatsPerMeasure=scoreBeatsPerMeasure(),measure=scoreMeasureIndexForBeat(beat);
+      const systemIndex=scoreSystemIndexForMeasure(measure,layout),systemStartMeasure=scoreSystemStartMeasure(systemIndex,layout);
+      const local=beat-systemStartMeasure*beatsPerMeasure;
+      const span=beatsPerMeasure*layout.measuresPerSystem;
+      return layout.left+(Math.max(0,Math.min(span,local))/span)*(layout.right-layout.left);
     }
-    function scorePointToPosition(x,y){
-      const layout=scoreLayout(), beatsPerMeasure=scoreBeatsPerMeasure();
+    function scoreSnapLocalBeat(raw,duration,beatsPerMeasure){
+      const safeDuration=[.5,1,2,4].includes(Number(duration))?Number(duration):1;
+      const effectiveDuration=Math.min(safeDuration,beatsPerMeasure);
+      const maxStart=Math.max(0,beatsPerMeasure-effectiveDuration);
+      const step=Math.max(.5,effectiveDuration);
+      return Math.max(0,Math.min(maxStart,Math.round(Math.max(0,raw)/step)*step));
+    }
+    function scorePointToPosition(x,y,duration=scoreState.duration){
+      const layout=scoreLayout(),beatsPerMeasure=scoreBeatsPerMeasure();
       if(x<layout.left||x>layout.right) return null;
-      let measure=0, top=layout.systemTops[0];
-      if(layout.compact){
-        const candidates=layout.systemTops.map((systemTop,index)=>({index,top:systemTop,distance:Math.abs(y-(systemTop+30))})).sort((a,b)=>a.distance-b.distance);
-        measure=candidates[0].index; top=candidates[0].top;
-        if(y<top-28||y>top+100) return null;
-      } else if(y<48||y>160) return null;
+      const systems=layout.systemTops.map((top,index)=>({top,index,distance:Math.abs(y-(top+28))})).sort((a,b)=>a.distance-b.distance);
+      const system=systems[0];
+      if(!system||y<system.top-30||y>system.top+92) return null;
       const ratio=(x-layout.left)/(layout.right-layout.left);
-      const span=layout.compact?beatsPerMeasure:scoreTotalBeats();
-      const raw=Math.max(0,Math.min(span-.5,ratio*span));
-      const localBeat=Math.round(raw*2)/2;
-      const beat=layout.compact?measure*beatsPerMeasure+localBeat:localBeat;
-      const step=Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,Math.round((top+66-y)/6)));
-      return {beat,step,measure};
+      const span=beatsPerMeasure*layout.measuresPerSystem;
+      const rawInSystem=Math.max(0,Math.min(span-.001,ratio*span));
+      const localMeasure=Math.max(0,Math.min(layout.measuresPerSystem-1,Math.floor(rawInSystem/beatsPerMeasure)));
+      const measure=scoreSystemStartMeasure(system.index,layout)+localMeasure;
+      if(measure>=scoreMeasureCount()) return null;
+      const rawBeat=rawInSystem-localMeasure*beatsPerMeasure;
+      const localBeat=scoreSnapLocalBeat(rawBeat,duration,beatsPerMeasure);
+      const beat=measure*beatsPerMeasure+localBeat;
+      const step=Math.max(0,Math.min(SCORE_NATURAL_NOTES.length-1,Math.round((system.top+66-y)/6)));
+      return {beat,step,measure,systemIndex:system.index};
     }
-    function scoreSnapshot(){ return {events:scoreState.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))})),selectedId:scoreState.selectedId,nextId:scoreState.nextId,timeSignature:scoreState.timeSignature,tempo:scoreState.tempo}; }
+    function scoreSnapshot(){
+      return {
+        events:scoreState.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))})),
+        selectedId:scoreState.selectedId,nextId:scoreState.nextId,timeSignature:scoreState.timeSignature,tempo:scoreState.tempo
+      };
+    }
     function restoreScoreSnapshot(snapshot){
       scoreState.events=snapshot.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))}));
       scoreState.selectedId=snapshot.selectedId; scoreState.nextId=snapshot.nextId; scoreState.timeSignature=snapshot.timeSignature; scoreState.tempo=snapshot.tempo;
+      scoreState.drag=null;
       $('#scoreTimeSignature').value=scoreState.timeSignature; $('#scoreTempo').value=String(scoreState.tempo); renderScore(); scheduleSave();
     }
     function pushScoreHistory(){ scoreState.undo.push(scoreSnapshot()); if(scoreState.undo.length>30) scoreState.undo.shift(); scoreState.redo=[]; updateScoreUndoButtons(); }
     function updateScoreUndoButtons(){ $('#scoreUndo').disabled=!scoreState.undo.length; $('#scoreRedo').disabled=!scoreState.redo.length; }
-    function scoreEventAtBeat(beat){ return scoreState.events.find(event=>Math.abs(event.start-beat)<.001)||null; }
+    function scoreEventAtBeat(beat,excludeId=null){ return scoreState.events.find(event=>event.id!==excludeId&&Math.abs(event.start-beat)<.001)||null; }
     function scoreSelectedEvent(){ return scoreState.events.find(event=>event.id===scoreState.selectedId)||null; }
     function setScoreStatus(message,error=false){ const node=$('#scoreStatus'); node.textContent=message||''; node.classList.toggle('error',Boolean(error)); }
     function addScoreInput(beat,step){
-      pushScoreHistory();
       const existing=scoreEventAtBeat(beat);
       if(scoreState.mode==='rest'){
-        const event={id:existing?existing.id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:true,notes:[]};
-        if(existing) scoreState.events.splice(scoreState.events.indexOf(existing),1,event); else scoreState.events.push(event);
-        scoreState.selectedId=event.id; setScoreStatus(t('scoreRestAdded'));
-      } else {
-        const pitch=scorePitchForStep(step); let event=existing;
-        if(!event||event.rest){
-          event={id:existing?existing.id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:false,notes:[]};
-          if(existing) scoreState.events.splice(scoreState.events.indexOf(existing),1,event); else scoreState.events.push(event);
+        if(existing&&!existing.rest){
+          scoreState.selectedId=existing.id; renderScore(); setScoreStatus(t('scoreOccupiedByNote'),true); return;
         }
-        event.duration=scoreState.duration;
-        if(!event.notes.some(item=>item.note===pitch.note&&item.display===pitch.display)) event.notes.push(pitch);
-        event.notes.sort((a,b)=>scoreStepForNatural(a.display)-scoreStepForNatural(b.display));
-        scoreState.selectedId=event.id; setScoreStatus(t('scoreAdded',{note:pitch.display}));
+        if(existing&&existing.rest){
+          if(existing.duration!==scoreState.duration){ pushScoreHistory(); existing.duration=scoreState.duration; scheduleSave(); }
+          scoreState.selectedId=existing.id; renderScore(); setScoreStatus(t('scoreRestAdded')); return;
+        }
+        pushScoreHistory();
+        const event={id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:true,notes:[]};
+        scoreState.events.push(event); scoreState.selectedId=event.id; setScoreStatus(t('scoreRestAdded'));
+      } else {
+        if(existing&&existing.rest){
+          scoreState.selectedId=existing.id; renderScore(); setScoreStatus(t('scoreOccupiedByRest'),true); return;
+        }
+        const pitch=scorePitchForStep(step);
+        if(existing){
+          if(existing.notes.some(item=>item.note===pitch.note&&item.display===pitch.display)){
+            scoreState.selectedId=existing.id; renderScore(); return;
+          }
+          pushScoreHistory();
+          existing.notes.push(pitch);
+          existing.notes.sort((a,b)=>scoreStepForNatural(a.display)-scoreStepForNatural(b.display));
+          scoreState.selectedId=existing.id; setScoreStatus(t('scoreAdded',{note:pitch.display}));
+        } else {
+          pushScoreHistory();
+          const event={id:scoreState.nextId++,start:beat,duration:scoreState.duration,rest:false,notes:[pitch]};
+          scoreState.events.push(event); scoreState.selectedId=event.id; setScoreStatus(t('scoreAdded',{note:pitch.display}));
+        }
       }
       scoreState.events.sort((a,b)=>a.start-b.start); renderScore(); scheduleSave();
     }
@@ -2068,63 +2118,88 @@
       Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,String(value))); return node;
     }
     function drawLedgerLines(svg,x,step,measure,layout){
-      const y=scoreYForStep(step,measure,layout), top=scoreSystemTop(measure,layout), lineYs=[];
+      const y=scoreYForStep(step,measure,layout),top=scoreSystemTopForMeasure(measure,layout),lineYs=[];
       if(y>=top+64) lineYs.push(top+64);
       if(y<=top-8) for(let ly=top-8;ly>=y;ly-=12) lineYs.push(ly);
       lineYs.forEach(ly=>svg.append(scoreSvgElement('line',{x1:x-12,y1:ly,x2:x+12,y2:ly,class:'ledger'})));
     }
     function renderRest(svg,event,x,measure,layout){
-      const y=scoreSystemTop(measure,layout)+28, path=scoreSvgElement('path',{class:'rest-mark'});
+      const y=scoreSystemTopForMeasure(measure,layout)+28,path=scoreSvgElement('path',{class:'rest-mark'});
       if(event.duration>=4) path.setAttribute('d','M'+(x-8)+' '+(y-5)+'h16v5h-16z');
       else if(event.duration>=2) path.setAttribute('d','M'+(x-8)+' '+y+'h16v5h-16z');
       else if(event.duration>=1) path.setAttribute('d','M'+(x-3)+' '+(y-16)+'l7 8-7 7 7 7-7 11');
       else path.setAttribute('d','M'+(x-2)+' '+(y-12)+'c8 0 8 8 1 10l7 13');
       svg.append(path);
-      if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-18,y:y-25,width:36,height:50,rx:8,class:'selected-ring'}));
+      if(event.id===scoreState.selectedId) svg.append(scoreSvgElement('rect',{x:x-17,y:y-24,width:34,height:48,rx:8,class:'selected-ring'}));
+      svg.append(scoreSvgElement('rect',{x:x-14,y:y-12,width:28,height:24,rx:7,class:'score-rest-hitbox','data-event-id':event.id}));
     }
-    function renderNote(svg,event,note,x,noteIndex,measure,layout){
-      const step=scoreStepForNatural(note.display), y=scoreYForStep(step,measure,layout), offset=(noteIndex-(event.notes.length-1)/2)*3, nx=x+offset;
-      drawLedgerLines(svg,nx,step,measure,layout);
-      const head=scoreSvgElement('ellipse',{cx:nx,cy:y,rx:8.2,ry:5.6,class:'note-head'+(event.duration>=2?' open':'')});
-      head.setAttribute('transform','rotate(-18 '+nx+' '+y+')'); svg.append(head);
+    function chordHeadOffsets(entries){
+      const offsets=new Map();
+      entries.forEach((entry,index)=>{
+        let offset=0;
+        const previous=entries[index-1];
+        if(previous&&entry.step-previous.step===1) offset=(offsets.get(previous.index)||0)===0?7:0;
+        offsets.set(entry.index,offset);
+      });
+      return offsets;
+    }
+    function renderChord(svg,event,x,measure,layout){
+      const entries=event.notes.map((note,index)=>({note,index,step:scoreStepForNatural(note.display)})).sort((a,b)=>a.step-b.step);
+      const offsets=chordHeadOffsets(entries);
+      const top=scoreSystemTopForMeasure(measure,layout),middle=top+28;
+      const positions=entries.map(entry=>({
+        ...entry,
+        y:scoreYForStep(entry.step,measure,layout),
+        x:x+(offsets.get(entry.index)||0)
+      }));
+      positions.forEach(position=>{
+        drawLedgerLines(svg,position.x,position.step,measure,layout);
+        const head=scoreSvgElement('ellipse',{cx:position.x,cy:position.y,rx:8.2,ry:5.6,class:'note-head'+(event.duration>=2?' open':'')});
+        head.setAttribute('transform','rotate(-18 '+position.x+' '+position.y+')'); svg.append(head);
+        if(position.note.accidental!=='natural'){
+          const acc=scoreSvgElement('text',{x:position.x-21,y:position.y+5,class:'accidental'});
+          acc.textContent=position.note.accidental==='sharp'?'♯':'♭'; svg.append(acc);
+        }
+      });
+      const ys=positions.map(position=>position.y),yMin=Math.min(...ys),yMax=Math.max(...ys);
       if(event.duration<4){
-        const middle=scoreSystemTop(measure,layout)+28, stemUp=y>=middle, stemX=stemUp?nx+7:nx-7, stemY2=stemUp?y-34:y+34;
-        svg.append(scoreSvgElement('line',{x1:stemX,y1:y,x2:stemX,y2:stemY2,class:'note-stem'}));
+        const averageY=ys.reduce((sum,value)=>sum+value,0)/ys.length,stemUp=averageY>=middle;
+        const stemX=stemUp?x+9:x-9,stemY1=stemUp?yMax:yMin,stemY2=stemUp?yMin-34:yMax+34;
+        svg.append(scoreSvgElement('line',{x1:stemX,y1:stemY1,x2:stemX,y2:stemY2,class:'note-stem'}));
         if(event.duration<=.5){
           const d=stemUp?'M'+stemX+' '+stemY2+'c12 5 13 12 5 18':'M'+stemX+' '+stemY2+'c-12-5-13-12-5-18';
           svg.append(scoreSvgElement('path',{d:d,class:'note-flag'}));
         }
       }
-      if(note.accidental!=='natural'){ const acc=scoreSvgElement('text',{x:nx-20,y:y+5,class:'accidental'}); acc.textContent=note.accidental==='sharp'?'♯':'♭'; svg.append(acc); }
-      if(event.id===scoreState.selectedId&&noteIndex===0) svg.append(scoreSvgElement('ellipse',{cx:nx,cy:y,rx:14,ry:11,class:'selected-ring'}));
+      if(event.id===scoreState.selectedId){
+        svg.append(scoreSvgElement('rect',{x:x-19,y:yMin-12,width:42,height:Math.max(24,yMax-yMin+24),rx:9,class:'chord-selection'}));
+      }
+      positions.forEach(position=>{
+        svg.append(scoreSvgElement('rect',{
+          x:position.x-15,y:position.y-3.5,width:30,height:7,rx:3.5,class:'score-note-hitbox',
+          'data-event-id':event.id,'data-note-index':position.index
+        }));
+      });
     }
-
-    function drawScoreSystem(svg,measure,layout){
-      const top=scoreSystemTop(measure,layout), beatsPerMeasure=scoreBeatsPerMeasure();
+    function drawScoreSystem(svg,systemIndex,layout){
+      const top=layout.systemTops[systemIndex],beatsPerMeasure=scoreBeatsPerMeasure();
+      const startMeasure=scoreSystemStartMeasure(systemIndex,layout);
+      const endMeasure=Math.min(scoreMeasureCount(),startMeasure+layout.measuresPerSystem);
       const clef=scoreSvgElement('text',{x:layout.compact?18:38,y:top+49,class:'clef','aria-hidden':'true'}); clef.textContent='𝄞'; svg.append(clef);
       const timeX=layout.compact?55:73;
-      if(!layout.compact||measure===0){
-        const topNum=scoreSvgElement('text',{x:timeX,y:top+23,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
-        const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
-      }
+      const topNum=scoreSvgElement('text',{x:timeX,y:top+23,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
+      const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
       for(let i=0;i<5;i++){ const y=top+i*12; svg.append(scoreSvgElement('line',{x1:layout.left,y1:y,x2:layout.right,y2:y,class:'staff-line'})); }
-      if(layout.compact){
+      svg.append(scoreSvgElement('rect',{x:layout.left,y:top-30,width:layout.right-layout.left,height:104,class:'score-hitbox','data-score-input':'true'}));
+      for(let measure=startMeasure;measure<endMeasure;measure+=1){
+        const measureStart=measure*beatsPerMeasure;
         for(let local=0;local<=beatsPerMeasure;local+=.5){
-          const globalBeat=measure*beatsPerMeasure+local, x=scoreXForBeat(globalBeat,layout);
+          const globalBeat=measureStart+local,x=scoreXForBeat(globalBeat,layout);
           if(local===0||Math.abs(local-beatsPerMeasure)<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
           else if(Math.abs(local-Math.round(local))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
         }
-        const label=scoreSvgElement('text',{x:layout.left+5,y:top-15,class:'measure-number'}); label.textContent=String(measure+1); svg.append(label);
-        svg.append(scoreSvgElement('rect',{x:layout.left,y:top-28,width:layout.right-layout.left,height:100,class:'score-hitbox','data-score-input':'true'}));
-        return;
+        const label=scoreSvgElement('text',{x:scoreXForBeat(measureStart,layout)+5,y:top-15,class:'measure-number'}); label.textContent=String(measure+1); svg.append(label);
       }
-      for(let beat=0;beat<=scoreTotalBeats();beat+=.5){
-        const x=scoreXForBeat(beat,layout);
-        if(Math.abs((beat/beatsPerMeasure)-Math.round(beat/beatsPerMeasure))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'bar-line'}));
-        else if(Math.abs(beat-Math.round(beat))<.001) svg.append(scoreSvgElement('line',{x1:x,y1:top-8,x2:x,y2:top+58,class:'beat-guide'}));
-      }
-      [0,1].forEach(index=>{ const label=scoreSvgElement('text',{x:scoreXForBeat(index*beatsPerMeasure,layout)+5,y:top-15,class:'measure-number'}); label.textContent=String(index+1); svg.append(label); });
-      svg.append(scoreSvgElement('rect',{x:layout.left,y:top-28,width:layout.right-layout.left,height:100,class:'score-hitbox','data-score-input':'true'}));
     }
     function setScoreMobileEditor(selected){
       const editor=$('#scoreMobileEditor'); if(!editor) return;
@@ -2133,61 +2208,93 @@
       $('#scoreMobileSelected').textContent=notes; $('#scoreMobileDuration').value=String(selected.duration);
     }
     function renderScore(){
-      const svg=$('#scoreSvg'), layout=scoreLayout(); svg.replaceChildren();
+      const svg=$('#scoreSvg'),layout=scoreLayout(); svg.replaceChildren();
       svg.setAttribute('viewBox','0 0 '+layout.width+' '+layout.height);
-      if(layout.compact){ drawScoreSystem(svg,0,layout); drawScoreSystem(svg,1,layout); } else drawScoreSystem(svg,0,layout);
-      const beatsPerMeasure=scoreBeatsPerMeasure();
+      layout.systemTops.forEach((_,systemIndex)=>drawScoreSystem(svg,systemIndex,layout));
+      const beatsPerMeasure=scoreBeatsPerMeasure(),span=beatsPerMeasure*layout.measuresPerSystem;
+      const cellSpan=(layout.right-layout.left)/span;
       scoreState.events.forEach(event=>{
-        const measure=layout.compact?scoreMeasureIndexForBeat(event.start):0;
-        const cellSpan=(layout.right-layout.left)/(layout.compact?beatsPerMeasure:scoreTotalBeats());
-        const x=scoreXForBeat(event.start,layout)+cellSpan*.20;
-        if(event.rest) renderRest(svg,event,x,measure,layout); else event.notes.forEach((note,index)=>renderNote(svg,event,note,x,index,measure,layout));
-        const top=scoreSystemTop(measure,layout);
-        const eventYs=event.rest?[top+28]:event.notes.map(note=>scoreYForStep(scoreStepForNatural(note.display),measure,layout));
-        const minY=Math.min(...eventYs), maxY=Math.max(...eventYs), hitTop=Math.max(top-28,minY-24), hitBottom=Math.min(top+72,maxY+24);
-        svg.append(scoreSvgElement('rect',{x:x-layout.hitWidth/2,y:hitTop,width:layout.hitWidth,height:Math.max(46,hitBottom-hitTop),rx:8,class:'score-event-hitbox','data-event-id':event.id}));
+        const measure=scoreMeasureIndexForBeat(event.start),x=scoreXForBeat(event.start,layout)+cellSpan*.18;
+        if(event.rest) renderRest(svg,event,x,measure,layout); else if(event.notes.length) renderChord(svg,event,x,measure,layout);
       });
-      if(scoreState.playbackStartedAt!=null){ const cursor=scoreSvgElement('line',{id:'scoreCursor',class:'cursor-line'}); svg.append(cursor); setScoreCursorPosition(0); }
+      if(scoreState.playbackStartedAt!=null){
+        const cursor=scoreSvgElement('line',{id:'scoreCursor',class:'cursor-line'}); svg.append(cursor); setScoreCursorPosition(0);
+      }
       $('#scoreEmptyHint').hidden=scoreState.events.length>0; $('#scoreEventCount').textContent=String(scoreState.events.length);
       const selected=scoreSelectedEvent(); $('#scoreDelete').disabled=!selected; setScoreMobileEditor(selected);
       if(selected){
         const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
         const sel=$('#scoreSelection'); sel.replaceChildren(); const strong=document.createElement('strong'); strong.textContent=notes; sel.append(strong,document.createTextNode(' · '+scoreDurationLabel(selected.duration)));
       } else $('#scoreSelection').textContent=t('scoreNoSelection');
-      updateScoreUndoButtons();
-      updateWavExportAvailability();
+      updateScoreUndoButtons(); updateWavExportAvailability();
     }
     function scorePointerToLocal(event){
-      const svg=$('#scoreSvg'), point=svg.createSVGPoint(), matrix=svg.getScreenCTM(); if(!matrix) return null;
+      const svg=$('#scoreSvg'),point=svg.createSVGPoint(),matrix=svg.getScreenCTM(); if(!matrix) return null;
       point.x=event.clientX; point.y=event.clientY; return point.matrixTransform(matrix.inverse());
     }
-    function handleScorePointer(event){
-      const target=event.target.closest?event.target.closest('[data-event-id]'):null;
-      if(target){ scoreState.selectedId=Number(target.getAttribute('data-event-id')); renderScore(); return; }
-      const p=scorePointerToLocal(event), pos=p?scorePointToPosition(p.x,p.y):null;
-      if(!pos) return; addScoreInput(pos.beat,pos.step);
+    function beginScoreDrag(event,target){
+      const eventId=Number(target.getAttribute('data-event-id')),noteIndex=Number(target.getAttribute('data-note-index'));
+      const scoreEvent=scoreState.events.find(item=>item.id===eventId);
+      if(!scoreEvent||scoreEvent.rest||!scoreEvent.notes[noteIndex]) return false;
+      const svg=$('#scoreSvg');
+      scoreState.selectedId=eventId;
+      scoreState.drag={
+        pointerId:event.pointerId,eventId:eventId,noteRef:scoreEvent.notes[noteIndex],
+        startX:event.clientX,startY:event.clientY,moved:false,historyPushed:false
+      };
+      try{ svg.setPointerCapture(event.pointerId); }catch{}
+      renderScore(); event.preventDefault(); return true;
     }
-
+    function handleScorePointerDown(event){
+      const noteTarget=event.target.closest?event.target.closest('[data-note-index]'):null;
+      if(noteTarget&&beginScoreDrag(event,noteTarget)) return;
+      const restTarget=event.target.closest?event.target.closest('.score-rest-hitbox'):null;
+      if(restTarget){
+        scoreState.selectedId=Number(restTarget.getAttribute('data-event-id')); renderScore(); event.preventDefault(); return;
+      }
+      const p=scorePointerToLocal(event),pos=p?scorePointToPosition(p.x,p.y,scoreState.duration):null;
+      if(!pos) return; addScoreInput(pos.beat,pos.step); event.preventDefault();
+    }
+    function handleScorePointerMove(event){
+      const drag=scoreState.drag; if(!drag||drag.pointerId!==event.pointerId) return;
+      const distance=Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY);
+      if(distance<4&&!drag.moved) return;
+      const scoreEvent=scoreState.events.find(item=>item.id===drag.eventId);
+      if(!scoreEvent||!drag.noteRef){ scoreState.drag=null; return; }
+      const p=scorePointerToLocal(event),pos=p?scorePointToPosition(p.x,p.y,scoreEvent.duration):null;
+      if(!pos) return;
+      if(!drag.historyPushed){ pushScoreHistory(); drag.historyPushed=true; }
+      drag.moved=true;
+      if(!scoreEventAtBeat(pos.beat,scoreEvent.id)) scoreEvent.start=pos.beat;
+      const pitch=scorePitchForStep(pos.step,drag.noteRef.accidental);
+      const duplicate=scoreEvent.notes.some(note=>note!==drag.noteRef&&note.note===pitch.note&&note.display===pitch.display);
+      if(!duplicate) Object.assign(drag.noteRef,pitch);
+      scoreEvent.notes.sort((a,b)=>scoreStepForNatural(a.display)-scoreStepForNatural(b.display));
+      scoreState.events.sort((a,b)=>a.start-b.start);
+      renderScore(); event.preventDefault();
+    }
+    function finishScoreDrag(event){
+      const drag=scoreState.drag; if(!drag||drag.pointerId!==event.pointerId) return;
+      scoreState.drag=null;
+      try{ $('#scoreSvg').releasePointerCapture(event.pointerId); }catch{}
+      if(drag.historyPushed){ scheduleSave(); setScoreStatus(t('scoreDragged')); }
+      renderScore(); event.preventDefault();
+    }
     function sampleScoreNote(note){
       return {note:note,display:String(note).replace('#','♯'),accidental:String(note).includes('#')?'sharp':'natural'};
     }
     function loadScoreSample(key){
       const sample=SCORE_SAMPLES[key]; if(!sample) return;
-      if(scoreState.events.length && !window.confirm(t('sampleReplaceConfirm'))) return;
-      stopScore();
-      pushScoreHistory();
+      if(scoreState.events.length&&!window.confirm(t('sampleReplaceConfirm'))) return;
+      stopScore(); pushScoreHistory();
       let nextId=scoreState.nextId;
-      scoreState.events=sample.events.map(event=>({
-        id:nextId++,start:event.start,duration:event.duration,rest:false,notes:event.notes.map(sampleScoreNote)
-      }));
+      scoreState.events=sample.events.map(event=>({id:nextId++,start:event.start,duration:event.duration,rest:false,notes:event.notes.map(sampleScoreNote)}));
       scoreState.nextId=nextId; scoreState.selectedId=null; scoreState.tempo=sample.tempo; scoreState.timeSignature=sample.timeSignature;
       $('#scoreTempo').value=String(scoreState.tempo); $('#scoreTimeSignature').value=scoreState.timeSignature;
       renderScore(); scheduleSave();
-      const name=t(sample.nameKey);
-      setScoreStatus(t('sampleLoaded',{name:name}));
+      const name=t(sample.nameKey); setScoreStatus(t('sampleLoaded',{name:name}));
       AppToast.show({message:t('sampleLoaded',{name:name}),actionLabel:t('undoAction'),duration:5000,onAction:scoreUndo});
     }
-
     function deleteScoreSelection(){
       const index=scoreState.events.findIndex(event=>event.id===scoreState.selectedId); if(index<0) return;
       pushScoreHistory(); scoreState.events.splice(index,1); scoreState.selectedId=null; renderScore(); scheduleSave(); setScoreStatus(t('scoreDeleted'));
@@ -2200,42 +2307,63 @@
     }
     function scoreUndo(){ if(!scoreState.undo.length) return; scoreState.redo.push(scoreSnapshot()); restoreScoreSnapshot(scoreState.undo.pop()); setScoreStatus(t('scoreUndone')); }
     function scoreRedo(){ if(!scoreState.redo.length) return; scoreState.undo.push(scoreSnapshot()); restoreScoreSnapshot(scoreState.redo.pop()); setScoreStatus(t('scoreRedone')); }
-    function setScoreMode(mode){ scoreState.mode=mode==='rest'?'rest':'note'; $('#scoreModeNote').setAttribute('aria-pressed',String(scoreState.mode==='note')); $('#scoreModeRest').setAttribute('aria-pressed',String(scoreState.mode==='rest')); }
+    function setScoreMode(mode){
+      scoreState.mode=mode==='rest'?'rest':'note';
+      $('#scoreModeNote').setAttribute('aria-pressed',String(scoreState.mode==='note'));
+      $('#scoreModeRest').setAttribute('aria-pressed',String(scoreState.mode==='rest'));
+    }
     function setScoreDuration(duration){
-      const next=Number(duration), selected=scoreSelectedEvent();
+      const next=Number(duration),selected=scoreSelectedEvent();
       if(selected&&selected.duration!==next){ pushScoreHistory(); selected.duration=next; }
-      scoreState.duration=next; $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
+      scoreState.duration=next;
+      $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
       if($('#scoreMobileDuration')) $('#scoreMobileDuration').value=String(scoreState.duration);
       if(selected){ renderScore(); scheduleSave(); }
     }
-    function setScoreAccidental(accidental){ scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural'; $$('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental))); }
+    function setScoreAccidental(accidental){
+      scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural';
+      $$('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental)));
+    }
     function scoreSequenceForSide(side){
       const secondsPerBeat=60/scoreState.tempo;
-      return scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>({startSeconds:event.start*secondsPerBeat,durationSeconds:Math.max(.08,event.duration*secondsPerBeat),frequencies:event.rest?[]:event.notes.map(note=>abFrequency(side,note.note))}));
+      return scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>({
+        startSeconds:event.start*secondsPerBeat,
+        durationSeconds:Math.max(.08,event.duration*secondsPerBeat),
+        frequencies:event.rest?[]:event.notes.map(note=>abFrequency(side,note.note)).filter(value=>engine.validFrequency(value))
+      }));
     }
-    function stopScoreCursor(){ cancelAnimationFrame(scoreState.playbackFrame); scoreState.playbackFrame=0; scoreState.playbackStartedAt=null; scoreState.playbackDuration=0; renderScore(); }
+    function stopScoreCursor(){
+      cancelAnimationFrame(scoreState.playbackFrame); scoreState.playbackFrame=0; scoreState.playbackStartedAt=null; scoreState.playbackDuration=0; renderScore();
+    }
     function setScoreCursorPosition(globalBeat){
       const cursor=$('#scoreCursor'); if(!cursor) return;
-      const layout=scoreLayout(), measure=layout.compact?scoreMeasureIndexForBeat(globalBeat):0, top=scoreSystemTop(measure,layout), x=scoreXForBeat(globalBeat,layout);
+      const layout=scoreLayout(),measure=scoreMeasureIndexForBeat(Math.min(globalBeat,Math.max(0,scoreTotalBeats()-.001)));
+      const top=scoreSystemTopForMeasure(measure,layout),x=scoreXForBeat(globalBeat,layout);
       cursor.setAttribute('x1',String(x)); cursor.setAttribute('x2',String(x)); cursor.setAttribute('y1',String(top-28)); cursor.setAttribute('y2',String(top+70));
     }
     function animateScoreCursor(){
       if(scoreState.playbackStartedAt==null||!engine.context) return;
-      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt, secondsPerBeat=60/scoreState.tempo;
-      const globalBeat=Math.max(0,Math.min(scoreTotalBeats(),elapsed/secondsPerBeat)), progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration)));
+      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt,secondsPerBeat=60/scoreState.tempo;
+      const globalBeat=Math.max(0,Math.min(scoreTotalBeats()-.001,elapsed/secondsPerBeat));
+      const progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration)));
       setScoreCursorPosition(globalBeat);
-      if(progress>=1){ stopScoreCursor(); return; } scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor);
+      if(progress>=1){ stopScoreCursor(); return; }
+      scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor);
     }
     async function playScore(side){
       if(!scoreState.events.some(event=>!event.rest&&event.notes.length)){ setScoreStatus(t('scoreEmpty'),true); return; }
       scoreState.tempo=Math.max(30,Math.min(300,Number($('#scoreTempo').value)||90)); $('#scoreTempo').value=String(scoreState.tempo);
+      const sequence=scoreSequenceForSide(side);
+      if(!sequence.some(event=>event.frequencies.length)){ setScoreStatus(t('invalidABFrequency'),true); return; }
       try{
-        const result=await engine.playScore(scoreSequenceForSide(side),playbackOptions()); setAudioReadyState();
+        const result=await engine.playScore(sequence,playbackOptions()); setAudioReadyState();
         scoreState.playbackStartedAt=result.startTime; scoreState.playbackDuration=Math.max(result.durationSeconds,scoreTotalBeats()*(60/scoreState.tempo));
         renderScore(); scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor); setScoreStatus(t('scorePlaying',{side:side.toUpperCase()}));
       }catch(error){ console.error(error); setScoreStatus(t('playbackFailed'),true); }
     }
-    function stopScore(){ engine.stopAll({releaseMs:Number($('#releaseMs').value)||70}); stopScoreCursor(); setScoreStatus(t('scoreStopped')); }
+    function stopScore(){
+      engine.stopAll({releaseMs:Number($('#releaseMs').value)||70}); stopScoreCursor(); setScoreStatus(t('scoreStopped'));
+    }
 
 
     function offlineAudioSupported(){ return Boolean(window.OfflineAudioContext || window.webkitOfflineAudioContext); }
