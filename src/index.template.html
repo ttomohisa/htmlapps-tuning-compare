@@ -617,7 +617,14 @@
     .score-number { font-variant-numeric:tabular-nums; }
     .score-subtoolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
     .score-subtoolbar .button { min-height:38px; padding:7px 11px; font-size:12px; }
+    .score-measure-control { display:inline-grid; grid-template-columns:38px auto 38px; align-items:center; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+    .score-measure-control button { min-width:38px; min-height:38px; border:0; background:transparent; font-size:18px; cursor:pointer; }
+    .score-measure-control button:hover:not(:disabled) { background:var(--surface-hover); }
+    .score-measure-control button:disabled { opacity:.4; cursor:not-allowed; }
+    .score-measure-value { min-width:72px; padding:0 8px; text-align:center; font-size:12px; white-space:nowrap; }
+    .score-measure-value strong { font-size:14px; font-variant-numeric:tabular-nums; }
     .score-spacer { flex:1 1 auto; }
+    .score-mobile-quick-tools { display:none; }
     .score-canvas-shell { position:relative; margin-top:13px; overflow:hidden; border:1px solid var(--line); border-radius:12px; background:#fff; touch-action:manipulation; }
     .score-svg { display:block; width:100%; height:auto; min-height:210px; user-select:none; -webkit-user-select:none; }
     .score-svg .staff-line { stroke:#3d403c; stroke-width:1.25; }
@@ -650,7 +657,7 @@
     .score-editor-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; }
     .score-selection { min-width:0; flex:1 1 220px; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
     .score-selection strong { color:var(--text); }
-    .score-transport { display:flex; flex-wrap:wrap; gap:8px; }
+    .score-transport { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
     .score-transport .button { min-height:40px; }
     .score-status { min-height:20px; margin:9px 0 0; color:var(--muted); font-size:12px; }
     .score-status.error { color:var(--danger); }
@@ -695,6 +702,20 @@
       .score-toolbar { grid-template-columns:1fr; }
       .score-segmented button { min-height:46px; }
       .score-subtoolbar .button,.score-transport .button { min-height:46px; }
+      .score-measure-control { flex:1 1 auto; }
+      .score-mobile-quick-tools {
+        position:sticky; z-index:24; top:calc(var(--header-height) + 6px);
+        display:grid; grid-template-columns:minmax(0,1fr) minmax(116px,.72fr); gap:8px;
+        margin:10px 0 8px; padding:8px;
+        border:1px solid color-mix(in srgb,var(--line) 88%,transparent); border-radius:12px;
+        background:rgba(255,255,255,.96); box-shadow:0 5px 16px rgba(20,22,20,.08); backdrop-filter:blur(14px);
+      }
+      .score-mobile-quick-mode { display:grid; grid-template-columns:1fr 1fr; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+      .score-mobile-quick-mode button { min-height:44px; padding:7px 8px; border:0; border-right:1px solid var(--line); background:transparent; font:inherit; font-size:12px; font-weight:760; }
+      .score-mobile-quick-mode button:last-child { border-right:0; }
+      .score-mobile-quick-mode button[aria-pressed="true"] { color:var(--accent); background:var(--accent-soft); }
+      .score-mobile-quick-duration { width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; }
+      .score-transport { margin-top:18px; }
       .score-editor-row { display:none; }
       .score-workspace.has-mobile-selection { padding-bottom:96px; }
       .score-mobile-editor {
@@ -781,14 +802,20 @@
       display:grid; grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr); gap:14px;
       margin-top:14px; padding:14px; border:1px solid var(--line); border-radius:12px; background:var(--surface-muted);
     }
-    .learning-panel h3,.score-samples h3 { margin:0; font-size:14px; }
+    .learning-panel h3 { margin:0; font-size:14px; }
     .learning-panel p,.score-samples p { margin:5px 0 0; color:var(--muted); font-size:12px; line-height:1.6; }
     .learning-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
     .learning-metric { padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:var(--surface); min-width:0; }
     .learning-metric span { display:block; color:var(--muted); font-size:10px; font-weight:700; }
     .learning-metric strong { display:block; margin-top:3px; color:var(--text); font-size:14px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
     .learning-tip { margin-top:8px !important; }
-    .score-samples { margin:10px 0 13px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-muted); }
+    .score-samples { margin:10px 0 13px; border:1px solid var(--line); border-radius:12px; background:var(--surface-muted); overflow:hidden; }
+    .score-samples > summary { display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 12px; cursor:pointer; font-size:13px; font-weight:760; list-style:none; }
+    .score-samples > summary::-webkit-details-marker { display:none; }
+    .score-samples > summary::after { content:""; width:8px; height:8px; margin-left:auto; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(45deg); transition:transform .16s ease; }
+    .score-samples[open] > summary { border-bottom:1px solid var(--line); }
+    .score-samples[open] > summary::after { transform:rotate(225deg); }
+    .score-samples-body { padding:11px 12px 12px; }
     .score-sample-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .score-sample-actions .button { min-height:40px; }
     @media (max-width:760px) { .learning-panel { grid-template-columns:1fr; } }
@@ -1027,18 +1054,38 @@
         </label>
         <button type="button" class="button" id="scoreUndo" data-i18n="scoreUndo" disabled>元に戻す</button>
         <button type="button" class="button" id="scoreRedo" data-i18n="scoreRedo" disabled>やり直す</button>
+        <div class="score-measure-control" role="group" data-i18n-aria-label="scoreMeasureControls" aria-label="小節数">
+          <button type="button" id="scoreMeasureMinus" data-i18n-aria-label="scoreMeasureDecrease" aria-label="小節を減らす">−</button>
+          <span class="score-measure-value"><strong id="scoreMeasureCount">4</strong> <span data-i18n="scoreMeasureUnit">小節</span></span>
+          <button type="button" id="scoreMeasurePlus" data-i18n-aria-label="scoreMeasureIncrease" aria-label="小節を増やす">＋</button>
+        </div>
         <span class="score-spacer"></span>
         <button type="button" class="button danger" id="scoreClear" data-i18n="scoreClear">譜面をクリア</button>
       </div>
-      <div class="score-samples" aria-labelledby="scoreSamplesTitle">
-        <h3 id="scoreSamplesTitle" data-i18n="scoreSamplesTitle">サンプル譜面</h3>
-        <p data-i18n="scoreSamplesIntro">音律差を聞きやすい短い例を読み込めます。現在の譜面がある場合は置き換える前に確認します。</p>
-        <div class="score-sample-actions">
-          <button type="button" class="button" data-score-sample="majorThird" data-i18n="sampleMajorThird">長三度</button>
-          <button type="button" class="button" data-score-sample="majorTriad" data-i18n="sampleMajorTriad">長三和音</button>
-          <button type="button" class="button" data-score-sample="scale" data-i18n="sampleScale">Cメジャースケール</button>
-          <button type="button" class="button" data-score-sample="cadence" data-i18n="sampleCadence">I–IV–V–I</button>
+      <details class="score-samples">
+        <summary id="scoreSamplesTitle" data-i18n="scoreSamplesTitle">サンプル譜面</summary>
+        <div class="score-samples-body">
+          <p data-i18n="scoreSamplesIntro">音律差を聞きやすい短い例を読み込めます。現在の譜面がある場合は置き換える前に確認します。</p>
+          <div class="score-sample-actions">
+            <button type="button" class="button" data-score-sample="majorThird" data-i18n="sampleMajorThird">長三度</button>
+            <button type="button" class="button" data-score-sample="majorTriad" data-i18n="sampleMajorTriad">長三和音</button>
+            <button type="button" class="button" data-score-sample="scale" data-i18n="sampleScale">Cメジャースケール</button>
+            <button type="button" class="button" data-score-sample="cadence" data-i18n="sampleCadence">I–IV–V–I</button>
+          </div>
         </div>
+      </details>
+      <div class="score-mobile-quick-tools" aria-label="譜面入力クイック操作">
+        <div class="score-mobile-quick-mode" role="group" data-i18n-aria-label="scoreInputMode" aria-label="入力">
+          <button type="button" id="scoreMobileModeNote" aria-pressed="true" data-i18n="scoreModeNote">音符</button>
+          <button type="button" id="scoreMobileModeRest" aria-pressed="false" data-i18n="scoreModeRest">休符</button>
+        </div>
+        <select class="score-mobile-quick-duration" id="scoreMobileQuickDuration" data-i18n-aria-label="scoreDuration" aria-label="音価">
+          <option value="4" data-i18n="scoreWhole">全音符</option>
+          <option value="2" data-i18n="scoreHalf">2分音符</option>
+          <option value="1" selected data-i18n="scoreQuarter">4分音符</option>
+          <option value="0.5" data-i18n="scoreEighth">8分音符</option>
+          <option value="0.25" data-i18n="scoreSixteenth">16分音符</option>
+        </select>
       </div>
       <div class="score-canvas-shell">
         <svg class="score-svg" id="scoreSvg" viewBox="0 0 960 230" role="img" data-i18n-aria-label="scoreCanvasLabel" aria-label="簡易五線譜"></svg>
@@ -1561,8 +1608,10 @@
     const SCORE_NATURAL_NOTES = Object.freeze(['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6']);
     const SCORE_DURATION_NAMES = Object.freeze({ 4:'scoreWhole', 2:'scoreHalf', 1:'scoreQuarter', .5:'scoreEighth', .25:'scoreSixteenth' });
     const FLAT_TO_SHARP = Object.freeze({ Db:'C#', Eb:'D#', Gb:'F#', Ab:'G#', Bb:'A#' });
-    const SCORE_MEASURE_COUNT = 4;
-    const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0, drag:null, longPressTimer:0 };
+    const SCORE_DEFAULT_MEASURE_COUNT = 4;
+    const SCORE_MIN_MEASURE_COUNT = 1;
+    const SCORE_MAX_MEASURE_COUNT = 16;
+    const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, measureCount:SCORE_DEFAULT_MEASURE_COUNT, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0, drag:null, longPressTimer:0 };
 
 
     const SCORE_SAMPLES = Object.freeze({
@@ -2108,7 +2157,7 @@
 
 
     function scoreBeatsPerMeasure(){ return scoreState.timeSignature==='3/4'?3:4; }
-    function scoreMeasureCount(){ return SCORE_MEASURE_COUNT; }
+    function scoreMeasureCount(){ return Math.max(SCORE_MIN_MEASURE_COUNT,Math.min(SCORE_MAX_MEASURE_COUNT,Number(scoreState.measureCount)||SCORE_DEFAULT_MEASURE_COUNT)); }
     function scoreTotalBeats(){ return scoreBeatsPerMeasure()*scoreMeasureCount(); }
     function scoreDurationLabel(value){ return t(SCORE_DURATION_NAMES[value]||'scoreQuarter'); }
     function scorePitchForStep(stepIndex,accidental=scoreState.accidental){
@@ -2199,12 +2248,13 @@
     function scoreSnapshot(){
       return {
         events:scoreState.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))})),
-        selectedId:scoreState.selectedId,nextId:scoreState.nextId,timeSignature:scoreState.timeSignature,tempo:scoreState.tempo
+        selectedId:scoreState.selectedId,nextId:scoreState.nextId,timeSignature:scoreState.timeSignature,tempo:scoreState.tempo,measureCount:scoreMeasureCount()
       };
     }
     function restoreScoreSnapshot(snapshot){
       scoreState.events=snapshot.events.map(event=>({...event,notes:event.notes.map(note=>({...note}))}));
       scoreState.selectedId=snapshot.selectedId; scoreState.nextId=snapshot.nextId; scoreState.timeSignature=snapshot.timeSignature; scoreState.tempo=snapshot.tempo;
+      scoreState.measureCount=Math.max(SCORE_MIN_MEASURE_COUNT,Math.min(SCORE_MAX_MEASURE_COUNT,Number(snapshot.measureCount)||SCORE_DEFAULT_MEASURE_COUNT));
       scoreState.drag=null;
       $('#scoreTimeSignature').value=scoreState.timeSignature; $('#scoreTempo').value=String(scoreState.tempo); renderScore(); scheduleSave();
     }
@@ -2434,6 +2484,7 @@
         const cursor=scoreSvgElement('line',{id:'scoreCursor',class:'cursor-line'}); svg.append(cursor); setScoreCursorPosition(0);
       }
       $('#scoreEmptyHint').hidden=scoreState.events.length>0;
+      updateScoreMeasureControls();
       const selected=scoreSelectedEvent(); $('#scoreDelete').disabled=!selected; setScoreMobileEditor(selected);
       if(selected){
         const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
@@ -2580,7 +2631,7 @@
       stopScore(); pushScoreHistory();
       let nextId=scoreState.nextId;
       scoreState.events=sample.events.map(event=>({id:nextId++,start:event.start,duration:event.duration,rest:false,notes:event.notes.map(sampleScoreNote)}));
-      scoreState.nextId=nextId; scoreState.selectedId=null; scoreState.tempo=sample.tempo; scoreState.timeSignature=sample.timeSignature;
+      scoreState.nextId=nextId; scoreState.selectedId=null; scoreState.tempo=sample.tempo; scoreState.timeSignature=sample.timeSignature; scoreState.measureCount=SCORE_DEFAULT_MEASURE_COUNT;
       $('#scoreTempo').value=String(scoreState.tempo); $('#scoreTimeSignature').value=scoreState.timeSignature;
       renderScore(); scheduleSave();
       const name=t(sample.nameKey); setScoreStatus(t('sampleLoaded',{name:name}));
@@ -2610,6 +2661,8 @@
       scoreState.mode=mode==='rest'?'rest':'note';
       $('#scoreModeNote').setAttribute('aria-pressed',String(scoreState.mode==='note'));
       $('#scoreModeRest').setAttribute('aria-pressed',String(scoreState.mode==='rest'));
+      $('#scoreMobileModeNote')?.setAttribute('aria-pressed',String(scoreState.mode==='note'));
+      $('#scoreMobileModeRest')?.setAttribute('aria-pressed',String(scoreState.mode==='rest'));
     }
     function setScoreDuration(duration){
       const next=Number(duration),selected=scoreSelectedEvent();
@@ -2617,6 +2670,7 @@
       scoreState.duration=next;
       $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
       if($('#scoreMobileDuration')) $('#scoreMobileDuration').value=String(scoreState.duration);
+      if($('#scoreMobileQuickDuration')) $('#scoreMobileQuickDuration').value=String(scoreState.duration);
       if(selected){ renderScore(); scheduleSave(); }
     }
     function setScoreAccidental(accidental){
@@ -2843,7 +2897,7 @@
         tonic: $('#tonic').value,
         customFrequencies: { ...tuningEngine.custom },
         customTuning: { name: $('#customTuningName').value, editMode: customEditMode(), ratioBase: customRatioBaseNote() },
-        score: { tempo: scoreState.tempo, timeSignature: scoreState.timeSignature, events: scoreState.events, nextId: scoreState.nextId },
+        score: { tempo: scoreState.tempo, timeSignature: scoreState.timeSignature, measureCount: scoreMeasureCount(), events: scoreState.events, nextId: scoreState.nextId },
         wavExport: { target: $('#wavTarget').value, sampleRate: $('#wavSampleRate').value, filename: $('#wavFilename').value },
         abCompare: {
           preset: $('#abPreset').value,
@@ -2908,12 +2962,15 @@
           const tempo=Number(saved.score.tempo);
           if(Number.isFinite(tempo)) scoreState.tempo=Math.max(30,Math.min(300,tempo));
           if(['3/4','4/4'].includes(saved.score.timeSignature)) scoreState.timeSignature=saved.score.timeSignature;
+          const savedMeasureCount=Number(saved.score.measureCount);
+          scoreState.measureCount=Number.isFinite(savedMeasureCount)?Math.max(SCORE_MIN_MEASURE_COUNT,Math.min(SCORE_MAX_MEASURE_COUNT,Math.round(savedMeasureCount))):SCORE_DEFAULT_MEASURE_COUNT;
           if(Array.isArray(saved.score.events)){
             scoreState.events=saved.score.events.filter(event=>event&&Number.isFinite(Number(event.start))&&Number.isFinite(Number(event.duration))).map(event=>({
               id:Number(event.id)||scoreState.nextId++, start:Number(event.start), duration:[.25,.5,1,2,4].includes(Number(event.duration))?Number(event.duration):1,
               rest:Boolean(event.rest), notes:Array.isArray(event.notes)?event.notes.filter(note=>note&&typeof note.note==='string').map(note=>({note:note.note,display:note.display||note.note,accidental:note.accidental||'natural'})):[]
             }));
           }
+          scoreState.events=scoreState.events.filter(event=>event.start<scoreTotalBeats());
           scoreState.nextId=Math.max(Number(saved.score.nextId)||1,...scoreState.events.map(event=>event.id+1));
           $('#scoreTempo').value=String(scoreState.tempo); $('#scoreTimeSignature').value=scoreState.timeSignature;
         }
@@ -3233,6 +3290,8 @@
     $('#scoreSvg').addEventListener('contextmenu',event=>{ if(event.target.closest?.('[data-event-id],[data-chord-add-id]')) event.preventDefault(); });
     $('#scoreModeNote').addEventListener('click',()=>setScoreMode('note'));
     $('#scoreModeRest').addEventListener('click',()=>setScoreMode('rest'));
+    $('#scoreMobileModeNote').addEventListener('click',()=>setScoreMode('note'));
+    $('#scoreMobileModeRest').addEventListener('click',()=>setScoreMode('rest'));
     $$('[data-duration]').filter(button=>button.closest('#scoreDurationGroup')).forEach(button=>button.addEventListener('click',()=>setScoreDuration(button.dataset.duration)));
     $$('[data-accidental]').filter(button=>button.closest('#scoreAccidentalGroup')).forEach(button=>button.addEventListener('click',()=>setScoreAccidental(button.dataset.accidental)));
     $('#scoreTempo').addEventListener('change',()=>{ const value=Math.max(30,Math.min(300,Number($('#scoreTempo').value)||90)); scoreState.tempo=value; $('#scoreTempo').value=String(value); scheduleSave(); });
@@ -3244,6 +3303,7 @@
     $('#scoreDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
+    $('#scoreMobileQuickDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
     $('#scorePlayA').addEventListener('click',()=>playScore('a'));
     $('#scorePlayB').addEventListener('click',()=>playScore('b'));
     $('#scoreStop').addEventListener('click',stopScore);
