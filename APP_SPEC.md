@@ -193,11 +193,11 @@ The sample-score panel is a collapsible disclosure and is **closed by default** 
 
 On smartphone widths, the primary score input controls stay available while the user scrolls through a multi-system score.
 
-- the score toolbar becomes sticky directly below the sticky app header
+- a compact score-input bar is fixed directly above the mobile bottom navigation while the Score page is active
 - Note / Rest, duration, accidental, and tempo remain reachable without scrolling back to the top of the Score page
-- the sticky toolbar must not cover the staff or create page-level horizontal scrolling
+- the fixed quick bar must not cover score content or create page-level horizontal scrolling
 - playback controls keep a visible vertical gap below the score canvas
-- the fixed selected-event editor and bottom navigation must continue to avoid covering score content
+- the fixed selected-event editor stacks above the fixed quick bar, and both must avoid covering score content
 
 ## 15. Existing features retained
 
