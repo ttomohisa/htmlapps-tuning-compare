@@ -3,7 +3,7 @@
 ## 1.0.0
 
 - Made the score length adjustable from 1 to 16 measures, with confirmation before shrinking away existing events and Undo / Redo support.
-- Added a compact sticky Note / Rest + duration toolbar on smartphones so core input controls remain reachable while scrolling the score.
+- Added a compact fixed Note / Rest + duration toolbar above the mobile bottom navigation so core input controls remain visible while editing the score.
 - Collapsed the sample-score panel by default and added more spacing between the score canvas and playback controls.
 - Added sixteenth notes and sixteenth rests with quarter-beat snapping.
 - Added long-press duplication for chords, preserving voicing, accidentals, and duration.
