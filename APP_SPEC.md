@@ -72,10 +72,15 @@ Stop and natural playback completion clear the active state.
 
 ## 6. Score length
 
-The score is fixed at **four measures** in v1.0.0.
+The score starts at **four measures** and can be changed from **1 to 16 measures** without changing the app version.
 
-- 4/4 → 16 total beats
-- 3/4 → 12 total beats
+- the user can decrease / increase the measure count with dedicated − / + controls
+- increasing adds empty measures
+- decreasing keeps events in the remaining range
+- if decreasing would remove notes or rests, the app asks for confirmation first
+- measure-count changes participate in Undo / Redo
+- project JSON and local autosave persist the measure count
+- older saved projects without a measure count continue to open as four measures
 
 Desktop displays two measures per system.
 
@@ -171,16 +176,30 @@ The playback cursor follows all four measures and moves between systems correctl
 
 ## 13. Sample scores
 
-The built-in samples now use the four-measure score:
+The built-in samples use four measures:
 
 - Major third: sustained C4 + E4 across four measures
 - Major triad: sustained C4 + E4 + G4 across four measures
 - C major scale: ascending two measures and descending two measures
 - I–IV–V–I: one whole-measure chord per measure
 
+Loading a sample sets the score length to four measures.
+
 Sample replacement still confirms before replacing a non-empty score and remains Undoable.
 
-## 14. Existing features retained
+The sample-score panel is a collapsible disclosure and is **closed by default** so it does not separate the score tools from the staff during normal editing.
+
+## 14. Smartphone score editing
+
+On smartphone widths, the primary score input controls stay available while the user scrolls through a multi-system score.
+
+- the score toolbar becomes sticky directly below the sticky app header
+- Note / Rest, duration, accidental, and tempo remain reachable without scrolling back to the top of the Score page
+- the sticky toolbar must not cover the staff or create page-level horizontal scrolling
+- playback controls keep a visible vertical gap below the score canvas
+- the fixed selected-event editor and bottom navigation must continue to avoid covering score content
+
+## 15. Existing features retained
 
 - 12-tone equal temperament
 - 5-limit just intonation
@@ -194,7 +213,7 @@ Sample replacement still confirms before replacing a non-empty score and remains
 - Undo / Redo
 - no runtime network dependency
 
-## 15. RC UX polish
+## 16. RC UX polish
 
 Additional v0.9.0 hands-on fixes:
 
