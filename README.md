@@ -148,7 +148,7 @@ It uses bottom navigation for:
 - Tuning
 - Sound
 
-The score wraps by measure, touch targets are enlarged where needed, and selected-note editing remains accessible above the bottom navigation. A compact sticky bar keeps **Note / Rest** and **duration** controls available while scrolling through a longer score. The sample-score panel is collapsed by default.
+The score wraps by measure, touch targets are enlarged where needed, and selected-note editing remains accessible above the bottom navigation. A compact fixed bar above the mobile bottom navigation keeps **Note / Rest** and **duration** controls available at all times on the Score page. The sample-score panel is collapsed by default.
 
 ![Tuning Compare mobile screenshot](assets/screenshot-mobile.png)
 
