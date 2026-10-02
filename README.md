@@ -9,7 +9,7 @@
 
 A browser-based tool for comparing **12-tone equal temperament**, **5-limit just intonation**, and **custom tunings** with the same notes, timbre, and playback level.
 
-You can compare tunings by ear, inspect frequencies and cents differences, edit a short four-measure score, adjust custom frequencies directly, and export the result as WAV — without uploading the score, tuning settings, or generated audio.
+You can compare tunings by ear, inspect frequencies and cents differences, edit a compact 1–16 measure score, adjust custom frequencies directly, and export the result as WAV — without uploading the score, tuning settings, or generated audio.
 
 ## 🚀 Live demo
 
@@ -25,7 +25,7 @@ GitHub Pages serves the initial HTML. After it loads, tuning calculations, score
 - **12-tone equal temperament and 5-limit just intonation** — Select the reference pitch and, for just intonation, the tonic used by the built-in ratio table.
 - **Edit custom tunings directly** — Work in Hz, ratio, or cents and audition individual notes while adjusting them.
 - **See the difference numerically** — Inspect A/B frequency values and cents differences alongside the listening comparison.
-- **Use a four-measure score** — Enter notes, chords, rests, accidentals, 3/4 or 4/4 time, and whole/half/quarter/eighth/sixteenth durations.
+- **Use a 1–16 measure score** — Start with four measures, then add or remove measures as needed. Enter notes, chords, rests, accidentals, 3/4 or 4/4 time, and whole/half/quarter/eighth/sixteenth durations.
 - **Edit the score without leaving the staff** — Long-press a chord to duplicate it, drag a chord horizontally without changing its pitches, move rests horizontally, and use the selected-chord pitch lane to add a note at the intended height more easily.
 - **Start with useful examples** — Load a major third, major triad, C major scale, or I–IV–V–I sample.
 - **Export audio locally** — Render A only, B only, or an A → B comparison as 16-bit mono WAV at 44.1 kHz or 48 kHz.
@@ -86,11 +86,12 @@ Use **Play A** and **Play B** to hear the same notes with either tuning. The com
 
 ### 3. Edit the score
 
-The score is intentionally limited to four measures so it stays focused on tuning comparison rather than full notation.
+The score starts at four measures and can be adjusted from 1 to 16 measures while staying focused on tuning comparison rather than full notation.
 
 Supported in v1.0.0:
 
 - Treble clef
+- 1–16 measures with − / + controls
 - Single notes and chords
 - Rests
 - Whole, half, quarter, eighth, and sixteenth durations
@@ -147,7 +148,7 @@ It uses bottom navigation for:
 - Tuning
 - Sound
 
-The score wraps by measure, touch targets are enlarged where needed, and selected-note editing remains accessible above the bottom navigation.
+The score wraps by measure, touch targets are enlarged where needed, and selected-note editing remains accessible above the bottom navigation. A compact sticky bar keeps **Note / Rest** and **duration** controls available while scrolling through a longer score. The sample-score panel is collapsed by default.
 
 ![Tuning Compare mobile screenshot](assets/screenshot-mobile.png)
 
@@ -216,7 +217,7 @@ For a disconnected workflow, open the generated standalone HTML directly and fol
 ## Limitations
 
 - This is a tuning-comparison tool, not full notation software, a DAW, or a MIDI sequencer.
-- The score is fixed to four measures in v1.0.0.
+- The score supports 1–16 measures and starts at four measures.
 - Dotted notes, ties, tuplets, dynamics, and multiple parts are not implemented in v1.0.0.
 - MIDI keyboard input and MIDI file import are not implemented.
 - Custom tuning stores C4–B4 directly and derives other octaves at 2:1; independent per-octave tuning is not included.
