@@ -2750,13 +2750,13 @@
       const next=Number(duration);
       if(![.25,.5,1,2,4].includes(next)) return;
       scoreState.duration=next;
-      $('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
+      $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
       if($('#scoreMobileQuickDuration')) $('#scoreMobileQuickDuration').value=String(scoreState.duration);
     }
     function setScoreAccidental(accidental){
       scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural';
       ['#scoreAccidentalGroup','#scoreMobileAccidentalGroup'].forEach(selector=>{
-        $(selector+' [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental)));
+        $$(selector+' [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental)));
       });
     }
     function scoreSequenceForSide(side){
