@@ -2,6 +2,9 @@
 
 ## 1.0.0
 
+- Changed duration selection to configure the next score input only; it no longer changes the duration of an already selected event.
+- Added ♭ / ♮ / ♯ to the fixed smartphone score-input bar and added one-tap 3rd-below / 3rd-above chord helpers for selected notes and chords.
+- Prioritized accidental/note hit targets over blank staff positions and made same-position accidental input replace the existing note spelling instead of leaving the original natural note behind.
 - Made the score length adjustable from 1 to 16 measures, with confirmation before shrinking away existing events and Undo / Redo support.
 - Added a compact fixed Note / Rest + duration toolbar above the mobile bottom navigation so core input controls remain visible while editing the score.
 - Collapsed the sample-score panel by default and added more spacing between the score canvas and playback controls.
