@@ -159,7 +159,43 @@ Likewise, note input must not silently replace a rest. The rest must be deleted 
 
 A rest can be dragged horizontally. Rest dragging changes only its start position, uses the rest's duration-aware snapping, keeps its duration, and is Undoable.
 
-## 12. Score playback
+## 12. Input tools vs selected-event editing
+
+Changing the score input duration is a **next-input setting** and must not modify the duration of an already selected note, chord, or rest.
+
+- desktop duration buttons update only the next input duration
+- the fixed smartphone duration control updates only the next input duration
+- the selected-event editor has its own duration control for explicitly changing the selected event
+- selecting a new input duration while an event remains selected must leave that event unchanged
+
+Accidental tools follow the same input-tool model. The selected accidental is used for the next note and for explicit accidental application to an existing note.
+
+## 13. Accidental priority and same-position replacement
+
+Hit testing and note replacement prioritize an existing note / accidental over blank staff input.
+
+- accidental glyphs have note hit targets, so tapping ♭ / ♯ selects/edits that note rather than placing a new note at the glyph coordinates
+- when an event already contains a note on the same diatonic staff position, entering that position with a different accidental replaces the existing note's accidental instead of adding a second note
+- changing natural ↔ flat ↔ sharp at the same staff position is one Undo operation
+- the original natural note must not remain beside the newly altered note
+- position remains the visual staff position; accidental semantics determine the sounding pitch for that position
+
+## 14. Smartphone accidental and chord helpers
+
+The fixed smartphone score-input bar includes:
+
+- Note / Rest
+- duration
+- ♭ / ♮ / ♯
+
+When a non-rest event is selected, the selected-event editor also exposes one-tap chord helpers:
+
+- **3rd below** — adds a note two diatonic staff steps below the lowest selected chord tone
+- **3rd above** — adds a note two diatonic staff steps above the highest selected chord tone
+
+The helper uses the currently selected accidental for the added pitch, rejects out-of-range / duplicate pitches, participates in Undo, and keeps the event start and duration unchanged.
+
+## 15. Score playback
 
 Score playback remains available for tuning A and tuning B.
 
@@ -174,7 +210,7 @@ Playback uses the Web Audio timeline and the current timbre / volume / attack / 
 
 The playback cursor follows all four measures and moves between systems correctly.
 
-## 13. Sample scores
+## 16. Sample scores
 
 The built-in samples use four measures:
 
@@ -189,7 +225,7 @@ Sample replacement still confirms before replacing a non-empty score and remains
 
 The sample-score panel is a collapsible disclosure and is **closed by default** so it does not separate the score tools from the staff during normal editing.
 
-## 14. Smartphone score editing
+## 17. Smartphone score editing
 
 On smartphone widths, the primary score input controls stay available while the user scrolls through a multi-system score.
 
@@ -199,7 +235,7 @@ On smartphone widths, the primary score input controls stay available while the 
 - playback controls keep a visible vertical gap below the score canvas
 - the fixed selected-event editor stacks above the fixed quick bar, and both must avoid covering score content
 
-## 15. Existing features retained
+## 18. Existing features retained
 
 - 12-tone equal temperament
 - 5-limit just intonation
@@ -213,7 +249,7 @@ On smartphone widths, the primary score input controls stay available while the 
 - Undo / Redo
 - no runtime network dependency
 
-## 16. RC UX polish
+## 19. RC UX polish
 
 Additional v0.9.0 hands-on fixes:
 
