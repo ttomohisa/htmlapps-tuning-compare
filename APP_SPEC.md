@@ -195,7 +195,26 @@ When a non-rest event is selected, the selected-event editor also exposes one-ta
 
 The helper uses the currently selected accidental for the added pitch, rejects out-of-range / duplicate pitches, participates in Undo, and keeps the event start and duration unchanged.
 
-## 15. Score playback
+## 15. Symbol-driven score timing
+
+Horizontal staff position determines **visual order and placement**, but an empty horizontal gap does not create silence by itself.
+
+- score events are ordered by their visual `start` position
+- playback time is then accumulated from each event's duration
+- note/chord duration contributes audible time
+- an explicit rest contributes silent time
+- no explicit rest between two events means no silent gap, even when their visual positions are separated
+- live score playback and WAV export use the same accumulated timing
+- the playback cursor follows the accumulated event/rest timeline and may jump across unused visual space instead of spending time in an implicit gap
+
+Example:
+
+- quarter-note C, visually later quarter-note E, no rest → C for 1 beat, then E for 1 beat
+- quarter-note C, quarter rest, quarter-note E → C for 1 beat, silence for 1 beat, then E for 1 beat
+
+The visual start positions remain editable so the user can arrange notation, but silence is represented only by an explicit rest event.
+
+## 16. Score playback
 
 Score playback remains available for tuning A and tuning B.
 
@@ -210,7 +229,7 @@ Playback uses the Web Audio timeline and the current timbre / volume / attack / 
 
 The playback cursor follows all four measures and moves between systems correctly.
 
-## 16. Sample scores
+## 17. Sample scores
 
 The built-in samples use four measures:
 
@@ -225,7 +244,7 @@ Sample replacement still confirms before replacing a non-empty score and remains
 
 The sample-score panel is a collapsible disclosure and is **closed by default** so it does not separate the score tools from the staff during normal editing.
 
-## 17. Smartphone score editing
+## 18. Smartphone score editing
 
 On smartphone widths, the primary score input controls stay available while the user scrolls through a multi-system score.
 
@@ -235,7 +254,7 @@ On smartphone widths, the primary score input controls stay available while the 
 - playback controls keep a visible vertical gap below the score canvas
 - the fixed selected-event editor stacks above the fixed quick bar, and both must avoid covering score content
 
-## 18. Existing features retained
+## 19. Existing features retained
 
 - 12-tone equal temperament
 - 5-limit just intonation
@@ -249,7 +268,7 @@ On smartphone widths, the primary score input controls stay available while the 
 - Undo / Redo
 - no runtime network dependency
 
-## 19. RC UX polish
+## 20. RC UX polish
 
 Additional v0.9.0 hands-on fixes:
 
