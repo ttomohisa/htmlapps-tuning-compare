@@ -7,6 +7,8 @@ const storageKey='tuning-compare:settings';
 const browser=await chromium.launch({headless:true});
 const context=await browser.newContext({viewport:{width:390,height:844},locale:'ja-JP',reducedMotion:'reduce'});
 const page=await context.newPage();
+const pageErrors=[];
+page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)));
 
 function assert(condition,message){ if(!condition) throw new Error(message); }
 async function waitSaved(){ await page.waitForTimeout(260); }
@@ -43,6 +45,7 @@ const quickDebug=await page.evaluate(()=>({
   quickRect:document.querySelector('.score-mobile-quick-tools')?.getBoundingClientRect().toJSON?.()||null,
   viewport:[innerWidth,innerHeight]
 }));
+quickDebug.pageErrors=pageErrors.slice();
 console.log('[debug quick]',JSON.stringify(quickDebug));
 assert(await page.locator('#scoreMobileQuickDuration').isVisible(),'Mobile quick duration is not visible: '+JSON.stringify(quickDebug));
 await page.locator('#scoreMobileQuickDuration').selectOption('1');
