@@ -36,7 +36,7 @@ async function clickSvg(x,y){
 
 // 1) Input duration must not edit the already-selected note.
 await reset();
-await page.locator('[data-duration="1"]').click();
+await page.locator('#scoreMobileQuickDuration').selectOption('1');
 await clickSvg(90,106); // E4, beat 0
 let state=await score();
 assert(state.events.length===1 && state.events[0].duration===1,'Quarter-note setup failed');
