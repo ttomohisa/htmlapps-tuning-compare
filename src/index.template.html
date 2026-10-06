@@ -707,37 +707,44 @@
         position:fixed; z-index:74;
         left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right));
         bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 8px);
-        display:grid; grid-template-columns:minmax(0,1fr) minmax(116px,.72fr); gap:8px;
+        display:grid; grid-template-columns:minmax(0,1fr) minmax(116px,.72fr); grid-template-areas:"mode duration" "accidental accidental"; gap:7px 8px;
         margin:0; padding:8px;
         border:1px solid color-mix(in srgb,var(--line) 88%,transparent); border-radius:14px;
         background:rgba(255,255,255,.97); box-shadow:0 -5px 20px rgba(20,22,20,.12); backdrop-filter:blur(14px);
       }
-      .score-mobile-quick-mode { display:grid; grid-template-columns:1fr 1fr; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
-      .score-mobile-quick-mode button { min-height:44px; padding:7px 8px; border:0; border-right:1px solid var(--line); background:transparent; font:inherit; font-size:12px; font-weight:760; }
+      .score-mobile-quick-mode { grid-area:mode; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+      .score-mobile-quick-mode button { min-height:42px; padding:6px 8px; border:0; border-right:1px solid var(--line); background:transparent; font:inherit; font-size:12px; font-weight:760; }
       .score-mobile-quick-mode button:last-child { border-right:0; }
       .score-mobile-quick-mode button[aria-pressed="true"] { color:var(--accent); background:var(--accent-soft); }
-      .score-mobile-quick-duration { width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; }
+      .score-mobile-quick-duration { grid-area:duration; width:100%; min-height:42px; border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; }
+      .score-mobile-quick-accidental { grid-area:accidental; display:grid; grid-template-columns:repeat(3,1fr); overflow:hidden; border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+      .score-mobile-quick-accidental button { min-height:38px; border:0; border-right:1px solid var(--line); background:transparent; font:inherit; font-size:18px; font-weight:760; }
+      .score-mobile-quick-accidental button:last-child { border-right:0; }
+      .score-mobile-quick-accidental button[aria-pressed="true"] { color:var(--accent); background:var(--accent-soft); }
       .score-transport { margin-top:18px; }
       .score-editor-row { display:none; }
-      .score-workspace { padding-bottom:86px; }
-      .score-workspace.has-mobile-selection { padding-bottom:158px; }
+      .score-workspace { padding-bottom:132px; }
+      .score-workspace.has-mobile-selection { padding-bottom:238px; }
       .score-mobile-editor {
         position:fixed; z-index:75;
         left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right));
-        bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 78px);
-        display:grid; grid-template-columns:minmax(0,1fr) minmax(98px,.72fr) auto; gap:8px; align-items:center;
+        bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 112px);
+        display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center;
         padding:9px; border:1px solid var(--line); border-radius:14px;
-        background:rgba(255,255,255,.96); box-shadow:var(--shadow-md); backdrop-filter:blur(14px);
+        background:rgba(255,255,255,.97); box-shadow:var(--shadow-md); backdrop-filter:blur(14px);
       }
       .score-mobile-selected { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:760; }
-      .score-mobile-duration select { width:100%; min-height:44px; border:1px solid var(--line); border-radius:10px; padding:6px 8px; background:var(--surface); }
-      .score-mobile-editor .button { min-height:44px; padding:7px 10px; }
+      .score-mobile-editor .button { min-height:42px; padding:6px 10px; }
+      .score-mobile-chord-tools { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; padding-top:2px; }
+      .score-mobile-chord-tools[hidden] { display:none; }
+      .score-mobile-chord-tools .button { width:100%; color:var(--accent); }
       .score-empty-hint { align-items:start; padding-top:22px; }
       .page-intro { padding-bottom:14px; }
       footer { padding-bottom:12px; }
     }
     @media (max-width:380px) {
-      .score-mobile-editor { grid-template-columns:minmax(0,1fr) 92px auto; gap:6px; padding:7px; }
+      .score-mobile-quick-tools { left:8px; right:8px; padding:7px; gap:6px; }
+      .score-mobile-editor { left:8px; right:8px; gap:6px; padding:7px; }
       .score-mobile-editor .button { padding-inline:8px; }
     }
 
@@ -846,6 +853,7 @@
     .score-svg .score-note-hitbox:active { cursor:grabbing; }
     .score-svg .score-rest-hitbox { fill:transparent; cursor:grab; }
     .score-svg .score-rest-hitbox:active { cursor:grabbing; }
+    .score-svg .score-accidental-hitbox { fill:transparent; cursor:pointer; }
     .score-svg .chord-selection { fill:none; stroke:var(--accent); stroke-width:2.2; }
     .score-svg .score-chord-add-lane { fill:rgba(22,98,79,.055); stroke:rgba(22,98,79,.42); stroke-width:1; stroke-dasharray:2 4; cursor:crosshair; }
 
@@ -1089,6 +1097,11 @@
           <option value="0.5" data-i18n="scoreEighth">8分音符</option>
           <option value="0.25" data-i18n="scoreSixteenth">16分音符</option>
         </select>
+        <div class="score-mobile-quick-accidental" id="scoreMobileAccidentalGroup" role="group" data-i18n-aria-label="scoreAccidental" aria-label="臨時記号">
+          <button type="button" data-accidental="flat" aria-pressed="false">♭</button>
+          <button type="button" data-accidental="natural" aria-pressed="true">♮</button>
+          <button type="button" data-accidental="sharp" aria-pressed="false">♯</button>
+        </div>
       </div>
       <div class="score-canvas-shell">
         <svg class="score-svg" id="scoreSvg" viewBox="0 0 960 230" role="img" data-i18n-aria-label="scoreCanvasLabel" aria-label="簡易五線譜"></svg>
@@ -1100,17 +1113,11 @@
       </div>
       <div class="score-mobile-editor" id="scoreMobileEditor" hidden>
         <div class="score-mobile-selected" id="scoreMobileSelected"></div>
-        <label class="score-mobile-duration">
-          <span class="sr-only-app" data-i18n="scoreDuration">音価</span>
-          <select id="scoreMobileDuration" data-i18n-aria-label="scoreDuration" aria-label="音価">
-            <option value="4" data-i18n="scoreWhole">全音符</option>
-            <option value="2" data-i18n="scoreHalf">2分音符</option>
-            <option value="1" data-i18n="scoreQuarter">4分音符</option>
-            <option value="0.5" data-i18n="scoreEighth">8分音符</option>
-            <option value="0.25" data-i18n="scoreSixteenth">16分音符</option>
-          </select>
-        </label>
         <button type="button" class="button danger" id="scoreMobileDelete" data-i18n="scoreDelete">選択を削除</button>
+        <div class="score-mobile-chord-tools" id="scoreMobileChordTools" hidden>
+          <button type="button" class="button" id="scoreMobileThirdBelow" data-i18n="scoreAddThirdBelow">＋3度下</button>
+          <button type="button" class="button" id="scoreMobileThirdAbove" data-i18n="scoreAddThirdAbove">＋3度上</button>
+        </div>
       </div>
       <div class="score-transport" role="group" data-i18n-aria-label="scorePlaybackControls" aria-label="譜面のA/B再生">
         <button type="button" class="button ab-play-button" id="scorePlayA" aria-pressed="false" data-i18n="playA">Aを再生</button>
