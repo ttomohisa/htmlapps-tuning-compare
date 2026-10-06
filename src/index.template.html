@@ -2282,6 +2282,10 @@
       return removed;
     }
     function scoreSelectedEvent(){ return scoreState.events.find(event=>event.id===scoreState.selectedId)||null; }
+    function scoreNoteAtStep(event,step){
+      if(!event||event.rest||!Array.isArray(event.notes)) return null;
+      return event.notes.find(note=>scoreStepForNatural(note.display)===step)||null;
+    }
     function clearScoreLongPress(){ clearTimeout(scoreState.longPressTimer); scoreState.longPressTimer=0; }
     function scoreEventFitsMeasure(start,duration){
       const beatsPerMeasure=scoreBeatsPerMeasure(),measure=Math.floor(start/beatsPerMeasure),local=start-measure*beatsPerMeasure;
@@ -2374,8 +2378,15 @@
         }
         const pitch=scorePitchForStep(step);
         if(existing){
-          if(existing.notes.some(item=>item.note===pitch.note&&item.display===pitch.display)){
-            scoreState.selectedId=existing.id; renderScore(); return;
+          const sameStep=scoreNoteAtStep(existing,step);
+          if(sameStep){
+            scoreState.selectedId=existing.id;
+            if(sameStep.note===pitch.note&&sameStep.display===pitch.display&&sameStep.accidental===pitch.accidental){ renderScore(); return; }
+            pushScoreHistory();
+            Object.assign(sameStep,pitch);
+            existing.notes.sort((a,b)=>scoreStepForNatural(a.display)-scoreStepForNatural(b.display));
+            setScoreStatus(t('scoreAccidentalApplied',{note:pitch.display}));
+            renderScore(); scheduleSave(); return;
           }
           pushScoreHistory();
           existing.notes.push(pitch);
@@ -2454,8 +2465,12 @@
         const head=scoreSvgElement('ellipse',{cx:position.x,cy:position.y,rx:8.2,ry:5.6,class:'note-head'+(event.duration>=2?' open':''),'data-event-id':event.id,'data-note-index':position.index});
         head.setAttribute('transform','rotate(-18 '+position.x+' '+position.y+')'); svg.append(head);
         if(position.note.accidental!=='natural'){
-          const acc=scoreSvgElement('text',{x:position.x-21,y:position.y+5,class:'accidental'});
+          const acc=scoreSvgElement('text',{x:position.x-21,y:position.y+5,class:'accidental','data-event-id':event.id,'data-note-index':position.index});
           acc.textContent=position.note.accidental==='sharp'?'♯':'♭'; svg.append(acc);
+          svg.append(scoreSvgElement('rect',{
+            x:position.x-31,y:position.y-13,width:20,height:26,rx:4,class:'score-accidental-hitbox',
+            'data-event-id':event.id,'data-note-index':position.index
+          }));
         }
       });
       const ys=positions.map(position=>position.y),yMin=Math.min(...ys),yMax=Math.max(...ys);
@@ -2510,10 +2525,32 @@
       }
     }
     function setScoreMobileEditor(selected){
-      const editor=$('#scoreMobileEditor'); if(!editor) return;
-      editor.hidden=!selected; $('#mobileScorePage')?.classList.toggle('has-mobile-selection',Boolean(selected)); if(!selected) return;
+      const editor=$('#scoreMobileEditor'),chordTools=$('#scoreMobileChordTools'); if(!editor) return;
+      editor.hidden=!selected; $('#mobileScorePage')?.classList.toggle('has-mobile-selection',Boolean(selected));
+      if(chordTools) chordTools.hidden=!selected||selected.rest||!selected.notes.length;
+      if(!selected) return;
       const notes=selected.rest?t('scoreModeRest'):selected.notes.map(item=>item.display).join(' + ');
-      $('#scoreMobileSelected').textContent=notes; $('#scoreMobileDuration').value=String(selected.duration);
+      $('#scoreMobileSelected').textContent=notes+' · '+scoreDurationLabel(selected.duration);
+    }
+    function addScoreChordThird(direction){
+      const selected=scoreSelectedEvent();
+      if(!selected||selected.rest||!selected.notes.length) return false;
+      const steps=selected.notes.map(note=>scoreStepForNatural(note.display));
+      const anchor=direction<0?Math.min(...steps):Math.max(...steps);
+      const targetStep=anchor+(direction<0?-2:2);
+      if(targetStep<0||targetStep>=SCORE_NATURAL_NOTES.length){ setScoreStatus(t('scoreChordHelperRange'),true); return false; }
+      const pitch=scorePitchForStep(targetStep,scoreState.accidental);
+      const sameStep=scoreNoteAtStep(selected,targetStep);
+      if(sameStep){
+        if(sameStep.note===pitch.note&&sameStep.display===pitch.display&&sameStep.accidental===pitch.accidental){ setScoreStatus(t('scoreChordHelperExists')); return false; }
+        pushScoreHistory(); Object.assign(sameStep,pitch);
+        selected.notes.sort((a,b)=>scoreStepForNatural(a.display)-scoreStepForNatural(b.display));
+        renderScore(); scheduleSave(); setScoreStatus(t('scoreAccidentalApplied',{note:pitch.display})); return true;
+      }
+      pushScoreHistory();
+      selected.notes.push(pitch);
+      selected.notes.sort((a,b)=>scoreStepForNatural(a.display)-scoreStepForNatural(b.display));
+      renderScore(); scheduleSave(); setScoreStatus(t('scoreAdded',{note:pitch.display})); return true;
     }
     function renderScore(){
       const svg=$('#scoreSvg'),layout=scoreLayout(); svg.replaceChildren();
@@ -2710,17 +2747,17 @@
       $('#scoreMobileModeRest')?.setAttribute('aria-pressed',String(scoreState.mode==='rest'));
     }
     function setScoreDuration(duration){
-      const next=Number(duration),selected=scoreSelectedEvent();
-      if(selected&&selected.duration!==next){ pushScoreHistory(); selected.duration=next; }
+      const next=Number(duration);
+      if(![.25,.5,1,2,4].includes(next)) return;
       scoreState.duration=next;
-      $$('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
-      if($('#scoreMobileDuration')) $('#scoreMobileDuration').value=String(scoreState.duration);
+      $('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
       if($('#scoreMobileQuickDuration')) $('#scoreMobileQuickDuration').value=String(scoreState.duration);
-      if(selected){ renderScore(); scheduleSave(); }
     }
     function setScoreAccidental(accidental){
       scoreState.accidental=['flat','sharp'].includes(accidental)?accidental:'natural';
-      $$('#scoreAccidentalGroup [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental)));
+      ['#scoreAccidentalGroup','#scoreMobileAccidentalGroup'].forEach(selector=>{
+        $(selector+' [data-accidental]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accidental===scoreState.accidental)));
+      });
     }
     function scoreSequenceForSide(side){
       const secondsPerBeat=60/scoreState.tempo;
@@ -3338,7 +3375,7 @@
     $('#scoreMobileModeNote').addEventListener('click',()=>setScoreMode('note'));
     $('#scoreMobileModeRest').addEventListener('click',()=>setScoreMode('rest'));
     $$('[data-duration]').filter(button=>button.closest('#scoreDurationGroup')).forEach(button=>button.addEventListener('click',()=>setScoreDuration(button.dataset.duration)));
-    $$('[data-accidental]').filter(button=>button.closest('#scoreAccidentalGroup')).forEach(button=>button.addEventListener('click',()=>setScoreAccidental(button.dataset.accidental)));
+    $('[data-accidental]').filter(button=>button.closest('#scoreAccidentalGroup')||button.closest('#scoreMobileAccidentalGroup')).forEach(button=>button.addEventListener('click',()=>setScoreAccidental(button.dataset.accidental)));
     $('#scoreTempo').addEventListener('change',()=>{ const value=Math.max(30,Math.min(300,Number($('#scoreTempo').value)||90)); scoreState.tempo=value; $('#scoreTempo').value=String(value); scheduleSave(); });
     $('#scoreTimeSignature').addEventListener('change',()=>{ pushScoreHistory(); scoreState.timeSignature=$('#scoreTimeSignature').value==='3/4'?'3/4':'4/4'; const maxStart=scoreTotalBeats()-.25; scoreState.events=scoreState.events.filter(event=>event.start<=maxStart); scoreState.selectedId=null; renderScore(); scheduleSave(); });
     $('#scoreUndo').addEventListener('click',scoreUndo);
@@ -3349,7 +3386,8 @@
     $$('[data-score-sample]').forEach(button=>button.addEventListener('click',()=>loadScoreSample(button.dataset.scoreSample)));
     $('#scoreDelete').addEventListener('click',deleteScoreSelection);
     $('#scoreMobileDelete').addEventListener('click',deleteScoreSelection);
-    $('#scoreMobileDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
+    $('#scoreMobileThirdBelow').addEventListener('click',()=>addScoreChordThird(-1));
+    $('#scoreMobileThirdAbove').addEventListener('click',()=>addScoreChordThird(1));
     $('#scoreMobileQuickDuration').addEventListener('change',event=>setScoreDuration(event.currentTarget.value));
     $('#scorePlayA').addEventListener('click',()=>playScore('a'));
     $('#scorePlayB').addEventListener('click',()=>playScore('b'));
