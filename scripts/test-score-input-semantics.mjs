@@ -36,6 +36,15 @@ async function clickSvg(x,y){
 
 // 1) Input duration must not edit the already-selected note.
 await reset();
+const quickDebug=await page.evaluate(()=>({
+  bodyClass:document.body.className,
+  scoreClass:document.querySelector('#mobileScorePage')?.className,
+  quickDisplay:getComputedStyle(document.querySelector('.score-mobile-quick-tools')).display,
+  quickRect:document.querySelector('.score-mobile-quick-tools')?.getBoundingClientRect().toJSON?.()||null,
+  viewport:[innerWidth,innerHeight]
+}));
+console.log('[debug quick]',JSON.stringify(quickDebug));
+assert(await page.locator('#scoreMobileQuickDuration').isVisible(),'Mobile quick duration is not visible: '+JSON.stringify(quickDebug));
 await page.locator('#scoreMobileQuickDuration').selectOption('1');
 await clickSvg(90,106); // E4, beat 0
 let state=await score();
