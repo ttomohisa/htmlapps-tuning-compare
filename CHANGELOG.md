@@ -2,6 +2,8 @@
 
 ## 1.0.0
 
+- Changed score timing so unused horizontal space no longer creates implicit silence; only explicit rest events add silent time in live playback and WAV export.
+- Updated the playback cursor to follow symbol-driven timing and jump across unused visual space instead of traversing it as silence.
 - Changed duration selection to configure the next score input only; it no longer changes the duration of an already selected event.
 - Added ♭ / ♮ / ♯ to the fixed smartphone score-input bar and added one-tap 3rd-below / 3rd-above chord helpers for selected notes and chords.
 - Prioritized accidental/note hit targets over blank staff positions and made same-position accidental input replace the existing note spelling instead of leaving the original natural note behind.
