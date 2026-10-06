@@ -26,7 +26,7 @@ GitHub Pages serves the initial HTML. After it loads, tuning calculations, score
 - **Edit custom tunings directly** — Work in Hz, ratio, or cents and audition individual notes while adjusting them.
 - **See the difference numerically** — Inspect A/B frequency values and cents differences alongside the listening comparison.
 - **Use a 1–16 measure score** — Start with four measures, then add or remove measures as needed. Enter notes, chords, rests, accidentals, 3/4 or 4/4 time, and whole/half/quarter/eighth/sixteenth durations.
-- **Edit the score without leaving the staff** — Long-press a chord to duplicate it, drag a chord horizontally without changing its pitches, move rests horizontally, and use the selected-chord pitch lane to add a note at the intended height more easily.
+- **Edit the score without leaving the staff** — Long-press a chord to duplicate it, drag a chord horizontally without changing its pitches, move rests horizontally, and use the selected-chord pitch lane to add a note at the intended height more easily. Changing the input duration affects the **next** note/rest only, not the event that happens to be selected.
 - **Start with useful examples** — Load a major third, major triad, C major scale, or I–IV–V–I sample.
 - **Export audio locally** — Render A only, B only, or an A → B comparison as 16-bit mono WAV at 44.1 kHz or 48 kHz.
 - **Save the whole experiment** — Export and import project JSON containing the score, tunings, sound settings, and WAV settings.
@@ -103,6 +103,8 @@ Supported in v1.0.0:
 - Long-press chord duplication
 - Selected-chord pitch lane for easier note addition
 - Horizontal rest dragging
+- Input duration changes apply only to the next note/rest
+- Same-position ♭ / ♮ / ♯ input replaces that note's accidental instead of leaving a duplicate natural note
 - Undo / Redo
 
 On desktop, the score uses two measures per system. On smartphones, it wraps to one measure per system instead of forcing a long horizontal canvas.
@@ -148,7 +150,7 @@ It uses bottom navigation for:
 - Tuning
 - Sound
 
-The score wraps by measure, touch targets are enlarged where needed, and selected-note editing remains accessible above the bottom navigation. A compact fixed bar above the mobile bottom navigation keeps **Note / Rest** and **duration** controls available at all times on the Score page. The sample-score panel is collapsed by default.
+The score wraps by measure and touch targets are enlarged where needed. A compact fixed bar above the mobile bottom navigation keeps **Note / Rest**, **duration**, and **♭ / ♮ / ♯** controls available at all times on the Score page. When a note or chord is selected, one-tap **+ 3rd below** / **+ 3rd above** helpers make chord entry easier on touch screens. The sample-score panel is collapsed by default.
 
 ![Tuning Compare mobile screenshot](assets/screenshot-mobile.png)
 
