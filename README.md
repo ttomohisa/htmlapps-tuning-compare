@@ -86,7 +86,7 @@ Use **Play A** and **Play B** to hear the same notes with either tuning. The com
 
 ### 3. Edit the score
 
-The score starts at four measures and can be adjusted from 1 to 16 measures while staying focused on tuning comparison rather than full notation.
+The score starts at four measures and can be adjusted from 1 to 16 measures while staying focused on tuning comparison rather than full notation. **Horizontal spacing does not create an implicit rest**: events are played in visual order using their note/rest durations, and silence is added only by an explicit rest symbol.
 
 Supported in v1.0.0:
 
@@ -104,6 +104,7 @@ Supported in v1.0.0:
 - Selected-chord pitch lane for easier note addition
 - Horizontal rest dragging
 - Input duration changes apply only to the next note/rest
+- Empty horizontal space does not add silence; only explicit rests do
 - Same-position ♭ / ♮ / ♯ input replaces that note's accidental instead of leaving a duplicate natural note
 - Undo / Redo
 
@@ -129,7 +130,7 @@ The score can be rendered locally as:
 - B only
 - A → B comparison
 
-WAV output uses mono 16-bit PCM at 44.1 kHz or 48 kHz.
+WAV output uses mono 16-bit PCM at 44.1 kHz or 48 kHz. WAV rendering uses the same symbol-driven timing as live score playback: unused visual gaps are skipped, while explicit rests add silence.
 
 The A and B sides use the same sound and gain conditions. The app does not normalize A and B independently.
 
