@@ -1621,7 +1621,7 @@
     const SCORE_DEFAULT_MEASURE_COUNT = 4;
     const SCORE_MIN_MEASURE_COUNT = 1;
     const SCORE_MAX_MEASURE_COUNT = 16;
-    const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, measureCount:SCORE_DEFAULT_MEASURE_COUNT, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0, drag:null, longPressTimer:0 };
+    const scoreState = { mode:'note', duration:1, accidental:'natural', timeSignature:'4/4', tempo:90, measureCount:SCORE_DEFAULT_MEASURE_COUNT, events:[], selectedId:null, undo:[], redo:[], nextId:1, playbackFrame:0, playbackStartedAt:null, playbackDuration:0, playbackTimeline:[], drag:null, longPressTimer:0 };
 
 
     const SCORE_SAMPLES = Object.freeze({
@@ -2761,11 +2761,38 @@
     }
     function scoreSequenceForSide(side){
       const secondsPerBeat=60/scoreState.tempo;
-      return scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>({
-        startSeconds:event.start*secondsPerBeat,
-        durationSeconds:Math.max(.08,event.duration*secondsPerBeat),
-        frequencies:event.rest?[]:event.notes.map(note=>abFrequency(side,note.note)).filter(value=>engine.validFrequency(value))
-      }));
+      let timelineBeat=0;
+      return scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>{
+        const durationBeats=Math.max(.25,Number(event.duration)||1);
+        const item={
+          startSeconds:timelineBeat*secondsPerBeat,
+          durationSeconds:Math.max(.08,durationBeats*secondsPerBeat),
+          durationBeats:durationBeats,
+          visualStartBeat:Number(event.start)||0,
+          rest:Boolean(event.rest),
+          frequencies:event.rest?[]:event.notes.map(note=>abFrequency(side,note.note)).filter(value=>engine.validFrequency(value))
+        };
+        timelineBeat+=durationBeats;
+        return item;
+      });
+    }
+    function scoreSequenceDurationSeconds(sequence){
+      return Math.max(0,...sequence.map(event=>(Number(event.startSeconds)||0)+(Number(event.durationSeconds)||0)));
+    }
+    function scoreVisualBeatForElapsed(elapsedSeconds,sequence=scoreState.playbackTimeline){
+      if(!Array.isArray(sequence)||!sequence.length) return 0;
+      const elapsed=Math.max(0,Number(elapsedSeconds)||0);
+      let index=sequence.findIndex(event=>elapsed<(Number(event.startSeconds)||0)+(Number(event.durationSeconds)||0));
+      if(index<0) index=sequence.length-1;
+      const event=sequence[index],start=Math.max(0,Number(event.startSeconds)||0),duration=Math.max(.001,Number(event.durationSeconds)||.001);
+      const local=Math.max(0,Math.min(1,(elapsed-start)/duration));
+      const visualStart=Math.max(0,Number(event.visualStartBeat)||0);
+      const durationBeats=Math.max(.25,Number(event.durationBeats)||.25);
+      const nextVisual=Number(sequence[index+1]?.visualStartBeat);
+      let visualEnd=visualStart+durationBeats;
+      if(Number.isFinite(nextVisual)&&nextVisual>visualStart) visualEnd=Math.min(visualEnd,nextVisual);
+      visualEnd=Math.min(Math.max(visualStart,visualEnd),Math.max(0,scoreTotalBeats()-.001));
+      return visualStart+(visualEnd-visualStart)*local;
     }
     function setScoreActive(side){
       [['a','#scorePlayA'],['b','#scorePlayB']].forEach(([key,selector])=>{
@@ -2775,7 +2802,7 @@
       });
     }
     function stopScoreCursor(){
-      cancelAnimationFrame(scoreState.playbackFrame); scoreState.playbackFrame=0; scoreState.playbackStartedAt=null; scoreState.playbackDuration=0; setScoreActive(null); renderScore();
+      cancelAnimationFrame(scoreState.playbackFrame); scoreState.playbackFrame=0; scoreState.playbackStartedAt=null; scoreState.playbackDuration=0; scoreState.playbackTimeline=[]; setScoreActive(null); renderScore();
     }
     function setScoreCursorPosition(globalBeat){
       const cursor=$('#scoreCursor'); if(!cursor) return;
@@ -2785,10 +2812,10 @@
     }
     function animateScoreCursor(){
       if(scoreState.playbackStartedAt==null||!engine.context) return;
-      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt,secondsPerBeat=60/scoreState.tempo;
-      const globalBeat=Math.max(0,Math.min(scoreTotalBeats()-.001,elapsed/secondsPerBeat));
+      const elapsed=engine.context.currentTime-scoreState.playbackStartedAt;
+      const visualBeat=scoreVisualBeatForElapsed(elapsed);
       const progress=Math.max(0,Math.min(1,elapsed/Math.max(.001,scoreState.playbackDuration)));
-      setScoreCursorPosition(globalBeat);
+      setScoreCursorPosition(visualBeat);
       if(progress>=1){ stopScoreCursor(); return; }
       scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor);
     }
@@ -2800,7 +2827,7 @@
       if(!sequence.some(event=>event.frequencies.length)){ setScoreStatus(t('invalidABFrequency'),true); return; }
       try{
         const result=await engine.playScore(sequence,playbackOptions()); setAudioReadyState();
-        scoreState.playbackStartedAt=result.startTime; scoreState.playbackDuration=Math.max(result.durationSeconds,scoreTotalBeats()*(60/scoreState.tempo));
+        scoreState.playbackStartedAt=result.startTime; scoreState.playbackDuration=Math.max(.001,result.durationSeconds); scoreState.playbackTimeline=sequence;
         setScoreActive(side); renderScore(); scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor); setScoreStatus(t('scorePlaying',{side:side.toUpperCase()}));
       }catch(error){ console.error(error); setScoreActive(null); setScoreStatus(t('playbackFailed'),true); }
     }
@@ -2811,11 +2838,8 @@
 
     function offlineAudioSupported(){ return Boolean(window.OfflineAudioContext || window.webkitOfflineAudioContext); }
     function scoreHasAudibleEvents(){ return scoreState.events.some(event=>!event.rest&&event.notes.length); }
-    function scoreRenderDurationSeconds(){
-      const secondsPerBeat=60/scoreState.tempo;
-      let end=scoreTotalBeats()*secondsPerBeat;
-      scoreState.events.forEach(event=>{ end=Math.max(end,(event.start+event.duration)*secondsPerBeat); });
-      return Math.max(.2,end+.08);
+    function scoreRenderDurationSeconds(sequence){
+      return Math.max(.2,scoreSequenceDurationSeconds(Array.isArray(sequence)?sequence:[])+.08);
     }
     function offlinePeriodicWave(context,timbre){
       if(timbre==='sine') return null;
@@ -2829,7 +2853,7 @@
       if(!OfflineContext) throw new Error('OfflineAudioContext unavailable');
       const options=playbackOptions();
       const sequence=scoreSequenceForSide(side);
-      const durationSeconds=scoreRenderDurationSeconds();
+      const durationSeconds=scoreRenderDurationSeconds(sequence);
       const frameCount=Math.max(1,Math.ceil(durationSeconds*sampleRate));
       const context=new OfflineContext(1,frameCount,sampleRate);
       const master=context.createGain();
