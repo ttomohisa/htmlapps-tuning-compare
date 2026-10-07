@@ -254,7 +254,31 @@ On smartphone widths, the primary score input controls stay available while the 
 - playback controls keep a visible vertical gap below the score canvas
 - the fixed selected-event editor stacks above the fixed quick bar, and both must avoid covering score content
 
-## 19. Existing features retained
+## 19. Mobile score control deduplication and selection dismissal
+
+On smartphone widths, controls duplicated by the fixed score-input bar are hidden from the upper score toolbar:
+
+- Note / Rest
+- duration
+- flat / natural / sharp
+
+Tempo remains in the upper toolbar because it is not duplicated in the fixed input bar.
+
+The fixed duration selector uses symbol-appropriate labels:
+
+- Note mode: Whole note / Half note / Quarter note / Eighth note / Sixteenth note
+- Rest mode: Whole rest / Half rest / Quarter rest / Eighth rest / Sixteenth rest
+
+When a score event is selected and the user taps an empty staff position:
+
+- the current selection is cleared
+- the fixed selected-event editor closes
+- that tap does not add a new score event
+- a subsequent tap can be used for normal note/rest input
+
+Tapping another existing note/rest selects that event normally.
+
+## 20. Existing features retained
 
 - 12-tone equal temperament
 - 5-limit just intonation
@@ -268,7 +292,7 @@ On smartphone widths, the primary score input controls stay available while the 
 - Undo / Redo
 - no runtime network dependency
 
-## 20. RC UX polish
+## 21. RC UX polish
 
 Additional v0.9.0 hands-on fixes:
 
