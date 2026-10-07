@@ -2,6 +2,9 @@
 
 ## 1.0.0
 
+- Hid duplicated Note / Rest, duration, and accidental controls from the upper score toolbar on smartphones; the fixed bottom score bar is now the single mobile input control surface.
+- Changed the fixed mobile duration labels to note/rest terminology based on the active mode (for example, Eighth note vs Eighth rest).
+- Tapping an empty staff position while an event is selected now dismisses the selection first instead of immediately creating another event.
 - Changed score timing so unused horizontal space no longer creates implicit silence; only explicit rest events add silent time in live playback and WAV export.
 - Updated the playback cursor to follow symbol-driven timing and jump across unused visual space instead of traversing it as silence.
 - Changed duration selection to configure the next score input only; it no longer changes the duration of an already selected event.
