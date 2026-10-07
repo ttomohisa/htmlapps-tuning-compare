@@ -151,7 +151,7 @@ It uses bottom navigation for:
 - Tuning
 - Sound
 
-The score wraps by measure and touch targets are enlarged where needed. A compact fixed bar above the mobile bottom navigation keeps **Note / Rest**, **duration**, and **♭ / ♮ / ♯** controls available at all times on the Score page. When a note or chord is selected, one-tap **+ 3rd below** / **+ 3rd above** helpers make chord entry easier on touch screens. The sample-score panel is collapsed by default.
+The score wraps by measure and touch targets are enlarged where needed. A compact fixed bar above the mobile bottom navigation keeps **Note / Rest**, **duration**, and **♭ / ♮ / ♯** controls available at all times on the Score page. Those duplicated controls are hidden from the upper score toolbar on phones. Duration labels switch to **Whole/Half/Quarter/Eighth/Sixteenth rest** while Rest mode is active. When a note or chord is selected, one-tap **+ 3rd below** / **+ 3rd above** helpers make chord entry easier on touch screens. Tapping an empty staff position while something is selected dismisses the selection first. The sample-score panel is collapsed by default.
 
 ![Tuning Compare mobile screenshot](assets/screenshot-mobile.png)
 
