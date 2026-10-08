@@ -3,7 +3,7 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 1.0.0
+- **Version:** 1.0.1
 - **Current milestone:** Formal Release
 - **Purpose:** Compare tuning A and B by ear and by frequency/cents, edit a short score, export WAV audio, and save the full project locally.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
@@ -413,7 +413,7 @@ This automatic overwrite applies to note insertion only. Rest insertion keeps th
 - one Undo restores both the inserted long note and the events it replaced
 - rest insertion does not use the covered-note overwrite behavior
 - standalone build and repository validation pass
-- app version is consistently 1.0.0 in config and generated UI
+- app version is consistently 1.0.1 in config and generated UI
 - Japanese and English UI complete the core compare → score → WAV / JSON flow
 - release screenshots include current Japanese desktop/mobile and English desktop UI
 - favicon and header app icon use the same canonical SVG
@@ -422,3 +422,16 @@ This automatic overwrite applies to note insertion only. Rest insertion keeps th
 ## 17. Post-v1.0 roadmap
 
 Future additions are optional and must not weaken the v1.0.0 local-first comparison workflow.
+
+## v1.0.1 reliable local project and audio export
+
+- Project JSON has an editable filename, saved in autosave and exported project state. Unicode is preserved; path/control characters are replaced, reserved device names are prefixed, and the `.json` extension remains intact. WAV names use the same extension-safe rules.
+- Project import validates supported schema, settings, score event IDs/timing/pitch spelling, and bounded arrays before changing any state. Files larger than 1 MiB are rejected before reading. Invalid files or canceled confirmation leave the project unchanged.
+- Older valid schema-v1 projects may omit newer optional fields, including `measureCount` and `projectFilename`. Missing fields receive clean application defaults rather than values from the previously edited project; missing measure count means four measures.
+- A newer file selection invalidates older pending reads and confirmations. Import replacement clears prior score Undo/Redo history only after validation and confirmation.
+- WAV export captures A and B frequencies, timing, timbre and gain together before asynchronous rendering. Edits during rendering affect the next export; the current file consistently uses its starting snapshot. Duplicate export remains disabled through score/language rerenders and recovers after completion or failure.
+- PCM remains mono 16-bit, at 44.1 or 48 kHz, with the same shared gain and 0.6-second A/B gap. Explicit-rest timing and tuning algorithms are unchanged.
+- The header shows v1.0.1. Language destinations use EN / JA, with current-UI-language accessible labels and titles describing the destination. The existing local-processing badge remains accurate.
+- The permanent regression suite runs with `npm ci --prefix tests && npm test --prefix tests`; no npm package is loaded by the released app.
+
+WAV allocation is preflighted before creating any OfflineAudioContext. Limits are five minutes of score per tuning and a conservative 256 MiB estimate covering both mono AudioBuffers and Float32 copies, combined output, PCM16 buffer and possible Blob copy. The memory limit uses the actual selected 44.1/48 kHz rate and A/B target; combined output can reach the limit earlier. Exceeding either limit leaves the project editable and asks the user to shorten the score, select one tuning, or lower the sample rate.

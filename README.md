@@ -140,6 +140,8 @@ Project JSON stores the editable project state, including the score and tuning s
 
 The app also saves the current project state locally in the browser so it can be restored on the next visit unless site data has been cleared.
 
+Edit the JSON filename before exporting. The `.json` extension is added automatically. Imports up to 1 MiB are validated before replacement; invalid files and canceled imports leave your current project unchanged. Older schema-v1 files remain supported. WAV exports use a snapshot of both tunings and the score at the moment export begins, so edits during rendering apply to your next export.
+
 ## Smartphone UI
 
 The mobile layout is not a scaled-down desktop canvas.
@@ -244,3 +246,14 @@ Bug reports and feature proposals are welcome through GitHub Issues. See [CONTRI
 Copyright © 2026 ttomohisa
 
 Licensed under the [MIT License](LICENSE).
+
+### Regression tests
+
+```sh
+npm ci --prefix tests
+npm test --prefix tests
+```
+
+The jsdom dependency is test-only; generated HTML has no runtime dependencies.
+
+WAV export is limited to five minutes per tuning and an estimated 256 MiB working-memory budget. Combined A/B exports can reach the memory limit earlier. Shorten the score, select one tuning, or use 44.1 kHz when prompted; the project remains editable.
