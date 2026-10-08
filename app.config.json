@@ -3,7 +3,7 @@
   "name": "Tuning Compare",
   "nameJa": "音律聞き比べ",
   "slug": "tuning-compare",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Compare equal temperament, 5-limit just intonation, and custom tunings with A/B playback, a four-measure score editor, local WAV export, and project JSON.",
   "descriptionJa": "12平均律・5-limit純正律・カスタム音律をA/Bで聞き比べ、4小節の簡易譜面、WAV出力、プロジェクトJSONまでブラウザ内で扱えます。",
   "defaultLanguage": "auto",

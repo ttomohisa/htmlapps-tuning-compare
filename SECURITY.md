@@ -54,3 +54,7 @@ Before adding or upgrading a package:
 - Refresh the selected lock entry with the dependency scripts; never hand-edit a lock hash to bypass a mismatch.
 - Rebuild with a clean cache.
 - Test with the network disabled.
+
+## Project import limits
+
+Project JSON stays local. Files above 1 MiB and invalid schemas, settings, or score events are rejected before project replacement. Import confirmation is required; cancel leaves the current project intact. A newer file selection invalidates stale reads and confirmations. Export names keep Unicode but strip path/control characters and preserve the required extension.

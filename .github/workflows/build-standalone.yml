@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - "src/**"
+      - "tests/**"
       - "scripts/**"
       - "app.config.json"
       - "assets/favicon.svg"
@@ -38,6 +39,22 @@ jobs:
       - name: Build and verify standalone HTML
         shell: pwsh
         run: ./scripts/check-repository.ps1
+
+      - name: Setup Node.js for regression tests
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Run application regressions on source and standalone output
+        shell: pwsh
+        run: |
+          npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm test --prefix tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:TEST_HTML = Join-Path $PWD "dist/index.html"
+          npm test --prefix tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload standalone artifact
         uses: actions/upload-artifact@v7
