@@ -72,10 +72,15 @@ Stop and natural playback completion clear the active state.
 
 ## 6. Score length
 
-The score is fixed at **four measures** in v0.9.0.
+The score starts at **four measures** and can be changed from **1 to 16 measures** without changing the app version.
 
-- 4/4 → 16 total beats
-- 3/4 → 12 total beats
+- the user can decrease / increase the measure count with dedicated − / + controls
+- increasing adds empty measures
+- decreasing keeps events in the remaining range
+- if decreasing would remove notes or rests, the app asks for confirmation first
+- measure-count changes participate in Undo / Redo
+- project JSON and local autosave persist the measure count
+- older saved projects without a measure count continue to open as four measures
 
 Desktop displays two measures per system.
 
@@ -93,6 +98,7 @@ In 4/4:
 - half note → 2 primary starts
 - quarter note → 4 starts
 - eighth note → 8 starts
+- sixteenth note → 16 starts
 
 The same rule is applied when dragging an event horizontally.
 
@@ -109,6 +115,8 @@ Selection/drag targets are attached to:
 - a compact target around a rest
 
 This keeps adjacent staff positions available for adding nearby pitches.
+
+When a chord is selected, a narrow vertical pitch lane is shown around its start position. Tapping/clicking the lane at a staff height adds that pitch to the selected chord while existing note heads remain directly draggable.
 
 ## 9. Chord notation
 
@@ -128,14 +136,16 @@ The previous “one stem per note” appearance is removed.
 
 A visible note can be dragged.
 
-- vertical drag changes that note's pitch
-- horizontal drag moves the whole event start position
+- for a single note, drag can change pitch and start position
+- for a chord, drag direction locks after the movement threshold
+- horizontal chord drag moves the whole event while preserving every note's pitch
+- vertical chord-note drag changes only the grabbed note's pitch
 - horizontal movement uses duration-aware snapping
 - movement into an occupied start position does not merge or overwrite the other event
 - accidental type is preserved when the dragged note changes staff position
 - the move is one Undo operation
 
-No long-press is required.
+Long-pressing a chord for about half a second duplicates the full chord, including duration, accidentals, and voicing, to the next available snapped position after it. Duplication is one Undo operation.
 
 ## 11. Rest behavior
 
@@ -147,7 +157,64 @@ Rest input must not silently overwrite notes.
 
 Likewise, note input must not silently replace a rest. The rest must be deleted first.
 
-## 12. Score playback
+A rest can be dragged horizontally. Rest dragging changes only its start position, uses the rest's duration-aware snapping, keeps its duration, and is Undoable.
+
+## 12. Input tools vs selected-event editing
+
+Changing the score input duration is a **next-input setting** and must not modify the duration of an already selected note, chord, or rest.
+
+- desktop duration buttons update only the next input duration
+- the fixed smartphone duration control updates only the next input duration
+- the selected-event editor has its own duration control for explicitly changing the selected event
+- selecting a new input duration while an event remains selected must leave that event unchanged
+
+Accidental tools follow the same input-tool model. The selected accidental is used for the next note and for explicit accidental application to an existing note.
+
+## 13. Accidental priority and same-position replacement
+
+Hit testing and note replacement prioritize an existing note / accidental over blank staff input.
+
+- accidental glyphs have note hit targets, so tapping ♭ / ♯ selects/edits that note rather than placing a new note at the glyph coordinates
+- when an event already contains a note on the same diatonic staff position, entering that position with a different accidental replaces the existing note's accidental instead of adding a second note
+- changing natural ↔ flat ↔ sharp at the same staff position is one Undo operation
+- the original natural note must not remain beside the newly altered note
+- position remains the visual staff position; accidental semantics determine the sounding pitch for that position
+
+## 14. Smartphone accidental and chord helpers
+
+The fixed smartphone score-input bar includes:
+
+- Note / Rest
+- duration
+- ♭ / ♮ / ♯
+
+When a non-rest event is selected, the selected-event editor also exposes one-tap chord helpers:
+
+- **3rd below** — adds a note two diatonic staff steps below the lowest selected chord tone
+- **3rd above** — adds a note two diatonic staff steps above the highest selected chord tone
+
+The helper uses the currently selected accidental for the added pitch, rejects out-of-range / duplicate pitches, participates in Undo, and keeps the event start and duration unchanged.
+
+## 15. Symbol-driven score timing
+
+Horizontal staff position determines **visual order and placement**, but an empty horizontal gap does not create silence by itself.
+
+- score events are ordered by their visual `start` position
+- playback time is then accumulated from each event's duration
+- note/chord duration contributes audible time
+- an explicit rest contributes silent time
+- no explicit rest between two events means no silent gap, even when their visual positions are separated
+- live score playback and WAV export use the same accumulated timing
+- the playback cursor follows the accumulated event/rest timeline and may jump across unused visual space instead of spending time in an implicit gap
+
+Example:
+
+- quarter-note C, visually later quarter-note E, no rest → C for 1 beat, then E for 1 beat
+- quarter-note C, quarter rest, quarter-note E → C for 1 beat, silence for 1 beat, then E for 1 beat
+
+The visual start positions remain editable so the user can arrange notation, but silence is represented only by an explicit rest event.
+
+## 16. Score playback
 
 Score playback remains available for tuning A and tuning B.
 
@@ -162,18 +229,56 @@ Playback uses the Web Audio timeline and the current timbre / volume / attack / 
 
 The playback cursor follows all four measures and moves between systems correctly.
 
-## 13. Sample scores
+## 17. Sample scores
 
-The built-in samples now use the four-measure score:
+The built-in samples use four measures:
 
 - Major third: sustained C4 + E4 across four measures
 - Major triad: sustained C4 + E4 + G4 across four measures
 - C major scale: ascending two measures and descending two measures
 - I–IV–V–I: one whole-measure chord per measure
 
+Loading a sample sets the score length to four measures.
+
 Sample replacement still confirms before replacing a non-empty score and remains Undoable.
 
-## 14. Existing features retained
+The sample-score panel is a collapsible disclosure and is **closed by default** so it does not separate the score tools from the staff during normal editing.
+
+## 18. Smartphone score editing
+
+On smartphone widths, the primary score input controls stay available while the user scrolls through a multi-system score.
+
+- a compact score-input bar is fixed directly above the mobile bottom navigation while the Score page is active
+- Note / Rest, duration, accidental, and tempo remain reachable without scrolling back to the top of the Score page
+- the fixed quick bar must not cover score content or create page-level horizontal scrolling
+- playback controls keep a visible vertical gap below the score canvas
+- the fixed selected-event editor stacks above the fixed quick bar, and both must avoid covering score content
+
+## 19. Mobile score control deduplication and selection dismissal
+
+On smartphone widths, controls duplicated by the fixed score-input bar are hidden from the upper score toolbar:
+
+- Note / Rest
+- duration
+- flat / natural / sharp
+
+Tempo remains in the upper toolbar because it is not duplicated in the fixed input bar.
+
+The fixed duration selector uses symbol-appropriate labels:
+
+- Note mode: Whole note / Half note / Quarter note / Eighth note / Sixteenth note
+- Rest mode: Whole rest / Half rest / Quarter rest / Eighth rest / Sixteenth rest
+
+When a score event is selected and the user taps an empty staff position:
+
+- the current selection is cleared
+- the fixed selected-event editor closes
+- that tap does not add a new score event
+- a subsequent tap can be used for normal note/rest input
+
+Tapping another existing note/rest selects that event normally.
+
+## 20. Existing features retained
 
 - 12-tone equal temperament
 - 5-limit just intonation
@@ -187,7 +292,7 @@ Sample replacement still confirms before replacing a non-empty score and remains
 - Undo / Redo
 - no runtime network dependency
 
-## 15. RC UX polish
+## 21. RC UX polish
 
 Additional v0.9.0 hands-on fixes:
 
@@ -286,6 +391,12 @@ This automatic overwrite applies to note insertion only. Rest insertion keeps th
 - score has four measures
 - note dragging changes pitch/time and is Undoable
 - rest input does not silently overwrite notes
+- sixteenth-note and sixteenth-rest input use quarter-beat snapping in 4/4
+- horizontal chord drag preserves all chord pitches
+- vertical chord-note drag does not move the chord start
+- long-pressing a chord duplicates it to the next available snapped position
+- selected chords expose a pitch lane for easier targeted note addition
+- rests can be dragged horizontally without changing duration
 - score layout works on desktop and smartphone
 - clearing a non-empty score uses the AppConfirm dialog before deletion
 - clearing remains Undoable after confirmation

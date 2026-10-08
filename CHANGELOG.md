@@ -2,8 +2,25 @@
 
 ## 1.0.0
 
+- Hid duplicated Note / Rest, duration, and accidental controls from the upper score toolbar on smartphones; the fixed bottom score bar is now the single mobile input control surface.
+- Changed the fixed mobile duration labels to note/rest terminology based on the active mode (for example, Eighth note vs Eighth rest).
+- Tapping an empty staff position while an event is selected now dismisses the selection first instead of immediately creating another event.
+- Changed score timing so unused horizontal space no longer creates implicit silence; only explicit rest events add silent time in live playback and WAV export.
+- Updated the playback cursor to follow symbol-driven timing and jump across unused visual space instead of traversing it as silence.
+- Changed duration selection to configure the next score input only; it no longer changes the duration of an already selected event.
+- Added ♭ / ♮ / ♯ to the fixed smartphone score-input bar and added one-tap 3rd-below / 3rd-above chord helpers for selected notes and chords.
+- Prioritized accidental/note hit targets over blank staff positions and made same-position accidental input replace the existing note spelling instead of leaving the original natural note behind.
+- Made the score length adjustable from 1 to 16 measures, with confirmation before shrinking away existing events and Undo / Redo support.
+- Added a compact fixed Note / Rest + duration toolbar above the mobile bottom navigation so core input controls remain visible while editing the score.
+- Collapsed the sample-score panel by default and added more spacing between the score canvas and playback controls.
+- Added sixteenth notes and sixteenth rests with quarter-beat snapping.
+- Added long-press duplication for chords, preserving voicing, accidentals, and duration.
+- Locked horizontal chord dragging so all chord-note pitches remain unchanged.
+- Added vertical-only note movement inside chords plus a selected-chord pitch lane for easier targeted note addition.
+- Added horizontal dragging for rests.
+- Added the GitHub Pages demo link to the English and Japanese README files.
 - Promoted Tuning Compare from the v0.9.0 release candidate to the first formal release.
-- Finalized the four-measure score editor, including treble-clef pitch geometry, standard rest placement, enlarged quarter/eighth rest glyphs, measure barlines, chord notation, drag editing, accidental editing, and Undo behavior.
+- Finalized the score editor, including treble-clef pitch geometry, standard rest placement, enlarged quarter/eighth rest glyphs, measure barlines, chord notation, drag editing, accidental editing, and Undo behavior.
 - Finalized A/B tuning comparison for 12-tone equal temperament, 5-limit just intonation, and custom tunings.
 - Finalized local WAV export, project JSON import/export, autosave, Japanese/English UI, and smartphone navigation.
 - Removed stale release-candidate and pre-WAV help text from the user-facing UI.
