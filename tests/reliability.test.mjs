@@ -197,3 +197,15 @@ test('mixed valid and out-of-range chord pitches never silently disappear from W
   assert.equal(app.document.querySelector('#exportWavButton').disabled,false);
  }finally{app.close();}
 });
+
+test('compact header actions retain 44px targets and never shrink the version badge',()=>{
+ const app=loadApp();try{
+  for(const id of ['languageButton','helpButton']){
+   const style=app.window.getComputedStyle(app.document.getElementById(id));
+   assert.equal(style.minWidth,'44px',id);assert.equal(style.minHeight,'44px',id);assert.equal(style.flexShrink,'0',id);
+  }
+  const badge=app.window.getComputedStyle(app.document.querySelector('#versionBadge'));assert.equal(badge.flexShrink,'0');
+  assert.equal(app.window.getComputedStyle(app.document.querySelector('.brand-name')).display,'flex');
+  assert.equal(app.window.getComputedStyle(app.document.querySelector('#brandName')).textOverflow,'ellipsis');
+ }finally{app.close();}
+});

@@ -5,7 +5,7 @@
 - Add an editable, persisted project JSON filename with Unicode-safe, extension-preserving export names.
 - Validate project imports before replacement, bound file size, use clean defaults for legacy omissions, and ignore stale reads or confirmations.
 - Keep asynchronous WAV export on one A/B score/settings snapshot, prevent duplicate renders after UI updates, and preflight duration/working-memory limits before audio allocation.
-- Use EN / JA destination labels with localized accessible names and titles; retain the local-processing badge.
+- Use EN / JA destination labels with localized accessible names and titles, retain the local-processing badge, and provide 44px language/Help targets without clipping the version badge.
 - Add permanent fixed-frequency, explicit-rest, PCM format, import race/cancel, and filename regression tests.
 
 
