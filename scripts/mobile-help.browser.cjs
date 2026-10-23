@@ -42,7 +42,17 @@ async function main() {
             const body = page.locator('#helpDialog .dialog-body');
             await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
             const finalItem = body.locator('[data-i18n="helpNoteStorage"]');
-            const finalBox = await finalItem.boundingBox(), bodyBox = await body.boundingBox();
+            // The final localized paragraph may be taller than a short viewport.
+            // Its last character must be visible after scrolling to the end.
+            const finalBox = await finalItem.evaluate(el => {
+              const text = el.firstChild;
+              const range = document.createRange();
+              range.setStart(text, Math.max(0, text.length - 1));
+              range.setEnd(text, text.length);
+              const box = range.getBoundingClientRect();
+              return { x: box.x, y: box.y, width: box.width, height: box.height };
+            }), bodyBox = await body.boundingBox();
+            console.log('GEOMETRY ' + label + ': ' + JSON.stringify({ finalBox, bodyBox, viewportHeight: height }));
             assert.ok(finalBox && bodyBox && finalBox.y >= 0 && finalBox.y + finalBox.height <= height && finalBox.y >= bodyBox.y - 1 && finalBox.y + finalBox.height <= bodyBox.y + bodyBox.height + 1, label + ': final Help item reachable');
             assert.ok(await body.evaluate(el => el.scrollWidth <= el.clientWidth + 1), label + ': Help width');
             const headerBox = await page.locator('#helpDialog .dialog-header').boundingBox();
