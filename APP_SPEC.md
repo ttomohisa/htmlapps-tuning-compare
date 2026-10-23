@@ -435,3 +435,7 @@ Future additions are optional and must not weaken the v1.0.0 local-first compari
 - The permanent regression suite runs with `npm ci --prefix tests && npm test --prefix tests`; no npm package is loaded by the released app.
 
 WAV allocation is preflighted before creating any OfflineAudioContext. Limits are five minutes of score per tuning and a conservative 256 MiB estimate covering both mono AudioBuffers and Float32 copies, combined output, PCM16 buffer and possible Blob copy. The memory limit uses the actual selected 44.1/48 kHz rate and A/B target; combined output can reach the limit earlier. Exceeding either limit leaves the project editable and asks the user to shorten the score, select one tuning, or lower the sample rate.
+
+## Informational footer on smartphones
+
+At the existing 600px smartphone navigation breakpoint, hide only the informational page footer. Keep the functional bottom navigation and its actions unchanged. The existing local-processing label remains `Fully local processing` in English.

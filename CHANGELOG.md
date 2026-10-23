@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
+
 ## 1.0.1 — 2026-10-08
 
 - Add an editable, persisted project JSON filename with Unicode-safe, extension-preserving export names.
