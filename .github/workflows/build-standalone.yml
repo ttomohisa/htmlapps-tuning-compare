@@ -37,6 +37,28 @@ jobs:
         shell: powershell
         run: .\scripts\check-powershell-syntax.ps1
 
+      - name: Check embedded release workflow PowerShell
+        shell: pwsh
+        run: |
+          $lines = [System.IO.File]::ReadAllLines((Join-Path $PWD '.github/workflows/release.yml'))
+          $count = 0
+          for ($i = 0; $i -lt $lines.Length; $i++) {
+            if ($lines[$i] -cne '        run: |') { continue }
+            $count++
+            $body = New-Object 'System.Collections.Generic.List[string]'
+            for ($j = $i + 1; $j -lt $lines.Length; $j++) {
+              if ($lines[$j].StartsWith('          ')) { $body.Add($lines[$j].Substring(10)) }
+              elseif ([string]::IsNullOrWhiteSpace($lines[$j])) { $body.Add('') }
+              else { break }
+            }
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseInput(($body -join [Environment]::NewLine), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { throw "release.yml script $count has invalid PowerShell: $($errors[0].Message)" }
+          }
+          if ($count -ne 3) { throw "Expected three PowerShell scripts in release.yml; got $count" }
+
+
       - name: Build and verify standalone HTML
         shell: pwsh
         run: ./scripts/check-repository.ps1
