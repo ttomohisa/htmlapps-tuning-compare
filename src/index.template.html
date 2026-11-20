@@ -1764,6 +1764,7 @@
         this.onVoiceCountChange = null;
         this.comparisonSession = null;
         this.comparisonTimer = 0;
+        this.playRequestId = 0;
       }
       supported() { return Boolean(window.AudioContext || window.webkitAudioContext); }
       async ensureReady() {
@@ -1804,7 +1805,9 @@
         const clean = frequencies.map(Number).filter(value => this.validFrequency(value));
         if (!clean.length) throw new Error('No valid frequency');
         if (clean.length > this.maxVoices) throw new Error(`Voice limit exceeded: ${clean.length}/${this.maxVoices}`);
+        const requestId=++this.playRequestId;
         await this.ensureReady();
+        if(requestId!==this.playRequestId) return null;
         this.stopAll({ releaseMs: Math.min(40, releaseMs) });
         this.setMasterVolume(masterVolume);
         const now = this.context.currentTime;
@@ -1841,7 +1844,9 @@
 
       async playScore(sequence, { timbre='soft', attackMs=10, releaseMs=70, masterVolume=.55 } = {}) {
         if (!Array.isArray(sequence) || !sequence.length) throw new Error('Empty score sequence');
+        const requestId=++this.playRequestId;
         await this.ensureReady();
+        if(requestId!==this.playRequestId) return null;
         this.stopAll({ releaseMs:Math.min(30,releaseMs) });
         this.setMasterVolume(masterVolume);
         const now=this.context.currentTime+.055;
@@ -1885,7 +1890,9 @@
         const cleanB = bFrequencies.map(Number).filter(value => this.validFrequency(value));
         if (!cleanA.length || !cleanB.length) throw new Error('No valid comparison frequency');
         if (cleanA.length + cleanB.length > this.maxVoices) throw new Error('Voice limit exceeded');
+        const requestId=++this.playRequestId;
         await this.ensureReady();
+        if(requestId!==this.playRequestId) return null;
         this.stopAll({ releaseMs: Math.min(30, releaseMs) });
         this.setMasterVolume(masterVolume);
 
@@ -1959,6 +1966,7 @@
       }
 
       stopAll({ releaseMs = 70 } = {}) {
+        this.playRequestId+=1;
         clearTimeout(this.comparisonTimer);
         this.comparisonTimer = 0;
         this.comparisonSession = null;
@@ -2037,12 +2045,13 @@
       return {
         type: $(prefix + 'Type').value || 'equal',
         referenceNote: $(prefix + 'ReferenceNote').value || 'A4',
-        referenceFrequency: Number.isFinite(rawReference) && rawReference >= 20 && rawReference <= 20000 ? rawReference : 440,
+        referenceFrequency: Number.isFinite(rawReference) && rawReference >= 20 && rawReference <= 20000 ? rawReference : NaN,
         tonic: $(prefix + 'Tonic').value || 'C'
       };
     }
     function ensureABCustom(side, force = false) {
       const settings = abSlotSettings(side);
+      if(!Number.isFinite(settings.referenceFrequency)) return;
       const map = abCustomFrequencies[side];
       const referenceMidi = tuningEngine.noteToMidi(settings.referenceNote);
       for (let midi = 60; midi <= 71; midi += 1) {
@@ -2160,10 +2169,10 @@
         noteCell.textContent = note.replace('#','♯');
         const aCell = document.createElement('td');
         aCell.className = 'comparison-number';
-        aCell.textContent = formatFrequency(a) + ' Hz';
+        aCell.textContent = Number.isFinite(a) ? formatFrequency(a) + ' Hz' : '—';
         const bCell = document.createElement('td');
         bCell.className = 'comparison-number';
-        bCell.textContent = formatFrequency(b) + ' Hz';
+        bCell.textContent = Number.isFinite(b) ? formatFrequency(b) + ' Hz' : '—';
         const diffCell = document.createElement('td');
         diffCell.className = cents > .005 ? 'cent-positive' : cents < -.005 ? 'cent-negative' : 'comparison-number';
         diffCell.textContent = formatCents(cents);
@@ -2194,7 +2203,8 @@
       }
       try{
         const durationMs=5600;
-        await engine.play(frequencies,{...playbackOptions(),durationMs:durationMs});
+        const result=await engine.play(frequencies,{...playbackOptions(),durationMs:durationMs});
+        if(!result) return;
         setAudioReadyState(); setABActive(initialSide); setABStatus(t('comparePlaying',{side:initialSide.toUpperCase()}));
         clearTimeout(engine.comparisonTimer);
         engine.comparisonTimer=window.setTimeout(()=>{ setABActive(null); setABStatus(''); },durationMs+180);
@@ -2873,7 +2883,7 @@
       const sequence=scoreSequenceForSide(side);
       if(!sequence.some(event=>event.frequencies.length)){ setScoreStatus(t('invalidABFrequency'),true); return; }
       try{
-        const result=await engine.playScore(sequence,playbackOptions()); setAudioReadyState();
+        const result=await engine.playScore(sequence,playbackOptions()); if(!result) return; setAudioReadyState();
         scoreState.playbackStartedAt=result.startTime; scoreState.playbackDuration=Math.max(.001,result.durationSeconds); scoreState.playbackTimeline=sequence;
         setScoreActive(side); renderScore(); scoreState.playbackFrame=requestAnimationFrame(animateScoreCursor); setScoreStatus(t('scorePlaying',{side:side.toUpperCase()}));
       }catch(error){ console.error(error); setScoreActive(null); setScoreStatus(t('playbackFailed'),true); }
@@ -2991,9 +3001,10 @@
     function wavExportBudget(sequenceA,sequenceB,target,sampleRate){
       const channels=1, maxSeconds=300, maxBytes=256*1024*1024;
       if(![44100,48000].includes(sampleRate)||!['a','b','ab'].includes(target)) return {ok:false,reason:'format',channels};
-      const durations=[sequenceA,sequenceB].map(scoreSequenceDurationSeconds);
+      const included=[target!=='b',target!=='a'];
+      const durations=[sequenceA,sequenceB].map((sequence,index)=>included[index]?scoreSequenceDurationSeconds(sequence):0);
       if(durations.some(seconds=>!Number.isFinite(seconds)||seconds>maxSeconds)) return {ok:false,reason:'duration',channels};
-      const frames=[sequenceA,sequenceB].map(sequence=>Math.ceil(scoreRenderDurationSeconds(sequence)*sampleRate));
+      const frames=[sequenceA,sequenceB].map((sequence,index)=>included[index]?Math.ceil(scoreRenderDurationSeconds(sequence)*sampleRate):0);
       const outputFrames=target==='a'?frames[0]:target==='b'?frames[1]:frames[0]+Math.round(sampleRate*.6)+frames[1];
       // Conservatively include both AudioBuffers and Float32 copies, combined
       // Float32 output, PCM16 ArrayBuffer and a possible Blob copy, all mono.
@@ -3010,18 +3021,23 @@
       wavExportBusy=true; button.disabled=true; button.setAttribute('aria-busy','true');
       try{
         // Capture both sides before yielding: later edits must not mix two projects in one WAV.
-        const options=playbackOptions(), sequenceA=scoreSequenceForSide('a'), sequenceB=scoreSequenceForSide('b');
+        const options=playbackOptions(), sequenceA=target==='b'?[]:scoreSequenceForSide('a'), sequenceB=target==='a'?[]:scoreSequenceForSide('b');
         const noteCounts=scoreState.events.slice().sort((a,b)=>a.start-b.start).map(event=>event.rest?0:event.notes.length);
         if([sequenceA,sequenceB].some(sequence=>sequence.some((event,index)=>event.frequencies.length!==noteCounts[index]))){ setWavStatus(t('invalidABFrequency'),true); return; }
         const budget=wavExportBudget(sequenceA,sequenceB,target,sampleRate);
         if(!budget.ok){ setWavStatus(t(budget.reason==='duration'?'wavTooLong':'wavTooLarge'),true); return; }
-        setWavStatus(t('wavExportingA'));
-        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
-        const a=await renderOfflineSide(sequenceA,sampleRate,options);
-        setWavStatus(t('wavExportingB'));
-        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
-        const b=await renderOfflineSide(sequenceB,sampleRate,options);
-        const sharedPeak=Math.max(samplePeak(a),samplePeak(b));
+        let a=null,b=null;
+        if(target!=='b'){
+          setWavStatus(t('wavExportingA'));
+          await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+          a=await renderOfflineSide(sequenceA,sampleRate,options);
+        }
+        if(target!=='a'){
+          setWavStatus(t('wavExportingB'));
+          await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+          b=await renderOfflineSide(sequenceB,sampleRate,options);
+        }
+        const sharedPeak=Math.max(a?samplePeak(a):0,b?samplePeak(b):0);
         const scale=sharedPeak>.98?.98/sharedPeak:1;
         setWavStatus(t('wavEncoding'));
         await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
@@ -3167,7 +3183,7 @@
     function validateReference() {
       const input = $('#referenceFrequency');
       const value = Number(input.value);
-      const valid = Number.isFinite(value) && value >= 20 && value <= 20000;
+      const valid = String(input.value).trim()!==''&&Number.isFinite(value) && value >= 20 && value <= 20000;
       input.setAttribute('aria-invalid', valid ? 'false' : 'true');
       if (!valid) setStatus(t('invalidReference'), true);
       return valid;
@@ -3175,6 +3191,7 @@
 
     function formatFrequency(value) { return Number(value).toFixed(3); }
     function formatCents(value) {
+      if(!Number.isFinite(value)) return '—';
       if (Math.abs(value) < .005) return '0.00 ¢';
       return `${value > 0 ? '+' : ''}${value.toFixed(2)} ¢`;
     }
@@ -3220,7 +3237,7 @@
         if(Number.isFinite(ratio)&&Number.isFinite(base)) frequency=base*ratio;
       } else if(mode==='cents'){
         const cents=Number(input.value),baseline=customBaselineFrequency(note);
-        if(Number.isFinite(cents)&&Number.isFinite(baseline)) frequency=baseline*Math.pow(2,cents/1200);
+        if(String(input.value).trim()!==''&&Number.isFinite(cents)&&Number.isFinite(baseline)) frequency=baseline*Math.pow(2,cents/1200);
       } else frequency=Number(input.value);
       const valid=Number.isFinite(frequency)&&frequency>=20&&frequency<=20000;
       input.setAttribute('aria-invalid',valid?'false':'true');
@@ -3392,7 +3409,7 @@
 
     function parseFrequency(input) {
       const value = Number(input.value);
-      const valid = engine.validFrequency(value);
+      const valid = String(input.value).trim()!==''&&engine.validFrequency(value);
       input.setAttribute('aria-invalid', valid ? 'false' : 'true');
       return valid ? value : null;
     }
@@ -3417,7 +3434,8 @@
       const frequency = parseFrequency($('#singleFrequency'));
       if (frequency == null) { setStatus(t('invalidFrequency'), true); $('#singleFrequency').focus(); return; }
       try {
-        await engine.play([frequency], { ...playbackOptions(), durationMs: 1300 });
+        const result=await engine.play([frequency], { ...playbackOptions(), durationMs: 1300 });
+        if(!result) return;
         setAudioReadyState(); setStatus(t('playingSingle', { frequency: Number(frequency.toFixed(3)) }));
       } catch (error) { console.error(error); setStatus(t('playbackFailed'), true); }
     }
@@ -3428,7 +3446,8 @@
       $$('.chord-frequency').forEach((input, index) => { if (!enabled[index].checked) return; const frequency = parseFrequency(input); if (frequency != null) frequencies.push(frequency); });
       if (!frequencies.length) { setStatus(t('noChordNotes'), true); return; }
       try {
-        await engine.play(frequencies, { ...playbackOptions(), durationMs: 1900 });
+        const result=await engine.play(frequencies, { ...playbackOptions(), durationMs: 1900 });
+        if(!result) return;
         setAudioReadyState(); setStatus(t('playingChord', { count: frequencies.length }));
       } catch (error) { console.error(error); setStatus(t('playbackFailed'), true); }
     }
@@ -3487,9 +3506,10 @@
       $(prefix + 'ReferenceNote').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
       $(prefix + 'ReferenceFrequency').addEventListener('change', event => {
         const value = Number(event.currentTarget.value);
-        const valid = Number.isFinite(value) && value >= 20 && value <= 20000;
+        const valid = event.currentTarget.value.trim()!==''&&Number.isFinite(value) && value >= 20 && value <= 20000;
         event.currentTarget.setAttribute('aria-invalid', valid ? 'false' : 'true');
-        if (valid) { renderABComparison(); scheduleSave(); }
+        renderABComparison();
+        if(valid) scheduleSave();
       });
       $(prefix + 'Tonic').addEventListener('change', () => { renderABComparison(); scheduleSave(); });
     });
