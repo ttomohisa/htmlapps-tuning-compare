@@ -14,6 +14,7 @@
 - Simplify project JSON UI: remove schema/version and redundant extension help, show a fixed .json suffix, and use compact icon actions for import/export.
 - Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
+- Publish a versioned tag and GitHub Release with standalone downloads automatically after merging to main, once verification passes.
 
 ## 1.0.1 — 2026-10-08
 
