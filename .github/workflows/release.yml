@@ -131,4 +131,4 @@ jobs:
           gh release create $tag $htmlAsset $selfExtractAsset --repo $env:GITHUB_REPOSITORY --title "Tuning Compare $tag" --notes-file $notesPath --verify-tag
           if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed for $tag" }
 
-          "Published $tag: https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$tag" >> $env:GITHUB_STEP_SUMMARY
+          "Published ${tag}: https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$tag" >> $env:GITHUB_STEP_SUMMARY
