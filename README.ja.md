@@ -3,7 +3,7 @@
 [![Validate standalone HTML](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
-[![Version](https://img.shields.io/badge/version-v1.0.0-16624F)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.0.2-16624F)](CHANGELOG.md)
 
 [English README](README.md)
 
