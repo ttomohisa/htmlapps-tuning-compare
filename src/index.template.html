@@ -673,7 +673,7 @@
     .score-svg .selected-ring { fill:none; stroke:var(--accent); stroke-width:2.2; }
     .score-svg .cursor-line { stroke:var(--accent); stroke-width:2; pointer-events:none; }
     .score-svg .clef-outline { fill:#20211f; }
-    .score-svg .time-signature { fill:#20211f; font-size:24px; font-weight:800; font-family:Arial,Helvetica,sans-serif; text-anchor:middle; }
+    .score-svg .time-signature { fill:#20211f; font-size:23px; line-height:1; font-weight:800; font-family:Arial,Helvetica,sans-serif; text-anchor:middle; }
     .score-svg .measure-number { fill:#8a8d87; font-size:10px; }
     .score-empty-hint { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; padding:22px; color:var(--muted); font-size:12px; text-align:center; }
     .score-empty-hint[hidden] { display:none; }
@@ -2601,8 +2601,8 @@
         transform:'translate('+(clefLeft-2.6)+' '+(top+49.4)+') scale(.052 -.052)'
       }); svg.append(clef);
       const timeX=layout.compact?78:77;
-      const topNum=scoreSvgElement('text',{x:timeX,y:top+22,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
-      const bottomNum=scoreSvgElement('text',{x:timeX,y:top+46,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
+      const topNum=scoreSvgElement('text',{x:timeX,y:top+21,class:'time-signature'}); topNum.textContent=String(beatsPerMeasure);
+      const bottomNum=scoreSvgElement('text',{x:timeX,y:top+47,class:'time-signature'}); bottomNum.textContent='4'; svg.append(topNum,bottomNum);
       svg.append(scoreSvgElement('rect',{x:layout.left,y:top-30,width:layout.right-layout.left,height:104,class:'score-hitbox','data-score-input':'true'}));
       for(let measure=startMeasure;measure<endMeasure;measure+=1){
         const measureStart=measure*beatsPerMeasure;
