@@ -26,16 +26,51 @@ async function main() {
             await page.locator('#helpButton').waitFor();
             if (await page.locator('html').getAttribute('lang') !== language) await page.locator('#languageButton').click();
             assert.equal(await page.locator('[data-i18n="localBadge"]').textContent(), language === 'en' ? 'Fully local processing' : '完全ローカル処理', label);
-            assert.ok(await page.locator('.local-badge').evaluate(el => {
-              const box = el.getBoundingClientRect();
-              const range = document.createRange();
-              range.selectNodeContents(el.querySelector('[data-i18n="localBadge"]'));
-              return box.left >= 0 && box.right <= innerWidth && el.scrollWidth <= el.clientWidth + 1
-                && [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1 && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
-            }), label + ': badge text fits');
+            assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': mobile badge hidden, desktop badge visible');
+            if (width > 600) {
+              assert.ok(await page.locator('.local-badge').evaluate(el => {
+                const box = el.getBoundingClientRect();
+                const range = document.createRange();
+                range.selectNodeContents(el.querySelector('[data-i18n="localBadge"]'));
+                return box.left >= 0 && box.right <= innerWidth && el.scrollWidth <= el.clientWidth + 1
+                  && [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1 && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
+              }), label + ': badge text fits');
+            }
             assert.equal(await page.locator('footer').isVisible(), width > 600, label);
             assert.equal(await page.locator('.app-mobile-bottom-bar').isVisible(), width <= 600, label + ': functional navigation preserved');
-
+            assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': intro shown before tab selection');
+            if (width <= 600) {
+              for (const key of ['compare', 'score', 'tuning', 'sound']) {
+                await page.locator('[data-mobile-key="' + key + '"]').click();
+                assert.equal(await page.locator('.page-intro').isVisible(), false, label + ': intro hidden after tapping ' + key);
+                assert.equal(await page.locator('[data-mobile-key="' + key + '"]').getAttribute('aria-current'), 'page', label + ': active tab ' + key);
+              }
+              await page.locator('[data-mobile-key="score"]').click();
+              const symbols = await page.locator('#scoreSvg').evaluate(svg => {
+                const clef=svg.querySelector('.clef-outline')?.getBoundingClientRect();
+                const numbers=Array.from(svg.querySelectorAll('.time-signature')).slice(0,2).map(el => el.getBoundingClientRect());
+                const firstNoteStart=svg.querySelector('.score-hitbox')?.getBoundingClientRect();
+                return clef && numbers.length===2 && firstNoteStart ? {
+                  clef: {left:clef.left,right:clef.right,top:clef.top,bottom:clef.bottom},
+                  top: {left:numbers[0].left,right:numbers[0].right,top:numbers[0].top,bottom:numbers[0].bottom},
+                  bottom: {left:numbers[1].left,right:numbers[1].right,top:numbers[1].top,bottom:numbers[1].bottom},
+                  firstNoteX:firstNoteStart.left
+                } : null;
+              });
+              assert.ok(symbols && symbols.clef.right + 2 <= Math.min(symbols.top.left,symbols.bottom.left), label + ': clef does not overlap time signature ' + JSON.stringify(symbols));
+              assert.ok(symbols.top.bottom <= symbols.bottom.top + 2, label + ': time-signature digits do not overlap ' + JSON.stringify(symbols));
+              assert.ok(symbols.bottom.right + 2 <= symbols.firstNoteX, label + ': first measure starts after time signature ' + JSON.stringify(symbols));
+              if(file === 'dist/index.html' && width === 320) {
+                await page.screenshot({ path: path.join(results, 'score-' + language + '-320.png') });
+              }
+              await page.locator('[data-mobile-key="tuning"]').click();
+              assert.equal(await page.locator('#projectFilename + .filename-extension').textContent(), '.json', label + ': fixed extension');
+              assert.equal(await page.locator('.project-schema').count(), 0, label + ': no schema badge');
+              assert.equal(await page.locator('#projectFilenameHelp').count(), 0, label + ': no redundant extension help');
+              assert.ok(await page.locator('.project-data-actions').evaluate(el =>
+                el.scrollWidth <= el.clientWidth + 1 && Array.from(el.querySelectorAll('button')).every(button => button.scrollWidth <= button.clientWidth + 1)
+              ), label + ': JSON actions fit on mobile');
+            }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 
             await page.locator('#helpButton').click();
