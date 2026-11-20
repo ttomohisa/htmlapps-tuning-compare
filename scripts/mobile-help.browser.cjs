@@ -39,6 +39,32 @@ async function main() {
             assert.equal(await page.locator('footer').isVisible(), width > 600, label);
             assert.equal(await page.locator('.app-mobile-bottom-bar').isVisible(), width <= 600, label + ': functional navigation preserved');
             assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': intro shown before tab selection');
+
+            const layoutBoundaries = await page.evaluate(() => {
+              function border(selector, side) {
+                const element = document.querySelector(selector);
+                if (!element) return null;
+                return getComputedStyle(element).getPropertyValue('border-' + side + '-width');
+              }
+              return {
+                outer: border('.workspace', 'top'),
+                abSlot: border('.ab-slot', 'top'),
+                abDivider: border('.ab-slot[data-slot="b"]', innerWidth <= 820 ? 'top' : 'left'),
+                wav: border('.wav-export-panel', 'left'),
+                project: border('.project-data-panel', 'left'),
+                learning: border('.learning-panel', 'left'),
+                comparisonTable: border('.comparison-table-wrap', 'top'),
+                scoreCanvas: border('.score-canvas-shell', 'top'),
+              };
+            });
+            assert.equal(layoutBoundaries.outer, '1px', label + ': outer workspace has a subtle boundary');
+            assert.equal(layoutBoundaries.abSlot, '0px', label + ': A/B settings are not nested cards');
+            assert.equal(layoutBoundaries.abDivider, '1px', label + ': A/B still have a responsive divider');
+            for (const key of ['wav', 'project', 'learning']) {
+              assert.equal(layoutBoundaries[key], '0px', label + ': ' + key + ' is not an inset frame');
+            }
+            assert.equal(layoutBoundaries.comparisonTable, '1px', label + ': comparison table remains bounded');
+            assert.equal(layoutBoundaries.scoreCanvas, '1px', label + ': score editing area remains bounded');
             if (width <= 600) {
               for (const key of ['compare', 'score', 'tuning', 'sound']) {
                 await page.locator('[data-mobile-key="' + key + '"]').click();
