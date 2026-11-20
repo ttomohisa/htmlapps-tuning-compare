@@ -2,7 +2,15 @@
 
 ## Unreleased
 
-### Changed
+## 1.0.2 — 2026-11-20
+
+- Prevent accidental score-note deletion on time-signature changes: preserve measure positions, confirm incompatible events, and keep Undo available.
+- Reject overlapping score inputs and drags instead of silently overwriting notes, and disable four-beat note/rest input in 3/4.
+- Fix invalid A/B reference frequencies from silently reverting to 440 Hz while displayed results remain stale.
+- Render and validate only the selected A/B side for single-side WAV export.
+- Cancel pending audio starts on stop or a newer play request.
+- Add keyboard score input and tests for editing, export, and audio cancellation.
+- Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
 
 ## 1.0.1 — 2026-10-08
