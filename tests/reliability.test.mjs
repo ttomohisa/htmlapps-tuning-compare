@@ -297,3 +297,44 @@ test('score keyboard editor enters notes at selected pitch and beat',()=>{
   assert.deepEqual(Array.from(app.api.scoreState.events,event=>event.notes[0].note),['G4','A4']);
  }finally{app.close();}
 });
+
+
+test('mobile navigation hides the introduction only after a tab tap',()=>{
+ const app=loadApp();try{
+  app.window.matchMedia=query=>({matches:query==='(max-width:600px)',addEventListener(){}});
+  const intro=app.document.querySelector('.page-intro'),badge=app.document.querySelector('.local-badge');
+  assert.ok(intro);assert.ok(badge);
+  assert.equal(app.document.body.classList.contains('mobile-tabs-visited'),false);
+  for(const key of ['compare','score','tuning','sound']){
+   app.document.querySelector('[data-mobile-key="'+key+'"]').click();
+   assert.equal(app.document.body.classList.contains('mobile-tabs-visited'),true);
+   assert.ok(app.document.querySelector('[data-mobile-key="'+key+'"]').classList.contains('is-active'));
+  }
+ }finally{app.close();}
+});
+
+test('project JSON suffix is a fixed label; old filenames with .json are normalized',()=>{
+ const app=loadApp();try{
+  const input=app.document.querySelector('#projectFilename');
+  assert.equal(input.parentElement.querySelector('.filename-extension').textContent,'.json');
+  assert.equal(app.document.querySelector('.project-schema'),null);
+  assert.equal(app.document.querySelector('#projectFilenameHelp'),null);
+  assert.equal(app.document.querySelector('#exportProjectButton svg')?.tagName.toLowerCase(),'svg');
+  assert.equal(app.document.querySelector('#importProjectButton svg')?.tagName.toLowerCase(),'svg');
+  input.value='保存データ.json';input.dispatchEvent(new app.window.FocusEvent('blur'));
+  assert.equal(input.value,'保存データ');
+  app.api.exportProjectJson();
+  assert.equal(app.downloads.at(-1).filename,'保存データ.json');
+ }finally{app.close();}
+});
+
+test('treble clefs use embedded vector paths with clear positions apart from time signatures',()=>{
+ const app=loadApp();try{
+  const svg=app.document.querySelector('#scoreSvg');
+  assert.ok(svg.querySelectorAll('path.clef-outline').length>=1);
+  assert.equal(svg.querySelectorAll('text.clef').length,0);
+  assert.equal(svg.querySelectorAll('text.time-signature').length,2*svg.querySelectorAll('path.clef-outline').length);
+  assert.ok(app.document.querySelector('.project-data-actions .project-action-export'));
+  assert.ok(app.document.querySelector('.project-data-actions .project-action-import'));
+ }finally{app.close();}
+});
