@@ -2841,7 +2841,7 @@
     function setScoreDuration(duration){
       const next=Number(duration);
       if(![.25,.5,1,2,4].includes(next)) return;
-      if(next===4&&scoreBeatsPerMeasure()===3){setScoreStatus(t('scoreInvalidDuration'),true);return;}
+      if(next===4&&scoreBeatsPerMeasure()===3){if($('#scoreMobileQuickDuration'))$('#scoreMobileQuickDuration').value=String(scoreState.duration);setScoreStatus(t('scoreInvalidDuration'),true);return;}
       scoreState.duration=next;
       $('#scoreDurationGroup [data-duration]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.duration)===scoreState.duration)));
       if($('#scoreMobileQuickDuration')) $('#scoreMobileQuickDuration').value=String(scoreState.duration);
