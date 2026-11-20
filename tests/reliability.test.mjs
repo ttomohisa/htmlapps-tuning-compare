@@ -209,3 +209,91 @@ test('compact header actions retain 44px targets and never shrink the version ba
   assert.equal(app.window.getComputedStyle(app.document.querySelector('#brandName')).textOverflow,'ellipsis');
  }finally{app.close();}
 });
+
+
+test('time-signature changes preserve measure positions and confirm data loss before applying',async()=>{
+ const app=loadApp();try{
+  const note=(id,start)=>({id,start,duration:1,rest:false,notes:[{note:'C4',display:'C4',accidental:'natural'}]});
+  app.api.scoreState.events=[note(1,0),note(2,5),note(3,7)];
+  app.window.AppConfirm={ask:async()=>false};
+  assert.equal(await app.api.setScoreTimeSignature('3/4'),false);
+  assert.equal(app.api.scoreState.timeSignature,'4/4');
+  assert.deepEqual(app.api.scoreState.events.map(x=>x.start),[0,5,7]);
+  app.window.AppConfirm={ask:async()=>true};
+  assert.equal(await app.api.setScoreTimeSignature('3/4'),true);
+  assert.equal(app.api.scoreState.timeSignature,'3/4');
+  assert.deepEqual(app.api.scoreState.events.map(x=>x.start),[0,4]);
+  app.api.scoreUndo();
+  assert.equal(app.api.scoreState.timeSignature,'4/4');
+  assert.deepEqual(app.api.scoreState.events.map(x=>x.start),[0,5,7]);
+ }finally{app.close();}
+});
+
+test('inserting a note must not delete an overlapping note; 3/4 rejects a four-beat input',()=>{
+ const app=loadApp();try{
+  app.api.scoreState.events=[{id:1,start:1,duration:1,rest:false,notes:[{note:'C4',display:'C4',accidental:'natural'}]}];
+  app.api.setScoreDuration(2);app.api.addScoreInput(0,4);
+  assert.equal(app.api.scoreState.events.length,1);
+  assert.match(app.document.querySelector('#scoreStatus').textContent,/occupies|重なり/);
+  app.api.scoreState.events=[];
+  app.api.scoreState.timeSignature='3/4';app.api.scoreState.duration=1;
+  app.api.setScoreDuration(4);
+  assert.equal(app.api.scoreState.duration,1);
+  app.api.scoreState.duration=4;app.api.addScoreInput(0,4);
+  assert.equal(app.api.scoreState.events.length,0);
+ }finally{app.close();}
+});
+
+test('invalid three-quarter project events extending beyond a measure are rejected',()=>{
+ const app=loadApp();try{
+  const incoming=project(app);
+  incoming.project.score.timeSignature='3/4';
+  incoming.project.score.events=[{id:1,start:2,duration:2,rest:false,notes:[{note:'C4',display:'C4',accidental:'natural'}]}];
+  assert.equal(app.api.validateProjectDocument(incoming).ok,false);
+ }finally{app.close();}
+});
+
+test('WAV export of only A never renders or checks invalid B',async()=>{
+ const app=loadApp();try{
+  const rendered=[],frequencies=[];
+  app.window.OfflineAudioContext=class {
+   constructor(channels,frames,rate){this.frames=frames;this.destination={};rendered.push(rate);}
+   createGain(){return {connect(){},gain:{value:0,setValueAtTime(){},exponentialRampToValueAtTime(){}}};}
+   createOscillator(){return {frequency:{setValueAtTime(v){frequencies.push(v);}},connect(){},start(){},stop(){},setPeriodicWave(){}};}
+   createPeriodicWave(){return {};}
+   async startRendering(){return {getChannelData:()=>new Float32Array(this.frames)};}
+  };
+  app.api.scoreState.events=[{id:1,start:0,duration:1,rest:false,notes:[{note:'A4',display:'A4',accidental:'natural'}]}];
+  app.document.querySelector('#wavTarget').value='a';
+  app.document.querySelector('#abBReferenceFrequency').value='';
+  await app.api.exportScoreWav();
+  assert.equal(rendered.length,1);
+  assert.deepEqual(frequencies,[440]);
+  assert.equal(app.downloads.length,1);
+  const seq=s=>[{startSeconds:0,durationSeconds:s,frequencies:[440]}];
+  assert.equal(app.api.wavExportBudget(seq(1),seq(301),'a',44100).ok,true);
+  assert.equal(app.api.wavExportBudget(seq(301),seq(1),'a',44100).reason,'duration');
+ }finally{app.close();}
+});
+
+test('stop invalidates a playback request while audio context is resuming',async()=>{
+ const app=loadApp();try{
+  const engine=app.api.engine;let resume;
+  engine.ensureReady=()=>new Promise(resolve=>{resume=resolve;});
+  const pending=engine.play([440]);
+  engine.stopAll();resume();
+  assert.equal(await pending,null);
+  assert.equal(engine.voices.size,0);
+ }finally{app.close();}
+});
+
+test('score keyboard editor enters notes at selected pitch and beat',()=>{
+ const app=loadApp();try{
+  const svg=app.document.querySelector('#scoreSvg');assert.equal(svg.getAttribute('tabindex'),'0');
+  const key=value=>svg.dispatchEvent(new app.window.KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
+  key('Enter');key('ArrowRight');key('ArrowUp');key('Enter');
+  assert.equal(app.api.scoreState.events.length,2);
+  assert.deepEqual(app.api.scoreState.events.map(event=>event.start),[0,1]);
+  assert.deepEqual(app.api.scoreState.events.map(event=>event.notes[0].note),['G4','A4']);
+ }finally{app.close();}
+});
