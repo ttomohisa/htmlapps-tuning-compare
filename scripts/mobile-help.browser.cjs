@@ -54,11 +54,13 @@ async function main() {
                   clef: {left:clef.left,right:clef.right,top:clef.top,bottom:clef.bottom},
                   top: {left:numbers[0].left,right:numbers[0].right,top:numbers[0].top,bottom:numbers[0].bottom},
                   bottom: {left:numbers[1].left,right:numbers[1].right,top:numbers[1].top,bottom:numbers[1].bottom},
-                  firstNoteX:firstNoteStart.left
+                  firstNoteX:firstNoteStart.left,
+                  numeralBaselineGap:Number(svg.querySelectorAll('.time-signature')[1].getAttribute('y'))-Number(svg.querySelectorAll('.time-signature')[0].getAttribute('y')),
+                  numeralFontSize:parseFloat(getComputedStyle(svg.querySelector('.time-signature')).fontSize)
                 } : null;
               });
               assert.ok(symbols && symbols.clef.right + 2 <= Math.min(symbols.top.left,symbols.bottom.left), label + ': clef does not overlap time signature ' + JSON.stringify(symbols));
-              assert.ok(symbols.top.bottom <= symbols.bottom.top + 2, label + ': time-signature digits do not overlap ' + JSON.stringify(symbols));
+              assert.ok(symbols.numeralBaselineGap >= symbols.numeralFontSize + 2, label + ': time-signature digits have separate baselines ' + JSON.stringify(symbols));
               assert.ok(symbols.bottom.right + 2 <= symbols.firstNoteX, label + ': first measure starts after time signature ' + JSON.stringify(symbols));
               if(file === 'dist/index.html' && width === 320) {
                 await page.screenshot({ path: path.join(results, 'score-' + language + '-320.png') });
