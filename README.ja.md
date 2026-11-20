@@ -172,6 +172,10 @@ JSONファイル名を編集してから書き出せます。`.json` は自動�
 
 GitHub Pagesがまだ有効になっていない場合でも、アプリのビルドと検証までは実行し、デプロイだけをスキップしてworkflow summaryへ設定手順を表示します。
 
+### タグとGitHub Releaseの自動作成
+
+PRを`main`へマージすると、**Publish GitHub Release** が`app.config.json`のバージョンを確認します。そのバージョンのGitHub Releaseがまだなければ、単一HTMLを再ビルドしてテストした後、検証済みのマージコミットに`vMAJOR.MINOR.PATCH`タグを付け、`CHANGELOG.md`の該当バージョンからリリースノートを作成します。GitHub Releaseには`tuning-compare.html`と`tuning-compare.self-extract.html`の2ファイルを添付します。同じバージョンのReleaseが存在する場合は作成をスキップします。失敗時はActionsから再実行できます。次のリリースでは`app.config.json`のバージョンとCHANGELOGを更新してください。
+
 ## 開発とビルド構成
 
 ```text
@@ -190,7 +194,8 @@ GitHub Pagesがまだ有効になっていない場合でも、アプリのビ�
 ├─ dist/index.html                  # ビルドで生成する単一HTML
 └─ .github/workflows/
    ├─ build-standalone.yml          # Pull Request時の単一HTML検証
-   └─ deploy-pages.yml              # GitHub Pages公開
+   ├─ deploy-pages.yml              # GitHub Pages公開
+   └─ release.yml                   # タグとGitHub Releaseの自動公開
 ```
 
 編集元は `src/index.template.html` です。生成済みHTMLを直接編集しません。
