@@ -293,7 +293,7 @@ test('score keyboard editor enters notes at selected pitch and beat',()=>{
   const key=value=>svg.dispatchEvent(new app.window.KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
   key('Enter');key('ArrowRight');key('ArrowUp');key('Enter');
   assert.equal(app.api.scoreState.events.length,2);
-  assert.deepEqual(app.api.scoreState.events.map(event=>event.start),[0,1]);
-  assert.deepEqual(app.api.scoreState.events.map(event=>event.notes[0].note),['G4','A4']);
+  assert.deepEqual(Array.from(app.api.scoreState.events,event=>event.start),[0,1]);
+  assert.deepEqual(Array.from(app.api.scoreState.events,event=>event.notes[0].note),['G4','A4']);
  }finally{app.close();}
 });
