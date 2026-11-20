@@ -12,6 +12,7 @@
 - Add keyboard score input and tests for editing, export, and audio cancellation.
 - Improve smartphone navigation: hide local badge, collapse the hero after first tab selection, and resize notation without overlapping musical symbols.
 - Simplify project JSON UI: remove schema/version and redundant extension help, show a fixed .json suffix, and use compact icon actions for import/export.
+- Align layout margins, padding, and gaps to an 8px grid, with flatter cards, muted borders, and softer nested panels on desktop and mobile.
 - Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
 - Publish a versioned tag and GitHub Release with standalone downloads automatically after merging to main, once verification passes.
