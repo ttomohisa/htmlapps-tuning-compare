@@ -35,3 +35,35 @@ test('surfaces stay restrained without raised card shadows', () => {
   assert.match(css, /--line:\s*#e2e6df;/);
   assert.match(css, /\.app-mobile-bottom-item\s*\{[^}]*\bgap:8px;/);
 });
+
+
+test('nested sections use dividers while interactive areas retain their boundaries', () => {
+  function rule(selector) {
+    const escaped = selector.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const match = css.match(new RegExp(escaped + '\\s*\\{([^}]*)\\}'));
+    assert.ok(match, selector + ' should have a CSS rule');
+    return match[1];
+  }
+
+  for (const selector of ['.workspace', '.card']) {
+    assert.match(rule(selector), /border:\s*1px solid var\(--line\)/, selector + ' should retain its outer boundary');
+  }
+  assert.match(rule('.ab-slot'), /border:\s*0/, 'A/B slots must not add nested cards');
+  assert.match(rule('.ab-slot[data-slot="b"]'), /border-left:\s*1px solid var\(--line\)/);
+  for (const selector of [
+    '.ab-custom-details',
+    '.wav-export-panel',
+    '.custom-editor-panel,.project-data-panel',
+    '.learning-panel',
+    '.score-samples',
+    '.sound-card .sound-advanced',
+  ]) {
+    assert.match(rule(selector), /border:\s*0/, selector + ' should have no enclosing frame');
+    assert.match(rule(selector), /border-top:\s*1px solid var\(--line\)/, selector + ' should retain a section divider');
+  }
+  assert.match(rule('.learning-metric'), /border:\s*0/, 'Metric values should not sit in further cards');
+  assert.match(rule('.sound-card .engine-state'), /background:\s*transparent/, 'Status rows should not be another tinted box');
+  assert.match(rule('.comparison-table-wrap'), /border:\s*1px solid var\(--line\)/, 'Comparison table should stay bounded');
+  assert.match(rule('.score-canvas-shell'), /border:\s*1px solid var\(--line\)/, 'Editable staff should stay bounded');
+  assert.match(css, /@media \(max-width: 820px\)[\s\S]*?\.ab-slot\[data-slot="b"\]\s*\{[^}]*border-top:\s*1px solid var\(--line\)/);
+});
