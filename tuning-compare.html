@@ -268,8 +268,8 @@
     footer { width: min(1180px, 100%); margin: 0 auto; padding: 0 24px 32px; color: var(--muted); font-size: 12px; }
     /* Reusable toast / Undo component. Canonical source: components/toast.html */
     .app-toast {
-      position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 60;
-      display: flex; align-items: center; gap: 16px; max-width: min(420px, calc(100vw - 36px));
+      position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 60;
+      display: flex; align-items: center; gap: 16px; max-width: min(420px, calc(100vw - 32px));
       padding: 8px 16px 8px 16px; border: 1px solid var(--line); border-radius: 12px;
       background: var(--surface); color: var(--text); box-shadow: var(--shadow-md); opacity: 0;
       transform: translateY(12px); pointer-events: none; transition: opacity .18s ease, transform .18s ease;
@@ -282,8 +282,8 @@
     .app-toast-action:hover { background: var(--surface-hover); }
     .app-toast-action[hidden] { display: none; }
     dialog {
-      width: min(640px, calc(100% - 28px));
-      max-height: min(760px, calc(100dvh - 28px));
+      width: min(640px, calc(100% - 32px));
+      max-height: min(760px, calc(100dvh - 32px));
       padding: 0;
       overflow: hidden;
       border: 1px solid var(--line);
@@ -296,7 +296,7 @@
     #helpDialog[open] {
       display: flex;
       flex-direction: column;
-      max-height: calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     }
     .dialog-header {
       display: flex;
@@ -440,11 +440,11 @@
       .toolbar, .button-row { width: 100%; }
       .button-row .button { flex: 1 1 auto; }
       .export-row, .export-field { width: 100%; }
-      .app-toast { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: none; }
+      .app-toast { left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); max-width: none; }
       textarea { min-height: 235px; }
       #helpDialog {
-        width: calc(100% - 20px);
-        max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        width: calc(100% - 32px);
+        max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       }
       #helpDialog .dialog-body {
         padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
@@ -731,7 +731,7 @@
       .score-measure-control { flex:1 1 auto; }
       .score-mobile-quick-tools {
         position:fixed; z-index:74;
-        left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right));
+        left:max(16px,env(safe-area-inset-left)); right:max(16px,env(safe-area-inset-right));
         bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 8px);
         display:grid; grid-template-columns:minmax(0,1fr) minmax(116px,.72fr); grid-template-areas:"mode duration" "accidental accidental"; gap:8px 8px;
         margin:0; padding:8px;
@@ -753,7 +753,7 @@
       .score-workspace.has-mobile-selection { padding-bottom:240px; }
       .score-mobile-editor {
         position:fixed; z-index:75;
-        left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right));
+        left:max(16px,env(safe-area-inset-left)); right:max(16px,env(safe-area-inset-right));
         bottom:calc(var(--app-mobile-bottom-bar-height) + env(safe-area-inset-bottom) + 112px);
         display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center;
         padding:8px; border:1px solid var(--line); border-radius:14px;
