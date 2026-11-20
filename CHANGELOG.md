@@ -10,6 +10,8 @@
 - Render and validate only the selected A/B side for single-side WAV export.
 - Cancel pending audio starts on stop or a newer play request.
 - Add keyboard score input and tests for editing, export, and audio cancellation.
+- Improve smartphone navigation: hide local badge, collapse the hero after first tab selection, and resize notation without overlapping musical symbols.
+- Simplify project JSON UI: remove schema/version and redundant extension help, show a fixed .json suffix, and use compact icon actions for import/export.
 - Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
 
