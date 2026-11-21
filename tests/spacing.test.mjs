@@ -67,3 +67,13 @@ test('nested sections use dividers while interactive areas retain their boundari
   assert.match(rule('.score-canvas-shell'), /border:\s*1px solid var\(--line\)/, 'Editable staff should stay bounded');
   assert.match(css, /@media \(max-width: 820px\)[\s\S]*?\.ab-slot\[data-slot="b"\]\s*\{[^}]*border-top:\s*1px solid var\(--line\)/);
 });
+
+
+test('intro keeps the useful explanation without a redundant hero heading', () => {
+  assert.doesNotMatch(html, /id=["']heroTitle["']/);
+  assert.doesNotMatch(html, /data-i18n=["']introTitle["']/);
+  assert.match(html, /<div class="page-intro">\s*<p data-i18n="introLead">/);
+  assert.match(css, /\.page-intro p\s*\{\s*margin:\s*0;/);
+  assert.doesNotMatch(css, /\.page-intro h2\s*\{/);
+  assert.match(html, /<h2 id="compareTitle"/, 'First real section heading is preserved');
+});
