@@ -70,3 +70,17 @@ test('offline instructions, licenses, and screenshot references remain present',
   assert.match(en, /assets\/screenshot-en\.png/);
   assert.match(ja, /assets\/screenshot\.png/);
 });
+
+
+test('release screenshots match current desktop and smartphone targets', () => {
+  for (const [name, expectedWidth, expectedHeight] of [
+    ['screenshot.png', 1360, 900],
+    ['screenshot-en.png', 1360, 900],
+    ['screenshot-mobile.png', 393, 844],
+  ]) {
+    const file = fs.readFileSync(path.join(root, 'assets', name));
+    assert.equal(file.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', name + ' should be PNG');
+    assert.equal(file.readUInt32BE(16), expectedWidth, name + ' width');
+    assert.equal(file.readUInt32BE(20), expectedHeight, name + ' height');
+  }
+});
