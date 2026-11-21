@@ -114,9 +114,16 @@ async function checkMobile(browser, lang) {
     const exportButton = page.locator('#exportProjectButton');
     await exportButton.scrollIntoViewIfNeeded();
     assert.ok(await exportButton.isVisible());
+    // Scrolling to the bottom must expose the last action above the fixed nav.
+    // scrollIntoViewIfNeeded() alone ignores overlays because they are still inside the viewport.
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+    await page.waitForTimeout(80);
     const btn = await exportButton.boundingBox();
     const nav = await page.locator('.app-mobile-bottom-bar').boundingBox();
-    assert.ok(btn && nav && btn.y + btn.height <= nav.y + 1, 'project export button must not be covered by fixed bottom bar');
+    const bottomGeometry = await page.evaluate(() => ({ scrollY, scrollHeight: document.documentElement.scrollHeight, innerHeight }));
+    console.log('MOBILE PROJECT POSITION ' + lang + ' ' + JSON.stringify({ btn, nav, bottomGeometry }));
+    assert.ok(btn && nav && btn.y + btn.height <= nav.y + 1,
+      'project export button must be reachable above the fixed bottom bar at the end of scrolling');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal overflow');
     assert.deepEqual(errors, [], 'mobile ' + lang + ' console errors');
     assert.deepEqual(network, [], 'mobile ' + lang + ' runtime network');
