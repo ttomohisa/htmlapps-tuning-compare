@@ -40,6 +40,27 @@ async function main() {
             assert.equal(await page.locator('.app-mobile-bottom-bar').isVisible(), width <= 600, label + ': functional navigation preserved');
             assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': intro shown before tab selection');
 
+            assert.equal(await page.locator('#heroTitle, [data-i18n="introTitle"]').count(), 0, label + ': redundant hero title removed');
+            const introLayout = await page.evaluate(() => {
+              const area = document.querySelector('.page-intro');
+              const lead = area.querySelector('[data-i18n="introLead"]');
+              const bounds = area.getBoundingClientRect();
+              const leadBounds = lead.getBoundingClientRect();
+              const workspace = document.querySelector('.compare-workspace').getBoundingClientRect();
+              return {
+                firstTextOffset: leadBounds.top - bounds.top,
+                extraGap: workspace.top - bounds.bottom,
+                marginTop: getComputedStyle(lead).marginTop,
+                text: lead.textContent.trim(),
+              };
+            });
+            assert.ok(introLayout.text.length > 0, label + ': introductory description retained');
+            assert.equal(introLayout.marginTop, '0px', label + ': no empty heading margin');
+            assert.ok(introLayout.firstTextOffset >= -1 && introLayout.firstTextOffset <= 8,
+              label + ': intro begins near container top ' + JSON.stringify(introLayout));
+            assert.ok(introLayout.extraGap >= -1 && introLayout.extraGap <= 1,
+              label + ': first card follows intro without unused blank space ' + JSON.stringify(introLayout));
+
             const pageGutters = await page.evaluate(() => {
               const brand = document.querySelector('.header-inner .brand').getBoundingClientRect();
               const intro = document.querySelector('.page-intro').getBoundingClientRect();
