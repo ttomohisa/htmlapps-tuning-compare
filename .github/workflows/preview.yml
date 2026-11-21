@@ -47,7 +47,20 @@ jobs:
         if ($LASTEXITCODE -ne 0) { throw "Mobile Help browser regression failed." }
         New-Item -ItemType Directory -Force -Path test-results/release-smoke | Out-Null
         node scripts/release-smoke.browser.cjs 2>&1 | Tee-Object -FilePath test-results/release-smoke/results.log
-        if ($LASTEXITCODE -ne 0) { throw "Release smoke browser regression failed." }
+        $smokeExit = $LASTEXITCODE
+        # Temporary audit handoff: expose only locally generated demonstration PNGs, not user files.
+        foreach ($imageName in @('screenshot.png', 'screenshot-en.png', 'screenshot-mobile.png')) {
+          $imagePath = Join-Path 'test-results/release-smoke' $imageName
+          if (-not (Test-Path -LiteralPath $imagePath)) { continue }
+          $encoded = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($imagePath))
+          Write-Host "BK_SCREENSHOT_BEGIN $imageName $($encoded.Length)"
+          for ($start = 0; $start -lt $encoded.Length; $start += 2048) {
+            $length = [Math]::Min(2048, $encoded.Length - $start)
+            Write-Host "BK_SCREENSHOT_CHUNK $imageName $start $($encoded.Substring($start, $length))"
+          }
+          Write-Host "BK_SCREENSHOT_END $imageName"
+        }
+        if ($smokeExit -ne 0) { throw "Release smoke browser regression failed." }
     - name: Upload mobile Help browser evidence
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
