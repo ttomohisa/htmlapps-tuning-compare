@@ -56,6 +56,14 @@ test('offline instructions, licenses, and screenshot references remain present',
   assert.match(html, /Copyright 2018 Google Inc\. All Rights Reserved\./);
   assert.match(html, /Permission is hereby granted, free of charge/);
   assert.match(html, /SIL OPEN FONT LICENSE Version 1\.1/);
+  const embedded = html.match(/<template id="embedded-license-notices"[^>]*>([\s\S]*?)<\/template>/)?.[1] || '';
+  assert.ok(embedded.includes(read('LICENSE').trim()), 'standalone source must contain the complete MIT license');
+  assert.ok(embedded.includes(read('THIRD_PARTY_NOTICES.md').trim()), 'standalone source must contain the complete OFL notice');
+  if (process.env.TEST_HTML) {
+    const generated = fs.readFileSync(process.env.TEST_HTML, 'utf8');
+    assert.ok(generated.includes('<template id="embedded-license-notices"'), 'generated standalone must include the license template');
+    assert.ok(generated.includes(read('THIRD_PARTY_NOTICES.md').trim()), 'generated standalone must contain the complete OFL notice');
+  }
   for (const asset of ['assets/screenshot.png', 'assets/screenshot-en.png', 'assets/screenshot-mobile.png', 'assets/favicon.svg']) {
     assert.ok(fs.statSync(path.join(root, asset)).size > 0, asset + ' must not be empty');
   }
