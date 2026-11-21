@@ -39,6 +39,23 @@ async function main() {
             assert.equal(await page.locator('footer').isVisible(), width > 600, label);
             assert.equal(await page.locator('.app-mobile-bottom-bar').isVisible(), width <= 600, label + ': functional navigation preserved');
             assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': intro shown before tab selection');
+            assert.equal(await page.locator('#projectDataPanel').getAttribute('open'), null, label + ': project tools closed on arrival');
+            assert.equal(await page.locator('#projectDataTitle').textContent(), language === 'en' ? 'Save or load a project' : 'プロジェクトを保存・読み込む', label + ': localized project disclosure label');
+            const buttonStyle = await page.evaluate(() => {
+              const play = getComputedStyle(document.querySelector('#abPlayA'));
+              const stop = getComputedStyle(document.querySelector('#abStop'));
+              const clear = getComputedStyle(document.querySelector('#scoreClear'));
+              const exportWav = getComputedStyle(document.querySelector('#exportWavButton'));
+              return {
+                play: play.backgroundColor,
+                stop: stop.backgroundColor,
+                clear: clear.backgroundColor,
+                exportWav: exportWav.backgroundColor,
+              };
+            });
+            assert.notEqual(buttonStyle.play, buttonStyle.stop, label + ': playback visually distinct from stop');
+            assert.notEqual(buttonStyle.exportWav, buttonStyle.stop, label + ': primary export distinct from minor action');
+            assert.equal(buttonStyle.stop, buttonStyle.clear, label + ': stop and destructive action default quietly');
 
             assert.equal(await page.locator('#heroTitle, [data-i18n="introTitle"]').count(), 0, label + ': redundant hero title removed');
             const introLayout = await page.evaluate(() => {
@@ -155,7 +172,7 @@ async function main() {
                 '#mobileTuningPage > .tuning-controls',
                 '#mobileTuningPage > .tuning-table-wrap',
                 '#mobileTuningPage > .project-data-panel',
-                '#mobileTuningPage .project-data-head',
+                '#mobileTuningPage .project-data-panel > summary',
               ]);
               await assertLeftAligned('sound settings section', [
                 '#mobileSoundPage > .sound-card > h2',
@@ -184,8 +201,26 @@ async function main() {
                     '#mobileTuningPage > .tuning-controls',
                     '#mobileTuningPage > .tuning-table-wrap',
                     '#mobileTuningPage > .project-data-panel',
-                    '#mobileTuningPage .project-data-head',
+                    '#mobileTuningPage .project-data-panel > summary',
                   ]);
+                  assert.equal(await page.locator('#projectDataPanel').getAttribute('open'), null, label + ': project controls start collapsed');
+                  assert.equal(await page.locator('#projectFilename').isVisible(), false, label + ': filename hidden until expanded');
+                  await page.locator('#projectDataTitle').click();
+                  assert.ok(await page.locator('#projectFilename').isVisible(), label + ': filename becomes accessible on expansion');
+                  assert.ok(await page.locator('#exportProjectButton').isVisible(), label + ': export becomes accessible on expansion');
+                  assert.ok(await page.locator('.project-data-actions').evaluate(el =>
+                    el.scrollWidth <= el.clientWidth + 1 &&
+                    Array.from(el.querySelectorAll('button')).every(button =>
+                      button.scrollWidth <= button.clientWidth + 1 &&
+                      button.getBoundingClientRect().height >= 40
+                    )
+                  ), label + ': project tools fit without cropping');
+                  if (file === 'dist/index.html' && width === 320) {
+                    await page.screenshot({ path: path.join(results, 'project-expanded-' + language + '-320.png') });
+                  }
+                  await page.locator('#projectDataTitle').click();
+                  assert.equal(await page.locator('#projectFilename').isVisible(), false, label + ': project controls fold again');
+
                 }
                 if (key === 'sound') {
                   await assertLeftAligned('mobile sound settings section', [
@@ -226,9 +261,7 @@ async function main() {
               assert.equal(await page.locator('#projectFilename + .filename-extension').textContent(), '.json', label + ': fixed extension');
               assert.equal(await page.locator('.project-schema').count(), 0, label + ': no schema badge');
               assert.equal(await page.locator('#projectFilenameHelp').count(), 0, label + ': no redundant extension help');
-              assert.ok(await page.locator('.project-data-actions').evaluate(el =>
-                el.scrollWidth <= el.clientWidth + 1 && Array.from(el.querySelectorAll('button')).every(button => button.scrollWidth <= button.clientWidth + 1)
-              ), label + ': JSON actions fit on mobile');
+
             }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 
