@@ -45,12 +45,23 @@ jobs:
         New-Item -ItemType Directory -Force -Path test-results/mobile-help | Out-Null
         node scripts/mobile-help.browser.cjs 2>&1 | Tee-Object -FilePath test-results/mobile-help/results.log
         if ($LASTEXITCODE -ne 0) { throw "Mobile Help browser regression failed." }
+        New-Item -ItemType Directory -Force -Path test-results/release-smoke | Out-Null
+        node scripts/release-smoke.browser.cjs 2>&1 | Tee-Object -FilePath test-results/release-smoke/results.log
+        if ($LASTEXITCODE -ne 0) { throw "Release smoke browser regression failed." }
     - name: Upload mobile Help browser evidence
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: mobile-help-browser-evidence
         path: test-results/mobile-help/
+        if-no-files-found: ignore
+        retention-days: 7
+    - name: Upload release smoke screenshots and evidence
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: release-smoke-browser-evidence
+        path: test-results/release-smoke/
         if-no-files-found: ignore
         retention-days: 7
     - name: Upload static preview site

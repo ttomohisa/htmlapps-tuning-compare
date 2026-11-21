@@ -13,6 +13,20 @@
 
 For GitHub Pages, one initial request downloads the HTML. Clear the Network panel after the page has loaded, then test the complete app flow.
 
+## Tuning Compare release smoke check
+
+Run these steps on the readable HTML and the self-extracting variant, in both Japanese and English. Use the 320 px smartphone layout as well as desktop.
+
+1. Compare A = equal temperament with B = just intonation. Play A, Play B and Stop, including quick repeated presses; an earlier pending sound must not start after Stop.
+2. Change an A/B reference frequency to an invalid value. The comparison must not silently substitute 440 Hz. Restore a valid value.
+3. Enter or load a short score with notes, a chord and an explicit rest. Try to place another event over an existing event; the old event must remain. Switch between 4/4 and 3/4 and check the confirmation and Undo behavior if a note would no longer fit.
+4. Export WAV with **A only**, **B only** and **A → B** targets. Change the filename, open the output and check RIFF/WAVE, mono PCM16 and the chosen 44.1/48 kHz rate. A-only export must not require a valid B reference frequency.
+5. On the **Tuning** page, check that **Save or load a project** is folded initially. Expand it, edit the JSON filename and export. Change a few settings, import the JSON and confirm the restoration. Test cancel, malformed JSON and a file larger than 1 MiB without changing the current project.
+6. On a phone, visit Compare, Score, Tuning and Sound using the bottom bar. Confirm no horizontal page overflow or covered final controls. Expand the project section and verify that import/export buttons are reachable above the bottom bar when scrolled into view.
+7. Check language changes, the Help dialog's last paragraph, keyboard focus, the top-right controls, and the offline Network panel. Generated WAV and JSON files must never be uploaded by the application.
+
+The repo's optional WebRTC component is **not used by Tuning Compare** and is not part of this application's release test.
+
 
 ## Self-extracting variant
 

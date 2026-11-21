@@ -3,7 +3,7 @@
 [![Validate standalone HTML](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
-[![Version](https://img.shields.io/badge/version-v1.0.0-16624F)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.0.2-16624F)](CHANGELOG.md)
 
 [日本語版 README](README.ja.md)
 
@@ -29,7 +29,7 @@ GitHub Pages serves the initial HTML. After it loads, tuning calculations, score
 - **Edit the score without leaving the staff** — Long-press a chord to duplicate it, drag a chord horizontally without changing its pitches, move rests horizontally, and use the selected-chord pitch lane to add a note at the intended height more easily. Changing the input duration affects the **next** note/rest only, not the event that happens to be selected.
 - **Start with useful examples** — Load a major third, major triad, C major scale, or I–IV–V–I sample.
 - **Export audio locally** — Render A only, B only, or an A → B comparison as 16-bit mono WAV at 44.1 kHz or 48 kHz.
-- **Save the whole experiment** — Export and import project JSON containing the score, tunings, sound settings, and WAV settings.
+- **Optional project export** — Expand **Save or load a project** in the Tuning section to export/import JSON containing the score, tunings, sound settings, and WAV settings.
 - **Local-first single HTML** — Japanese/English UI, local autosave, no runtime CDN, and no external runtime network dependency.
 
 ## Quick start
@@ -88,7 +88,7 @@ Use **Play A** and **Play B** to hear the same notes with either tuning. The com
 
 The score starts at four measures and can be adjusted from 1 to 16 measures while staying focused on tuning comparison rather than full notation. **Horizontal spacing does not create an implicit rest**: events are played in visual order using their note/rest durations, and silence is added only by an explicit rest symbol.
 
-Supported in v1.0.0:
+Current score features:
 
 - Treble clef
 - 1–16 measures with − / + controls
@@ -107,6 +107,8 @@ Supported in v1.0.0:
 - Empty horizontal space does not add silence; only explicit rests do
 - Same-position ♭ / ♮ / ♯ input replaces that note's accidental instead of leaving a duplicate natural note
 - Undo / Redo
+- Keyboard input on the focused staff: arrow keys to position the cursor and Enter/Space to insert notes or rests
+- Overlap-safe editing: new notes/rests and drag/duplicate operations do not delete overlapping events; changing the time signature asks before discarding incompatible events and supports Undo
 
 On desktop, the score uses two measures per system. On smartphones, it wraps to one measure per system instead of forcing a long horizontal canvas.
 
@@ -132,15 +134,17 @@ The score can be rendered locally as:
 
 WAV output uses mono 16-bit PCM at 44.1 kHz or 48 kHz. WAV rendering uses the same symbol-driven timing as live score playback: unused visual gaps are skipped, while explicit rests add silence.
 
-The A and B sides use the same sound and gain conditions. The app does not normalize A and B independently.
+The A and B sides use the same sound and gain conditions. The app does not normalize A and B independently. A-only and B-only exports validate and render only the selected tuning.
 
 ### 6. Save or restore a project
+
+Open the **Tuning** section and expand **Save or load a project** beneath the tuning table. This optional section is collapsed by default; its filename and import/export controls appear when opened.
 
 Project JSON stores the editable project state, including the score and tuning settings. Audio data is not embedded in the JSON.
 
 The app also saves the current project state locally in the browser so it can be restored on the next visit unless site data has been cleared.
 
-Edit the JSON filename before exporting. The `.json` extension is added automatically. Imports up to 1 MiB are validated before replacement; invalid files and canceled imports leave your current project unchanged. Older schema-v1 files remain supported. WAV exports use a snapshot of both tunings and the score at the moment export begins, so edits during rendering apply to your next export.
+Edit the JSON filename before exporting. The `.json` extension is added automatically. Imports up to 1 MiB are validated before replacement; invalid files and canceled imports leave your current project unchanged. Older schema-v1 files remain supported. WAV exports use a snapshot of the selected tuning side(s), score, and sound settings at the moment export begins, so edits during rendering apply to your next export.
 
 ## Smartphone UI
 
@@ -168,6 +172,10 @@ This repository includes a workflow that builds the standalone HTML and can depl
 
 If GitHub Pages is not enabled, the workflow still builds and validates the app, then skips the deployment step with setup instructions in the workflow summary.
 
+### Automatic tags and GitHub Releases
+
+After a PR is merged into `main`, the **Publish GitHub Release** workflow checks the stable version in `app.config.json`. If no GitHub Release exists for that version, it rebuilds and tests the standalone HTML, creates the `vMAJOR.MINOR.PATCH` tag on the validated merge commit, and publishes a GitHub Release with the notes from the matching `CHANGELOG.md` section. The release includes `tuning-compare.html` and `tuning-compare.self-extract.html` as download assets. Existing releases are skipped; a failed run can be retried from Actions. Set a new version and changelog entry for each future release.
+
 ## Development and build layout
 
 ```text
@@ -186,7 +194,8 @@ If GitHub Pages is not enabled, the workflow still builds and validates the app,
 ├─ dist/index.html                  # Generated readable standalone build
 └─ .github/workflows/
    ├─ build-standalone.yml          # Pull-request standalone validation
-   └─ deploy-pages.yml              # Optional GitHub Pages deployment
+   ├─ deploy-pages.yml              # Optional GitHub Pages deployment
+   └─ release.yml                   # Automatic tags and GitHub Releases
 ```
 
 Edit `src/index.template.html`; do not hand-edit generated HTML.
@@ -223,7 +232,7 @@ For a disconnected workflow, open the generated standalone HTML directly and fol
 
 - This is a tuning-comparison tool, not full notation software, a DAW, or a MIDI sequencer.
 - The score supports 1–16 measures and starts at four measures.
-- Dotted notes, ties, tuplets, dynamics, and multiple parts are not implemented in v1.0.0.
+- Dotted notes, ties, tuplets, dynamics, and multiple parts are not implemented.
 - MIDI keyboard input and MIDI file import are not implemented.
 - Custom tuning stores C4–B4 directly and derives other octaves at 2:1; independent per-octave tuning is not included.
 - The built-in just-intonation preset is specifically 5-limit just intonation relative to the selected tonic. It should not be interpreted as making every chord in every key perfectly just.

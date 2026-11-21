@@ -2,8 +2,28 @@
 
 ## Unreleased
 
-### Changed
+## 1.0.2 — Pending release
+
+- Prevent accidental score-note deletion on time-signature changes: preserve measure positions, confirm incompatible events, and keep Undo available.
+- Reject overlapping score inputs and drags instead of silently overwriting notes, and disable four-beat note/rest input in 3/4.
+- Fix invalid A/B reference frequencies from silently reverting to 440 Hz while displayed results remain stale.
+- Render and validate only the selected A/B side for single-side WAV export.
+- Cancel pending audio starts on stop or a newer play request.
+- Add keyboard score input and tests for editing, export, and audio cancellation.
+- Improve smartphone navigation: hide local badge, collapse the hero after first tab selection, and resize notation without overlapping musical symbols.
+- Simplify project JSON UI: remove schema/version and redundant extension help, show a fixed .json suffix, and use compact icon actions for import/export.
+- Align layout margins, padding, and gaps to an 8px grid, with flatter cards, muted borders, and softer nested panels on desktop and mobile.
+- Reduce nested card framing: use single-level A/B sections, slim section dividers for WAV/JSON/learning/advanced settings, and keep borders around interactive tables, fields, and score editing.
+- Correct the A/B heading and field alignment below 520px by removing the leftover A-side padding, and align header/intro gutters at 521–600px; extend bilingual Chromium viewport tests to check real section edges across responsive breakpoints.
+- Remove the redundant hero headline while retaining the Japanese/English introductory explanation; align the remaining lead and local-processing badge without leaving an empty heading gap.
+- Simplify the button hierarchy: clearer A/B playback states, calmer secondary/stop controls, consistent hover/focus styles, and compact note and score tools.
+- Fold the optional project save/load section by default without removing JSON import/export, filename editing, or project status feedback.
+- Sync the v1.0.2 product specification, Japanese/English READMEs, in-app help and offline release checklist with overlap-safe score editing and one-sided WAV behavior.
+- Embed the full MIT and Noto Music OFL-1.1 license texts in standalone HTML, and test the notices and release documentation for drift.
+- Add Chromium release-smoke checks for JSON round-trip, A-only WAV validity, bilingual layout, and mobile project controls.
+- Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
+- Publish a versioned tag and GitHub Release with standalone downloads automatically after merging to main, once verification passes.
 
 ## 1.0.1 — 2026-10-08
 
