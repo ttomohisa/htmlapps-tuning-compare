@@ -3,7 +3,6 @@
 // Offline browser operation, file download/import and cross-format checks run without network APIs.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
@@ -63,6 +62,10 @@ async function checkDesktop(browser, file, lang) {
       assert.equal(await page.locator('#tuningType').inputValue(), 'just');
       await page.locator('#projectFileInput').setInputFiles(jsonPath);
       await page.locator('#appConfirmDialog').waitFor({ state: 'visible' });
+      await page.locator('#appConfirmCancel').click();
+      assert.equal(await page.locator('#tuningType').inputValue(), 'just', 'cancel must preserve existing project');
+      await page.locator('#projectFileInput').setInputFiles(jsonPath);
+      await page.locator('#appConfirmDialog').waitFor({ state: 'visible' });
       await page.locator('#appConfirmOk').click();
       assert.equal(await page.locator('#tuningType').inputValue(), 'equal', 'import must restore saved tuning');
 
@@ -88,6 +91,44 @@ async function checkDesktop(browser, file, lang) {
       assert.equal(buf.readUInt16LE(22), 1, 'mono channel');
       assert.equal(buf.readUInt16LE(34), 16, '16-bit samples');
       assert.ok([44100, 48000].includes(buf.readUInt32LE(24)), 'supported sample rate');
+      // B-only should ignore invalid A; the A/B combination should encode at both rates.
+      await page.locator('#abBReferenceFrequency').fill('440');
+      await page.locator('#abBReferenceFrequency').dispatchEvent('change');
+      await page.locator('#abAReferenceFrequency').fill('0');
+      await page.locator('#abAReferenceFrequency').dispatchEvent('change');
+      await page.locator('#wavTarget').selectOption('b');
+      await page.locator('#wavSampleRate').selectOption('44100');
+      await page.locator('#wavFilename').fill('b-only-test');
+      const bPending = page.waitForEvent('download', { timeout: 45000 });
+      await page.locator('#exportWavButton').click();
+      const bDownload = await bPending;
+      assert.equal(bDownload.suggestedFilename(), 'b-only-test.wav');
+      const bPath = path.join(out, 'b-only.wav');
+      await bDownload.saveAs(bPath);
+      const bBuffer = fs.readFileSync(bPath);
+      assert.equal(bBuffer.toString('ascii', 0, 4), 'RIFF');
+      assert.equal(bBuffer.readUInt16LE(22), 1);
+      assert.equal(bBuffer.readUInt16LE(34), 16);
+      assert.equal(bBuffer.readUInt32LE(24), 44100);
+
+      await page.locator('#abAReferenceFrequency').fill('440');
+      await page.locator('#abAReferenceFrequency').dispatchEvent('change');
+      await page.locator('#wavTarget').selectOption('ab');
+      await page.locator('#wavSampleRate').selectOption('48000');
+      await page.locator('#wavFilename').fill('ab-comparison-test');
+      const bothPending = page.waitForEvent('download', { timeout: 45000 });
+      await page.locator('#exportWavButton').click();
+      const bothDownload = await bothPending;
+      assert.equal(bothDownload.suggestedFilename(), 'ab-comparison-test.wav');
+      const bothPath = path.join(out, 'ab-comparison.wav');
+      await bothDownload.saveAs(bothPath);
+      const bothBuffer = fs.readFileSync(bothPath);
+      assert.equal(bothBuffer.toString('ascii', 0, 4), 'RIFF');
+      assert.equal(bothBuffer.toString('ascii', 8, 12), 'WAVE');
+      assert.equal(bothBuffer.readUInt16LE(22), 1);
+      assert.equal(bothBuffer.readUInt16LE(34), 16);
+      assert.equal(bothBuffer.readUInt32LE(24), 48000);
+      assert.ok(bothBuffer.length > bBuffer.length, 'A/B WAV includes both sides and the separator');
     }
     await page.locator('#projectDataTitle').click();
     assert.equal(await page.locator('#projectFilename').isVisible(), false, 'project drawer re-closes');
