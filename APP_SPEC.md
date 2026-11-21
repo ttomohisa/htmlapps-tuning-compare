@@ -3,7 +3,7 @@
 ## 1. Product identity
 
 - **Name:** Tuning Compare / 音律聞き比べ
-- **Version:** 1.0.1
+- **Version:** 1.0.2 (release candidate; tag and GitHub Release are created after merge)
 - **Current milestone:** Formal Release
 - **Purpose:** Compare tuning A and B by ear and by frequency/cents, edit a short score, export WAV audio, and save the full project locally.
 - **Release artifacts:** `dist/index.html`, `dist/index.self-extract.html`, and repository-root `tuning-compare.html`.
@@ -340,9 +340,7 @@ Clearing the whole score requires the template `AppConfirm` dialog.
 
 ### Stable playback-button geometry
 
-Play A / Play B buttons reserve the playing-indicator dot area in both idle and active states.
-
-The indicator changes opacity rather than being inserted only during playback, so button width and neighboring controls must not shift when playback starts or stops.
+Play A / Play B controls reserve the triangular play icon in both idle and active states. The current side is shown with a solid accent background and `aria-pressed`; the buttons must not shift width when playback starts or stops. Stop controls remain visually secondary.
 
 ### Rest engraving and accidental click editing
 
@@ -359,21 +357,15 @@ Score notation follows these additional rules:
 - flat / natural / sharp click edits participate in Undo history
 - dragging still changes pitch/time and does not also apply the currently selected accidental on pointer release
 
-### Covered-note overwrite
+### Overlap-safe score editing (v1.0.2)
 
-When a new note event is inserted, later score events whose start positions fall strictly inside the new note's duration are removed before the new note is added.
+A new note, chord, or rest must not silently overwrite an existing event whose duration occupies the same time interval. An overlapping input is rejected without removing or changing the original event.
 
-Example in 4/4:
+The same collision rule applies to dragging and duplicating events. A new event beginning at the exact end of an existing event is permitted when it fits the measure. Notes and rests must stay within measure boundaries; a four-beat whole note/rest cannot be inserted into 3/4.
 
-- insert a whole note at beat 0
-- existing events starting at beats 1, 2, and 3 are removed
-- an event starting at beat 4 is outside the duration and remains
+Changing the time signature preserves relative event positions within each measure. When an existing event no longer fits, the app asks before deleting it, and the confirmed operation is Undoable.
 
-The overwrite is part of the same Undo snapshot as the newly inserted note, so one Undo restores the previous score.
-
-This automatic overwrite applies to note insertion only. Rest insertion keeps the existing no-silent-overwrite behavior.
-
-## 16. Acceptance criteria
+## Release acceptance criteria
 
 - A/B reference-note and tonic dropdowns are populated and selectable
 - only Play A / Play B / Stop remain in A/B playback
@@ -409,17 +401,19 @@ This automatic overwrite applies to note insertion only. Rest insertion keeps th
 - redundant score-header measure/event-count badge is absent
 - clicking an existing note applies the selected flat/natural/sharp without dragging
 - quarter and eighth rest glyphs are visibly larger than the previous sizing
-- inserting a long note removes later events covered by its duration, while the event at the exact end boundary remains
-- one Undo restores both the inserted long note and the events it replaced
-- rest insertion does not use the covered-note overwrite behavior
+- overlapping note, chord and rest input is refused without deleting existing events
+- drag and duplication honor the same non-overlap and measure-boundary constraints
+- exact-end-boundary event positions remain valid
+- a whole note/rest extending outside 3/4 is rejected
+- changing 4/4 to 3/4 preserves relative positions where possible and confirms any required event deletion; Undo restores the previous state
 - standalone build and repository validation pass
-- app version is consistently 1.0.1 in config and generated UI
+- app version is consistently 1.0.2 in config and generated UI
 - Japanese and English UI complete the core compare → score → WAV / JSON flow
 - release screenshots include current Japanese desktop/mobile and English desktop UI
 - favicon and header app icon use the same canonical SVG
 - runtime CSP keeps external connections blocked
 
-## 17. Post-v1.0 roadmap
+## Post-v1.0 roadmap
 
 Future additions are optional and must not weaken the v1.0.0 local-first comparison workflow.
 
@@ -439,3 +433,18 @@ WAV allocation is preflighted before creating any OfflineAudioContext. Limits ar
 ## Informational footer on smartphones
 
 At the existing 600px smartphone navigation breakpoint, hide only the informational page footer. Keep the functional bottom navigation and its actions unchanged. The existing local-processing label remains `Fully local processing` in English.
+
+## v1.0.2 release candidate: reliability and interface contract
+
+- Keep A and B independent. Invalid A/B reference frequencies remain visibly invalid rather than silently falling back to 440 Hz. One-sided WAV exports validate and render only their selected side.
+- Cancel pending audio starts after Stop or a newer play request. WAV exports retain an immutable snapshot of the selected tuning side(s), score timing and audio settings until completion; user edits affect the next export.
+- Support keyboard score input on the focused staff (arrows to position, Enter/Space to insert) in addition to pointer and touch input.
+- On smartphones at widths up to 600 px, use the four-tab bottom navigation; hide the introductory line after the first tab tap and hide the informational footer while keeping functional controls visible. At up to 520 px, A/B headings and form fields have identical left edges.
+- Keep the first-level workspace boundaries. Within them, use lightweight dividers rather than repeated nested cards for A/B tuning, learning information, WAV export and advanced settings. Margin, padding and gap pixel values follow an 8 px grid.
+- The title formerly above the introduction is removed. Keep the short Japanese/English lead; align the local-processing indicator with that lead on desktop.
+- Playback buttons communicate active state with stable play triangles and the accent color; stop and secondary tools are quieter. Keyboard focus remains visible and mobile tap targets remain usable.
+- The project JSON export/import UI lives under the collapsed-by-default `<details id="projectDataPanel">` in the Tuning section. Expanding it exposes the editable filename, export/import actions, status messages and import confirmation. Existing project format and autosave behavior remain unchanged.
+- The one-file readable and self-extracting builds must remain offline-capable. The application does not send user data to an external server; preserve `connect-src 'none'` and retain the Noto Music glyph notice in `THIRD_PARTY_NOTICES.md`.
+- Keep user-facing READMEs and in-app Help in sync with the supported workflows. Regenerate representative Japanese desktop/mobile and English desktop screenshots after UI changes before public release.
+- After a merge to `main`, the release workflow must verify the stable SemVer from `app.config.json`, rebuild, run regression tests, create an immutable `v1.0.2` tag on the validated commit and attach both standalone HTML variants to GitHub Release. Do not tag or publish from the PR branch.
+
