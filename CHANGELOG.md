@@ -2,8 +2,22 @@
 
 ## Unreleased
 
-### Changed
+## 1.0.2 — 2026-11-20
+
+- Prevent accidental score-note deletion on time-signature changes: preserve measure positions, confirm incompatible events, and keep Undo available.
+- Reject overlapping score inputs and drags instead of silently overwriting notes, and disable four-beat note/rest input in 3/4.
+- Fix invalid A/B reference frequencies from silently reverting to 440 Hz while displayed results remain stale.
+- Render and validate only the selected A/B side for single-side WAV export.
+- Cancel pending audio starts on stop or a newer play request.
+- Add keyboard score input and tests for editing, export, and audio cancellation.
+- Improve smartphone navigation: hide local badge, collapse the hero after first tab selection, and resize notation without overlapping musical symbols.
+- Simplify project JSON UI: remove schema/version and redundant extension help, show a fixed .json suffix, and use compact icon actions for import/export.
+- Align layout margins, padding, and gaps to an 8px grid, with flatter cards, muted borders, and softer nested panels on desktop and mobile.
+- Reduce nested card framing: use single-level A/B sections, slim section dividers for WAV/JSON/learning/advanced settings, and keep borders around interactive tables, fields, and score editing.
+- Correct the A/B heading and field alignment below 520px by removing the leftover A-side padding, and align header/intro gutters at 521–600px; extend bilingual Chromium viewport tests to check real section edges across responsive breakpoints.
+- Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
+- Publish a versioned tag and GitHub Release with standalone downloads automatically after merging to main, once verification passes.
 
 ## 1.0.1 — 2026-10-08
 

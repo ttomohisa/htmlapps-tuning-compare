@@ -1,0 +1,134 @@
+name: Publish GitHub Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-github-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Manual runs must also target main; never tag a PR branch.
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect version and existing release
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $config = Get-Content -Raw -Encoding UTF8 'app.config.json' | ConvertFrom-Json
+          $version = [string]$config.version
+          if ($version -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
+            throw "A stable SemVer version (MAJOR.MINOR.PATCH) is required: '$version'"
+          }
+          $tag = "v$version"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+          # Idempotent for later commits which do not change the version.
+          gh release view $tag --repo $env:GITHUB_REPOSITORY --json tagName --jq .tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $tag already exists; nothing to publish."
+            "publish=false" >> $env:GITHUB_OUTPUT
+          } else {
+            "publish=true" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate PowerShell syntax and encoding
+        if: steps.version.outputs.publish == 'true'
+        shell: powershell
+        run: .\scripts\check-powershell-syntax.ps1
+
+      - name: Build and verify standalone HTML
+        if: steps.version.outputs.publish == 'true'
+        shell: pwsh
+        run: ./scripts/check-repository.ps1
+
+      - name: Set up Node.js for regression tests
+        if: steps.version.outputs.publish == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Run regressions on source and generated standalone HTML
+        if: steps.version.outputs.publish == 'true'
+        shell: pwsh
+        run: |
+          npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm test --prefix tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:TEST_HTML = Join-Path $PWD 'dist/index.html'
+          npm test --prefix tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Tag validated commit and create GitHub Release
+        if: steps.version.outputs.publish == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = $env:RELEASE_TAG
+          $version = $env:RELEASE_VERSION
+
+          # Only publish the changelog entry for this version.
+          $changelog = Get-Content -Raw -Encoding UTF8 'CHANGELOG.md'
+          $pattern = '(?ms)^##[ \t]+' + [regex]::Escape($version) + '(?:[ \t]+[^\r\n]*)?\r?\n(?<notes>.*?)(?=^##[ \t]+|\z)'
+          $match = [regex]::Match($changelog, $pattern)
+          if (-not $match.Success -or [string]::IsNullOrWhiteSpace($match.Groups['notes'].Value)) {
+            throw "CHANGELOG.md has no release notes for $tag"
+          }
+          $notesPath = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          [System.IO.File]::WriteAllText($notesPath, $match.Groups['notes'].Value.Trim(), (New-Object System.Text.UTF8Encoding($false)))
+
+          $assetsPath = Join-Path $env:RUNNER_TEMP 'release-assets'
+          New-Item -ItemType Directory -Path $assetsPath -Force | Out-Null
+          $htmlAsset = Join-Path $assetsPath 'tuning-compare.html'
+          $selfExtractAsset = Join-Path $assetsPath 'tuning-compare.self-extract.html'
+          Copy-Item 'dist/index.html' $htmlAsset
+          Copy-Item 'dist/index.self-extract.html' $selfExtractAsset
+
+          # Handle a previous attempt that created the tag before a release failed.
+          $remoteTag = @(git ls-remote --refs --tags origin "refs/tags/$tag")
+          if ($LASTEXITCODE -ne 0) { throw "Failed to inspect remote tag $tag" }
+          if ($remoteTag.Count -gt 0) {
+            git fetch origin "refs/tags/$tag:refs/tags/$tag"
+            if ($LASTEXITCODE -ne 0) { throw "Could not fetch existing tag $tag" }
+            $tagCommit = (git rev-list -n 1 $tag).Trim()
+            if ($tagCommit -ne $env:GITHUB_SHA) {
+              throw "Existing $tag points at $tagCommit, not this commit $env:GITHUB_SHA. Bump app.config.json version rather than retagging."
+            }
+            Write-Host "Reusing tag $tag on the current commit."
+          } else {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git tag -a $tag -m "Tuning Compare $tag" $env:GITHUB_SHA
+            if ($LASTEXITCODE -ne 0) { throw "Could not create local tag $tag" }
+            git push origin "refs/tags/$tag"
+            if ($LASTEXITCODE -ne 0) { throw "Could not push tag $tag" }
+          }
+
+          # --verify-tag never moves the tag; release assets are the validated files.
+          gh release create $tag $htmlAsset $selfExtractAsset --repo $env:GITHUB_REPOSITORY --title "Tuning Compare $tag" --notes-file $notesPath --verify-tag
+          if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed for $tag" }
+
+          "Published ${tag}: https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$tag" >> $env:GITHUB_STEP_SUMMARY

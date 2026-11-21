@@ -3,7 +3,7 @@
 [![Validate standalone HTML](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-tuning-compare/actions/workflows/build-standalone.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-tuning-compare/)
-[![Version](https://img.shields.io/badge/version-v1.0.0-16624F)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.0.2-16624F)](CHANGELOG.md)
 
 [日本語版 README](README.ja.md)
 
@@ -168,6 +168,10 @@ This repository includes a workflow that builds the standalone HTML and can depl
 
 If GitHub Pages is not enabled, the workflow still builds and validates the app, then skips the deployment step with setup instructions in the workflow summary.
 
+### Automatic tags and GitHub Releases
+
+After a PR is merged into `main`, the **Publish GitHub Release** workflow checks the stable version in `app.config.json`. If no GitHub Release exists for that version, it rebuilds and tests the standalone HTML, creates the `vMAJOR.MINOR.PATCH` tag on the validated merge commit, and publishes a GitHub Release with the notes from the matching `CHANGELOG.md` section. The release includes `tuning-compare.html` and `tuning-compare.self-extract.html` as download assets. Existing releases are skipped; a failed run can be retried from Actions. Set a new version and changelog entry for each future release.
+
 ## Development and build layout
 
 ```text
@@ -186,7 +190,8 @@ If GitHub Pages is not enabled, the workflow still builds and validates the app,
 ├─ dist/index.html                  # Generated readable standalone build
 └─ .github/workflows/
    ├─ build-standalone.yml          # Pull-request standalone validation
-   └─ deploy-pages.yml              # Optional GitHub Pages deployment
+   ├─ deploy-pages.yml              # Optional GitHub Pages deployment
+   └─ release.yml                   # Automatic tags and GitHub Releases
 ```
 
 Edit `src/index.template.html`; do not hand-edit generated HTML.
