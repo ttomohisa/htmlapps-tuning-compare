@@ -41,13 +41,22 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tag" >> $env:GITHUB_OUTPUT
 
-          # Idempotent for later commits which do not change the version.
-          gh release view $tag --repo $env:GITHUB_REPOSITORY --json tagName --jq .tagName *> $null
-          if ($LASTEXITCODE -eq 0) {
+          # A release missing (404) is expected on first publish. Avoid a failing
+          # native gh command under ErrorActionPreference=Stop; reject all other errors.
+          $releaseUri = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/tags/$tag"
+          $releaseResponse = Invoke-WebRequest -Uri $releaseUri -Headers @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          } -SkipHttpErrorCheck -ErrorAction Stop
+          if ($releaseResponse.StatusCode -eq 200) {
             Write-Host "Release $tag already exists; nothing to publish."
             "publish=false" >> $env:GITHUB_OUTPUT
-          } else {
+          } elseif ($releaseResponse.StatusCode -eq 404) {
+            Write-Host "Release $tag does not exist yet; proceeding with validation."
             "publish=true" >> $env:GITHUB_OUTPUT
+          } else {
+            throw "Unexpected HTTP status $($releaseResponse.StatusCode) while checking release $tag"
           }
 
       - name: Validate PowerShell syntax and encoding

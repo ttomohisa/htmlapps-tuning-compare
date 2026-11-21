@@ -18,7 +18,13 @@ test('release uses current SemVer, changelog notes, existing-tag checks, and ski
   assert.match(config.version, /^\d+\.\d+\.\d+$/);
   assert.ok(changelog.includes('## ' + config.version + ' '));
   assert.match(workflow, /Get-Content -Raw -Encoding UTF8 'app\.config\.json'/);
-  assert.match(workflow, /gh release view \$tag/);
+  assert.match(workflow, /Invoke-WebRequest.*-Uri \$releaseUri.*-Headers/s);
+  assert.match(workflow, /-SkipHttpErrorCheck -ErrorAction Stop/);
+  assert.match(workflow, /\$releaseResponse\.StatusCode -eq 200/);
+  assert.match(workflow, /\$releaseResponse\.StatusCode -eq 404/);
+  assert.match(workflow, /Unexpected HTTP status/);
+  assert.match(workflow, /"publish=true" >> \$env:GITHUB_OUTPUT/);
+  assert.doesNotMatch(workflow, /gh release view \$tag/);
   assert.match(workflow, /"publish=false" >> \$env:GITHUB_OUTPUT/);
   assert.match(workflow, /git ls-remote --refs --tags origin/);
   assert.match(workflow, /\$tagCommit -ne \$env:GITHUB_SHA/);
