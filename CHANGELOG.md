@@ -16,6 +16,8 @@
 - Reduce nested card framing: use single-level A/B sections, slim section dividers for WAV/JSON/learning/advanced settings, and keep borders around interactive tables, fields, and score editing.
 - Correct the A/B heading and field alignment below 520px by removing the leftover A-side padding, and align header/intro gutters at 521–600px; extend bilingual Chromium viewport tests to check real section edges across responsive breakpoints.
 - Remove the redundant hero headline while retaining the Japanese/English introductory explanation; align the remaining lead and local-processing badge without leaving an empty heading gap.
+- Simplify the button hierarchy: clearer A/B playback states, calmer secondary/stop controls, consistent hover/focus styles, and compact note and score tools.
+- Fold the optional project save/load section by default without removing JSON import/export, filename editing, or project status feedback.
 - Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
 - Publish a versioned tag and GitHub Release with standalone downloads automatically after merging to main, once verification passes.
