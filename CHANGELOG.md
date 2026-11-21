@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 1.0.2 — 2026-11-20
+## 1.0.2 — Pending release
 
 - Prevent accidental score-note deletion on time-signature changes: preserve measure positions, confirm incompatible events, and keep Undo available.
 - Reject overlapping score inputs and drags instead of silently overwriting notes, and disable four-beat note/rest input in 3/4.
