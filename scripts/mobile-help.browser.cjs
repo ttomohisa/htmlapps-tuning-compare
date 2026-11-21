@@ -40,6 +40,14 @@ async function main() {
             assert.equal(await page.locator('.app-mobile-bottom-bar').isVisible(), width <= 600, label + ': functional navigation preserved');
             assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': intro shown before tab selection');
 
+            const pageGutters = await page.evaluate(() => {
+              const brand = document.querySelector('.header-inner .brand').getBoundingClientRect();
+              const intro = document.querySelector('.page-intro').getBoundingClientRect();
+              return { brandLeft: brand.left, introLeft: intro.left };
+            });
+            assert.ok(Math.abs(pageGutters.brandLeft - pageGutters.introLeft) <= 1,
+              label + ': header and page intro must use the same gutter ' + JSON.stringify(pageGutters));
+
             const layoutBoundaries = await page.evaluate(() => {
               function border(selector, side) {
                 const element = document.querySelector(selector);
