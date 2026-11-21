@@ -54,7 +54,10 @@ async function checkDesktop(browser, file, lang) {
       const jsonPath = path.join(out, 'roundtrip.json');
       await jsonDownload.saveAs(jsonPath);
       const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-      assert.ok(json.score && json.abCompare && json.wavExport, 'JSON must retain complete project state');
+      assert.equal(json.kind, 'browser-kitty.tuning-compare-project');
+      assert.equal(json.appVersion, '1.0.2');
+      assert.ok(json.project?.score && json.project?.abCompare && json.project?.wavExport,
+        'JSON project payload must retain complete state');
 
       await page.locator('#tuningType').selectOption('just');
       assert.equal(await page.locator('#tuningType').inputValue(), 'just');
