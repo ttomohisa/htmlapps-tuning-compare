@@ -52,6 +52,10 @@ test('offline instructions, licenses, and screenshot references remain present',
   assert.match(read('LICENSE'), /^MIT License/);
   assert.match(read('THIRD_PARTY_NOTICES.md'), /Noto Music/);
   assert.match(read('THIRD_PARTY_NOTICES.md'), /SIL OPEN FONT LICENSE/);
+  assert.match(html, /<template id="embedded-license-notices" data-licenses="MIT OFL-1\.1">/);
+  assert.match(html, /Copyright 2018 Google Inc\. All Rights Reserved\./);
+  assert.match(html, /Permission is hereby granted, free of charge/);
+  assert.match(html, /SIL OPEN FONT LICENSE Version 1\.1/);
   for (const asset of ['assets/screenshot.png', 'assets/screenshot-en.png', 'assets/screenshot-mobile.png', 'assets/favicon.svg']) {
     assert.ok(fs.statSync(path.join(root, asset)).size > 0, asset + ' must not be empty');
   }
