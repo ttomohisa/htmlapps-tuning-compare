@@ -86,14 +86,13 @@ async function main() {
                 '.compare-workspace > .ab-grid',
                 '.ab-slot[data-slot="a"]',
                 '.ab-slot[data-slot="a"] .ab-slot-head',
-                '.ab-slot[data-slot="a"] #abATitle',
                 '.ab-slot[data-slot="a"] .ab-fields',
                 '.ab-slot[data-slot="a"] .ab-fields label:first-child',
                 '.ab-slot[data-slot="b"]',
                 '.ab-slot[data-slot="b"] .ab-slot-head',
                 '.ab-slot[data-slot="b"] .ab-fields',
                 '.ab-slot[data-slot="b"] .ab-fields label:first-child',
-              ].filter(selector => !selector.endsWith('#abATitle')));
+              ]);
               const abTitles = await page.evaluate(() => {
                 const a = document.querySelector('#abATitle').getBoundingClientRect();
                 const b = document.querySelector('#abBTitle').getBoundingClientRect();
