@@ -15,6 +15,7 @@
 - Align layout margins, padding, and gaps to an 8px grid, with flatter cards, muted borders, and softer nested panels on desktop and mobile.
 - Reduce nested card framing: use single-level A/B sections, slim section dividers for WAV/JSON/learning/advanced settings, and keep borders around interactive tables, fields, and score editing.
 - Correct the A/B heading and field alignment below 520px by removing the leftover A-side padding, and align header/intro gutters at 521–600px; extend bilingual Chromium viewport tests to check real section edges across responsive breakpoints.
+- Remove the redundant hero headline while retaining the Japanese/English introductory explanation; align the remaining lead and local-processing badge without leaving an empty heading gap.
 - Correct the displayed version badges in both READMEs.
 - Hide the informational page footer at the existing 600px smartphone breakpoint without hiding the functional bottom controls.
 - Publish a versioned tag and GitHub Release with standalone downloads automatically after merging to main, once verification passes.
