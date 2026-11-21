@@ -77,3 +77,24 @@ test('intro keeps the useful explanation without a redundant hero heading', () =
   assert.doesNotMatch(css, /\.page-intro h2\s*\{/);
   assert.match(html, /<h2 id="compareTitle"/, 'First real section heading is preserved');
 });
+
+
+test('project save and load controls are an accessible disclosure, closed by default', () => {
+  assert.match(html, /<details class="project-data-panel" id="projectDataPanel">/);
+  assert.doesNotMatch(html, /<details class="project-data-panel" id="projectDataPanel"[^>]*\sopen\b/);
+  assert.match(html, /<summary id="projectDataTitle" data-i18n="projectTitle">プロジェクトを保存・読み込む<\/summary>/);
+  assert.match(html, /<div class="project-data-body">/);
+  assert.match(html, /id="exportProjectButton"/);
+  assert.match(html, /id="importProjectButton"/);
+  assert.match(html, /id="projectFileInput" type="file"/);
+  assert.match(css, /\.project-data-panel > summary:focus-visible\s*\{/);
+});
+
+test('button hierarchy distinguishes playback, primary, stop and utility actions', () => {
+  assert.match(css, /\.ab-play-button\s*\{[^}]*background:\s*var\(--accent-soft\)/);
+  assert.match(css, /\.ab-play-button::before\s*\{[^}]*clip-path:/);
+  assert.match(css, /#abStop,\s*#scoreStop,\s*#stopButton\s*\{[^}]*background:\s*transparent/);
+  assert.match(css, /\.button\.primary,\s*\.primary\s*\{[^}]*background:\s*var\(--accent\)/);
+  assert.match(css, /\.project-data-actions \.project-action-export\s*\{[^}]*background:\s*var\(--accent-soft\)/);
+  assert.match(css, /:focus-visible\s*\{\s*outline:\s*2px solid var\(--focus\)/);
+});
