@@ -13,7 +13,7 @@ async function main() {
   try {
     for (const file of ['dist/index.html', 'dist/index.self-extract.html', 'tuning-compare.html']) {
       for (const language of ['ja', 'en']) {
-        for (const [width, height] of [[1360, 900], [601, 568], [600, 568], [360, 640], [320, 568], [393, 252]]) {
+        for (const [width, height] of [[1360, 900], [821, 700], [820, 700], [601, 568], [600, 568], [521, 700], [520, 700], [393, 640], [360, 640], [320, 568], [393, 252]]) {
           const context = await browser.newContext({ viewport: { width, height }, locale: language, reducedMotion: 'reduce' });
           const page = await context.newPage();
           const errors = [], requests = [];
@@ -65,11 +65,114 @@ async function main() {
             }
             assert.equal(layoutBoundaries.comparisonTable, '1px', label + ': comparison table remains bounded');
             assert.equal(layoutBoundaries.scoreCanvas, '1px', label + ': score editing area remains bounded');
+
+            // Check actual element positions; border-only tests missed the 520px A/B padding regression.
+            const assertLeftAligned = async (group, selectors) => {
+              const rects = await page.evaluate(items => items.map(selector => {
+                const element = document.querySelector(selector);
+                if (!element) return { selector, missing: true };
+                const bounds = element.getBoundingClientRect();
+                return { selector, left: bounds.left, right: bounds.right, width: bounds.width, visible: bounds.width > 0 && bounds.height > 0 };
+              }), selectors);
+              assert.ok(rects.every(rect => !rect.missing && rect.visible), label + ': ' + group + ' missing or hidden ' + JSON.stringify(rects));
+              const left = rects[0].left;
+              for (const rect of rects) {
+                assert.ok(Math.abs(rect.left - left) <= 1, label + ': ' + group + ' left-edge mismatch ' + JSON.stringify(rects));
+                assert.ok(rect.left >= -1 && rect.right <= width + 1, label + ': ' + group + ' outside viewport ' + JSON.stringify(rect));
+              }
+            };
+            if (width <= 820) {
+              await assertLeftAligned('A/B header and controls', [
+                '.compare-workspace > .ab-grid',
+                '.ab-slot[data-slot="a"]',
+                '.ab-slot[data-slot="a"] .ab-slot-head',
+                '.ab-slot[data-slot="a"] #abATitle',
+                '.ab-slot[data-slot="a"] .ab-fields',
+                '.ab-slot[data-slot="a"] .ab-fields label:first-child',
+                '.ab-slot[data-slot="b"]',
+                '.ab-slot[data-slot="b"] .ab-slot-head',
+                '.ab-slot[data-slot="b"] .ab-fields',
+                '.ab-slot[data-slot="b"] .ab-fields label:first-child',
+              ].filter(selector => !selector.endsWith('#abATitle')));
+              const abTitles = await page.evaluate(() => {
+                const a = document.querySelector('#abATitle').getBoundingClientRect();
+                const b = document.querySelector('#abBTitle').getBoundingClientRect();
+                const styleA = getComputedStyle(document.querySelector('.ab-slot[data-slot="a"]'));
+                const styleB = getComputedStyle(document.querySelector('.ab-slot[data-slot="b"]'));
+                return { aLeft: a.left, bLeft: b.left, paddingA: styleA.paddingLeft, paddingB: styleB.paddingLeft };
+              });
+              assert.ok(Math.abs(abTitles.aLeft - abTitles.bLeft) <= 1, label + ': A/B title left edge ' + JSON.stringify(abTitles));
+              assert.equal(abTitles.paddingA, abTitles.paddingB, label + ': equal A/B inset');
+            }
+            await assertLeftAligned('compare section', [
+              '.compare-workspace > .workspace-head',
+              '.compare-workspace > .ab-grid',
+            ]);
+            await assertLeftAligned('comparison target section', [
+              '.compare-target-workspace > .workspace-head',
+              '.compare-target-workspace > .compare-builder',
+              '.compare-target-workspace .comparison-table-wrap',
+              '.compare-target-workspace .learning-panel',
+              '.compare-target-workspace .compare-transport',
+            ]);
+            if (width > 600) {
+              await assertLeftAligned('score section', [
+                '#mobileScorePage > .workspace-head',
+                '#mobileScorePage > .score-toolbar',
+                '#mobileScorePage > .score-canvas-shell',
+                '#mobileScorePage > .wav-export-panel',
+              ]);
+              await assertLeftAligned('tuning section', [
+                '#mobileTuningPage > h2',
+                '#mobileTuningPage > .tuning-controls',
+                '#mobileTuningPage > .tuning-table-wrap',
+                '#mobileTuningPage > .project-data-panel',
+                '#mobileTuningPage .project-data-head',
+              ]);
+              await assertLeftAligned('sound settings section', [
+                '#mobileSoundPage > .sound-card > h2',
+                '#mobileSoundPage > .sound-card > .settings-grid',
+                '#mobileSoundPage .sound-advanced',
+                '#mobileSoundPage .engine-state',
+              ]);
+            }
+
             if (width <= 600) {
               for (const key of ['compare', 'score', 'tuning', 'sound']) {
                 await page.locator('[data-mobile-key="' + key + '"]').click();
                 assert.equal(await page.locator('.page-intro').isVisible(), false, label + ': intro hidden after tapping ' + key);
                 assert.equal(await page.locator('[data-mobile-key="' + key + '"]').getAttribute('aria-current'), 'page', label + ': active tab ' + key);
+                if (key === 'score') {
+                  await assertLeftAligned('mobile score section', [
+                    '#mobileScorePage > .workspace-head',
+                    '#mobileScorePage > .score-toolbar',
+                    '#mobileScorePage > .score-canvas-shell',
+                    '#mobileScorePage > .wav-export-panel',
+                  ]);
+                }
+                if (key === 'tuning') {
+                  await assertLeftAligned('mobile tuning section', [
+                    '#mobileTuningPage > h2',
+                    '#mobileTuningPage > .tuning-controls',
+                    '#mobileTuningPage > .tuning-table-wrap',
+                    '#mobileTuningPage > .project-data-panel',
+                    '#mobileTuningPage .project-data-head',
+                  ]);
+                }
+                if (key === 'sound') {
+                  await assertLeftAligned('mobile sound settings section', [
+                    '#mobileSoundPage > .sound-card > h2',
+                    '#mobileSoundPage > .sound-card > .settings-grid',
+                    '#mobileSoundPage .sound-advanced',
+                    '#mobileSoundPage .engine-state',
+                  ]);
+                  await assertLeftAligned('mobile audition section', [
+                    '#mobileSoundPage > .card:first-child > h2',
+                    '#mobileSoundPage > .card:first-child .frequency-row',
+                    '#mobileSoundPage > .card:first-child .chord-list',
+                    '#mobileSoundPage > .card:first-child .transport',
+                  ]);
+                }
               }
               await page.locator('[data-mobile-key="score"]').click();
               const symbols = await page.locator('#scoreSvg').evaluate(svg => {
